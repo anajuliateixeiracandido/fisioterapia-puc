@@ -1,14 +1,26 @@
 # Descrição
 
-<!-- Descreva as mudanças propostas neste PR -->
+<!-- Descreva de forma clara e objetiva o que foi feito e o PORQUÊ -->
+
+# O que foi feito
+
+- [ ] Nova funcionalidade
+- [ ] Refatoração
+- [ ] Correção de bug
+- [ ] Documentação
+- [ ] Melhoria de performance
+- [ ] Ajuste de permissão/regra de negócio
 
 # Checklist
-- [ ] Testes unitários adicionados/atualizados
-- [ ] Documentação atualizada (se aplicável)
-- [ ] Nenhum erro no lint
+
+- [ ] Código testado manualmente
+- [ ] Testes automatizados adicionados/atualizados
+- [ ] Lint sem erros
+- [ ] Não quebrou funcionalidades existentes
+- [ ] Sem dados sensíveis expostos no código (tokens, senhas, chaves)
 
 # Como testar
-<!-- Descreva como testar suas mudanças -->
 
-# Referências
-<!-- Adicione links ou referências relevantes -->
+<!-- Passo a passo para validar as mudanças e o resultado esperado -->
+
+---
