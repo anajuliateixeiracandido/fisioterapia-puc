@@ -11,5 +11,4 @@ router.use('/auth', authRoutes)
 router.use('/fisioterapeuta', fisioterapeutaRoutes)
 router.use('/pacientes', pacienteRoutes)
 
-
 export default router

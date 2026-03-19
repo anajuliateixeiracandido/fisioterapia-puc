@@ -1,10 +1,10 @@
 import { Router } from 'express'
 import {
-loginController,
-logoutController,
-forgotPasswordController,
-resetPasswordController,
-refreshTokenController,
+  loginController,
+  logoutController,
+  forgotPasswordController,
+  resetPasswordController,
+  refreshTokenController,
 } from '../controllers/auth.controller'
 import { authenticate } from '../middlewares/auth.middleware'
 
