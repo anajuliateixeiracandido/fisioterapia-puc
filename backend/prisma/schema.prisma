@@ -1,14 +1,99 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+provider = "postgresql"
+url      = env("DATABASE_URL")
+}
+
+enum Role {
+ALUNO
+PROFESSOR
+COORDENADOR
+}
+
+enum Sexo {
+M
+F
+}
+
+model Fisioterapeuta {
+id           Int       @id @default(autoincrement())
+uid          String    @unique @default(uuid())
+nomeCompleto String
+email        String    @unique
+senha        String
+role         Role
+matricula    String?
+codigoPessoa String?
+ativo        Boolean   @default(true)
+createdAt    DateTime  @default(now())
+updatedAt    DateTime  @updatedAt
+
+refreshTokenHash      String?    
+refreshTokenExpiresAt DateTime? 
+
+passwordResetToken          String?
+passwordResetTokenExpiresAt DateTime?
+
+professor    Professor?
+aluno        Aluno?
+}
+
+model Professor {
+id               Int            @id @default(autoincrement())
+
+fisioterapeutaId Int            @unique
+fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+
+alunos           Aluno[]    @relation("ProfessorAlunos")
+pacientes        Paciente[] @relation("ProfessorPacientes")
+}
+
+model Aluno {
+id               Int            @id @default(autoincrement())
+
+fisioterapeutaId Int            @unique
+fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+
+professorId      Int?   
+professor        Professor?     @relation("ProfessorAlunos", fields: [professorId], references: [id])
+
+pacientes        Paciente[] @relation("AlunoPacientes")
+}
+
+model Paciente {
+id                  Int      @id @default(autoincrement())
+codigo              String   @unique @default(cuid())
+nomeCompleto        String   @db.VarChar(200)
+dataNascimento      DateTime
+sexo                Sexo
+cpf                 String?  @unique
+telefone            String?
+endereco            String?
+email               String?
+alergias            String?
+condicaoSaude       String?  @db.VarChar(400)
+demandaReabilitacao String?  @db.VarChar(400)
+atividadeLimitacao  String?  @db.VarChar(400)
+queixaPrincipal     String?
+observacoesIniciais String?
+
+
+professorId         Int
+professor           Professor @relation("ProfessorPacientes", fields: [professorId], references: [id])
+
+alunos              Aluno[]  @relation("AlunoPacientes")
+contatosEmergencia  ContatoEmergencia[]
+}
+
+model ContatoEmergencia {
+id         Int      @id @default(autoincrement())
+nome       String
+telefone   String
+parentesco String
+
+pacienteId Int
+paciente   Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
 }
