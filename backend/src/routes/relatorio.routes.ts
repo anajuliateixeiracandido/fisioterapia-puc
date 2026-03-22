@@ -17,25 +17,25 @@ const router = Router()
 router.use(authenticate)
 
 // POST /relatorios - Criar relatório (Aluno ou Professor)
-router.post('/relatorios', authorize('ALUNO', 'PROFESSOR'), criar)
+router.post('/', authorize('ALUNO', 'PROFESSOR'), criar)
 
 // GET /relatorios - Listar relatórios com filtros e paginação
 // Query params: page (default: 1), limit (default: 10), codigoPaciente, status, dataInicio, dataFim, ordenacao, tipo, matriculaAluno
-router.get('/relatorios', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), listar)
+router.get('/', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), listar)
 
 // GET /relatorios/:id - Obter relatório por ID
-router.get('/relatorios/:id', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), obterPorId)
+router.get('/:id', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), obterPorId)
 
 // GET /relatorios/:id/pdf - Gerar PDF
-router.get('/relatorios/:id/pdf', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), gerarPDF)
+router.get('/:id/pdf', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), gerarPDF)
 
 // PATCH /relatorios/avaliacao/:id - Avaliar relatório (apenas Professor e Coordenador)
-router.patch('/relatorios/avaliacao/:id', authorize('PROFESSOR', 'COORDENADOR'), avaliar)
+router.patch('/avaliacao/:id', authorize('PROFESSOR', 'COORDENADOR'), avaliar)
 
 // PATCH /relatorios/:id - Editar relatório
-router.patch('/relatorios/:id', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), editar)
+router.patch('/:id', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), editar)
 
 // DELETE /relatorios/:id - Deletar relatório
-router.delete('/relatorios/:id', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), deletar)
+router.delete('/:id', authorize('ALUNO', 'PROFESSOR', 'COORDENADOR'), deletar)
 
 export default router

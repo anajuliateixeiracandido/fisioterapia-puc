@@ -1,8 +1,13 @@
 import { Request, Response, NextFunction } from 'express'
+import { cadastrarRelatorio } from '../services/relatorio.service'
+import { cadastroRelatorioSchema } from '../validators/relatorio.validator'
+import { AppError } from '../errors/AppError'
 
 async function criar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de criação
+    const dados = cadastroRelatorioSchema.parse(req.body)
+    const resultado = await cadastrarRelatorio(dados, (req as any).user as any)
+    
     res.status(201).json({ message: 'Relatório criado' })
   } catch (err) {
     next(err)
