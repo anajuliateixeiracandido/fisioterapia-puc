@@ -18,6 +18,12 @@ enum Sexo {
     F
 }
 
+enum StatusRelatorio {
+    ENVIADO
+    APROVADO
+    NEGADO
+}
+
 model Fisioterapeuta {
     id           Int      @id @default(autoincrement())
     uid          String   @unique @default(uuid())
@@ -39,6 +45,7 @@ model Fisioterapeuta {
 
     professor Professor?
     aluno     Aluno?
+    relatorios Relatorio[]
 }
 
 model Professor {
@@ -49,6 +56,7 @@ model Professor {
 
     alunos    Aluno[]    @relation("ProfessorAlunos")
     pacientes Paciente[] @relation("ProfessorPacientes")
+    relatoriosSupervisionados Relatorio[] @relation("ProfessorResponsavel")
 }
 
 model Aluno {
@@ -85,6 +93,7 @@ model Paciente {
 
     alunos             Aluno[]             @relation("AlunoPacientes")
     contatosEmergencia ContatoEmergencia[]
+    relatorios         Relatorio[]
 }
 
 model ContatoEmergencia {
@@ -124,9 +133,9 @@ model FormularioCIF {
     condicaoSaudeDescricao String
     factoresPessoais       String?
     planoTerapeutico       String?
-    observacoes            String?
 
     itens ItemCIF[]
+    relatorio Relatorio?
 
     @@map("formulario_cif")
 }
@@ -169,4 +178,35 @@ model CIFReferencia {
 
     @@index([categoria])
     @@map("cif_referencia")
+}
+
+model Relatorio {
+    id           Int              @id @default(autoincrement())
+    codigo       String           @unique @default(cuid())
+    status       StatusRelatorio  @default(ENVIADO)
+    dataCriacao  DateTime         @default(now())
+    dataAprovacao DateTime?
+    dataNegacao   DateTime?
+    feedback      String?          @db.Text
+    ultimaEdicao  DateTime?        @updatedAt
+
+    fisioterapeutaId Int
+    fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id])
+
+    pacienteId Int
+    paciente   Paciente @relation(fields: [pacienteId], references: [id])
+
+    professorResponsavelId Int?
+    professorResponsavel   Professor? @relation("ProfessorResponsavel", fields: [professorResponsavelId], references: [id])
+
+    formularioCIFId Int?            @unique
+    formularioCIF   FormularioCIF? @relation(fields: [formularioCIFId], references: [id])
+
+    @@index([fisioterapeutaId])
+    @@index([pacienteId])
+    @@index([professorResponsavelId])
+    @@index([status])
+    @@index([dataCriacao])
+    @@index([status, dataCriacao])
+    @@map("relatorio")
 }
