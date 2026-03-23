@@ -72,4 +72,29 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
   })
 }
 
-export { cadastrarFisioterapeuta }
+async function exibirTodosFisioterapeutas() {
+  try {
+      const fisioterapeutas = await prisma.fisioterapeuta.findMany({
+    select: {
+      uid: true,
+      nomeCompleto: true,
+      role: true,
+      codigoPessoa: true,
+    },
+  })
+
+  if (fisioterapeutas.length === 0) {
+    
+    throw new AppError(404, 'FISIOTERAPEUTAS_NOT_FOUND', 'Nenhum fisioterapeuta encontrado')
+  }
+
+  return fisioterapeutas;
+  } catch (err) {
+    throw new AppError(500, 'INTERNAL_SERVER_ERROR', 'Erro interno do servidor')
+  }
+}
+
+export { 
+  cadastrarFisioterapeuta, 
+  exibirTodosFisioterapeutas 
+}

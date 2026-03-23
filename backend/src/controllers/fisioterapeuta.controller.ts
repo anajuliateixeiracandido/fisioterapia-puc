@@ -3,7 +3,7 @@ import {
   professorCadastroSchema,
   alunoCadastroSchema,
 } from '../validators/fisioterapeuta.validator'
-import { cadastrarFisioterapeuta } from '../services/fisioterapeuta.service'
+import { cadastrarFisioterapeuta, exibirTodosFisioterapeutas } from '../services/fisioterapeuta.service'
 import { AppError } from '../errors/AppError'
 
 async function cadastrar(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -30,4 +30,14 @@ async function cadastrar(req: Request, res: Response, next: NextFunction): Promi
   }
 }
 
-export { cadastrar }
+async function getFisioterapeutas(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const resultado = await exibirTodosFisioterapeutas()
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+
+export { cadastrar, getFisioterapeutas }
