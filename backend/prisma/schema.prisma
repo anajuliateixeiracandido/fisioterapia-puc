@@ -10,7 +10,6 @@ datasource db {
 enum Role {
     ALUNO
     PROFESSOR
-    COORDENADOR
 }
 
 enum Sexo {
@@ -22,53 +21,54 @@ enum StatusRelatorio {
     ENVIADO
     APROVADO
     NEGADO
+    CORRIGIDO
 }
 
 model Fisioterapeuta {
-    id           Int      @id @default(autoincrement())
-    uid          String   @unique @default(uuid())
-    nomeCompleto String
-    email        String   @unique
-    senha        String
-    role         Role
-    matricula    String?
-    codigoPessoa String?
-    ativo        Boolean  @default(true)
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+id           Int       @id @default(autoincrement())
+uid          String    @unique @default(uuid())
+nomeCompleto String
+email        String    @unique
+senha        String
+role         Role
+createdAt    DateTime  @default(now())
+updatedAt    DateTime  @updatedAt
 
-    refreshTokenHash      String?
-    refreshTokenExpiresAt DateTime?
+refreshTokenHash      String?    
+refreshTokenExpiresAt DateTime? 
 
-    passwordResetToken          String?
-    passwordResetTokenExpiresAt DateTime?
+passwordResetToken          String?
+passwordResetTokenExpiresAt DateTime?
 
-    professor Professor?
-    aluno     Aluno?
-    relatorios Relatorio[]
+professor    Professor?
+aluno        Aluno?
+relatorios   Relatorio[]
 }
 
 model Professor {
-    id Int @id @default(autoincrement())
+id               Int            @id @default(autoincrement())
+codigoPessoa     String?
+coordenador  Boolean   @default(false)
 
-    fisioterapeutaId Int            @unique
-    fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+fisioterapeutaId Int            @unique
+fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
 
-    alunos    Aluno[]    @relation("ProfessorAlunos")
-    pacientes Paciente[] @relation("ProfessorPacientes")
-    relatoriosSupervisionados Relatorio[] @relation("ProfessorResponsavel")
+alunos           Aluno[]    @relation("ProfessorAlunos")
+pacientes        Paciente[] @relation("ProfessorPacientes")
+relatoriosSupervisionados Relatorio[] @relation("ProfessorResponsavel")
 }
 
 model Aluno {
-    id Int @id @default(autoincrement())
+id               Int            @id @default(autoincrement())
+matricula    String?
 
-    fisioterapeutaId Int            @unique
-    fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+fisioterapeutaId Int            @unique
+fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
 
-    professorId Int?
-    professor   Professor? @relation("ProfessorAlunos", fields: [professorId], references: [id])
+professorId      Int?   
+professor        Professor?     @relation("ProfessorAlunos", fields: [professorId], references: [id])
 
-    pacientes Paciente[] @relation("AlunoPacientes")
+pacientes        Paciente[] @relation("AlunoPacientes")
 }
 
 model Paciente {
@@ -182,13 +182,14 @@ model CIFReferencia {
 
 model Relatorio {
     id           Int              @id @default(autoincrement())
-    codigo       String           @unique @default(cuid())
     status       StatusRelatorio  @default(ENVIADO)
     dataCriacao  DateTime         @default(now())
     dataAprovacao DateTime?
-    dataNegacao   DateTime?
-    feedback      String?          @db.Text
-    ultimaEdicao  DateTime?        @updatedAt
+    
+    feedbacks         String[]    @default([])
+    datasFeedback     DateTime[]  @default([])
+    
+    datasEdicao       DateTime[]  @default([])
 
     fisioterapeutaId Int
     fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id])

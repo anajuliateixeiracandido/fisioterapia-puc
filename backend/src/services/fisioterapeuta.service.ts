@@ -36,7 +36,6 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
       where: {
         fisioterapeuta: {
           codigoPessoa: dados.codigoPessoaProfessor,
-          ativo: true,
         },
       },
     })

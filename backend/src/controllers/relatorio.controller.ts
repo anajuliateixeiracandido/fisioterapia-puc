@@ -1,14 +1,29 @@
 import { Request, Response, NextFunction } from 'express'
-import { cadastrarRelatorio } from '../services/relatorio.service'
-import { cadastroRelatorioSchema } from '../validators/relatorio.validator'
+import {
+  cadastrarRelatorio,
+  editarRelatorio,
+  deletarRelatorio,
+  avaliarRelatorio as avaliarRelatorioService,
+  listarRelatorios,
+  obterRelatorioPorId,
+} from '../services/relatorio.service'
+import {
+  cadastroRelatorioSchema,
+  editarRelatorioSchema,
+  avaliarRelatorioSchema,
+  listarRelatoriosSchema,
+} from '../validators/relatorio.validator'
 import { AppError } from '../errors/AppError'
 
 async function criar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const dados = cadastroRelatorioSchema.parse(req.body)
-    const resultado = await cadastrarRelatorio(dados, (req as any).user as any)
-    
-    res.status(201).json({ message: 'Relatório criado' })
+    const resultado = await cadastrarRelatorio(dados, (req as any).user)
+
+    res.status(201).json({
+      message: 'Relatório criado com sucesso',
+      data: resultado,
+    })
   } catch (err) {
     next(err)
   }
@@ -16,8 +31,19 @@ async function criar(req: Request, res: Response, next: NextFunction): Promise<v
 
 async function editar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de edição
-    res.status(200).json({ message: 'Relatório editado' })
+    const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
+    const dados = editarRelatorioSchema.parse(req.body)
+    const resultado = await editarRelatorio(id, dados, (req as any).user)
+
+    res.status(200).json({
+      message: 'Relatório editado com sucesso',
+      data: resultado,
+    })
   } catch (err) {
     next(err)
   }
@@ -25,7 +51,14 @@ async function editar(req: Request, res: Response, next: NextFunction): Promise<
 
 async function deletar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de exclusão
+    const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
+    await deletarRelatorio(id, (req as any).user)
+
     res.status(204).send()
   } catch (err) {
     next(err)
@@ -34,8 +67,19 @@ async function deletar(req: Request, res: Response, next: NextFunction): Promise
 
 async function avaliar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de avaliação
-    res.status(200).json({ message: 'Relatório avaliado' })
+    const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
+    const dados = avaliarRelatorioSchema.parse(req.body)
+    const resultado = await avaliarRelatorioService(id, dados, (req as any).user)
+
+    res.status(200).json({
+      message: 'Relatório avaliado com sucesso',
+      data: resultado,
+    })
   } catch (err) {
     next(err)
   }
@@ -43,20 +87,10 @@ async function avaliar(req: Request, res: Response, next: NextFunction): Promise
 
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de listagem com paginação
-    // Query params: page, limit, codigoPaciente, status, dataInicio, dataFim, ordenacao, tipo, matriculaAluno
-    const page = parseInt(req.query.page as string) || 1
-    const limit = parseInt(req.query.limit as string) || 10
-    
-    res.status(200).json({
-      data: [],
-      pagination: {
-        page,
-        limit,
-        total: 0,
-        totalPages: 0
-      }
-    })
+    const filtros = listarRelatoriosSchema.parse(req.query)
+    const resultado = await listarRelatorios(filtros, (req as any).user)
+
+    res.status(200).json(resultado)
   } catch (err) {
     next(err)
   }
@@ -64,8 +98,15 @@ async function listar(req: Request, res: Response, next: NextFunction): Promise<
 
 async function obterPorId(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de busca por ID
-    res.status(200).json({ message: 'Relatório encontrado' })
+    const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
+    const resultado = await obterRelatorioPorId(id, (req as any).user)
+
+    res.status(200).json(resultado)
   } catch (err) {
     next(err)
   }

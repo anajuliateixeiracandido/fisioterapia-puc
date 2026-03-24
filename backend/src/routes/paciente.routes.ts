@@ -5,6 +5,6 @@ import { authorize } from '../middlewares/role.middleware'
 
 const router = Router()
 
-router.post('/', authenticate, authorize('PROFESSOR', 'COORDENADOR'), cadastrar)
+router.post('/', authenticate, authorize('PROFESSOR'), cadastrar)
 
 export default router

@@ -17,7 +17,7 @@ async function login(dados: LoginInput) {
     where: { email: dados.email },
   })
 
-  if (!fisioterapeuta || !fisioterapeuta.ativo) {
+  if (!fisioterapeuta) {
     throw new AppError(401, 'CREDENCIAIS_INVALIDAS', 'Credenciais inválidas')
   }
 
@@ -74,7 +74,7 @@ async function forgotPassword(email: string) {
     where: { email },
   })
 
-  if (!fisioterapeuta || !fisioterapeuta.ativo) {
+  if (!fisioterapeuta) {
     return
   }
 
@@ -130,7 +130,7 @@ async function refreshToken(token: string) {
     },
   })
 
-  if (!fisioterapeuta || !fisioterapeuta.ativo) {
+  if (!fisioterapeuta) {
     throw new AppError(401, 'REFRESH_TOKEN_INVALIDO', 'Refresh token inválido ou expirado')
   }
 

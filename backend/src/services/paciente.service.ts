@@ -23,7 +23,6 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
       where: {
         fisioterapeuta: {
           matricula: dados.matriculaAluno,
-          ativo: true,
         },
       },
     })
