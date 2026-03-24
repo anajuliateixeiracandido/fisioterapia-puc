@@ -12,10 +12,11 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
         nomeCompleto: dados.nomeCompleto,
         email: dados.email,
         senha: senhaHash,
-        codigoPessoa: dados.codigoPessoa,
         role: 'PROFESSOR',
         professor: {
-          create: {},
+          create: {
+            codigoPessoa: dados.codigoPessoa,
+          },
         },
       },
       select: {
@@ -23,29 +24,14 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
         nomeCompleto: true,
         email: true,
         role: true,
-        codigoPessoa: true,
+        professor: {
+          select: {
+            codigoPessoa: true,
+          },
+        },
         createdAt: true,
       },
     })
-  }
-
-  let professorId: number | undefined = undefined
-
-  if (dados.codigoPessoaProfessor) {
-    const professor = await prisma.professor.findFirst({
-      where: {
-        fisioterapeuta: {
-          codigoPessoa: dados.codigoPessoaProfessor,
-          ativo: true,
-        },
-      },
-    })
-
-    if (!professor) {
-      throw new AppError(404, 'PROFESSOR_NOT_FOUND', 'Professor não encontrado')
-    }
-
-    professorId = professor.id
   }
 
   return prisma.fisioterapeuta.create({
@@ -53,11 +39,11 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
       nomeCompleto: dados.nomeCompleto,
       email: dados.email,
       senha: senhaHash,
-      matricula: dados.matricula,
       role: 'ALUNO',
       aluno: {
         create: {
-          professorId: professorId ?? null,
+          matricula: dados.matricula,
+          professorId: null,
         },
       },
     },
@@ -66,20 +52,22 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
       nomeCompleto: true,
       email: true,
       role: true,
-      matricula: true,
+      aluno: {
+        select: {
+          matricula: true,
+        },
+      },
       createdAt: true,
     },
   })
 }
-
 async function exibirTodosFisioterapeutas() {
   try {
-      const fisioterapeutas = await prisma.fisioterapeuta.findMany({
+    const fisioterapeutas = await prisma.fisioterapeuta.findMany({
     select: {
       uid: true,
       nomeCompleto: true,
       role: true,
-      codigoPessoa: true,
     },
   })
 

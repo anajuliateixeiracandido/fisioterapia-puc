@@ -24,10 +24,6 @@ const alunoCadastroSchema = z.object({
   email: emailSchema,
   senha: senhaForteSchema,
   matricula: z.string().regex(/^\d{5,10}$/, 'Matrícula deve ter entre 5 e 10 dígitos numéricos'),
-  codigoPessoaProfessor: z
-    .string()
-    .regex(/^\d{5,10}$/, 'Código pessoa do professor deve ter entre 5 e 10 dígitos numéricos')
-    .optional(),
 })
 
 type ProfessorCadastroInput = z.infer<typeof professorCadastroSchema>

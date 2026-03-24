@@ -10,7 +10,6 @@ url      = env("DATABASE_URL")
 enum Role {
 ALUNO
 PROFESSOR
-COORDENADOR
 }
 
 enum Sexo {
@@ -25,9 +24,6 @@ nomeCompleto String
 email        String    @unique
 senha        String
 role         Role
-matricula    String?
-codigoPessoa String?
-ativo        Boolean   @default(true)
 createdAt    DateTime  @default(now())
 updatedAt    DateTime  @updatedAt
 
@@ -43,6 +39,8 @@ aluno        Aluno?
 
 model Professor {
 id               Int            @id @default(autoincrement())
+codigoPessoa     String?
+coordenador      Boolean   @default(false)
 
 fisioterapeutaId Int            @unique
 fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
@@ -53,6 +51,7 @@ pacientes        Paciente[] @relation("ProfessorPacientes")
 
 model Aluno {
 id               Int            @id @default(autoincrement())
+matricula    String?
 
 fisioterapeutaId Int            @unique
 fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)

@@ -21,10 +21,7 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
   if (dados.matriculaAluno) {
     const aluno = await prisma.aluno.findFirst({
       where: {
-        fisioterapeuta: {
-          matricula: dados.matriculaAluno,
-          ativo: true,
-        },
+        matricula: dados.matriculaAluno,
       },
     })
 
@@ -69,20 +66,20 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
       alergias: true,
       professor: {
         select: {
+          codigoPessoa: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              codigoPessoa: true,
             },
           },
         },
       },
       alunos: {
         select: {
+          matricula: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              matricula: true,
             },
           },
         },
@@ -132,20 +129,20 @@ async function listarPacientes() {
       alergias: true,
       professor: {
         select: {
+          codigoPessoa: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              codigoPessoa: true,
             },
           },
         },
       },
       alunos: {
         select: {
+          matricula: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              matricula: true,
             },
           },
         },
@@ -191,20 +188,18 @@ async function listarPacientesFisioterapeuta(fisioterapeutaId: number, role: any
       alergias: true,
       professor: {
         select: {
+          codigoPessoa: true,
           fisioterapeuta: {
-            select: {
-              nomeCompleto: true,
-              codigoPessoa: true,
-            },
+            select: { nomeCompleto: true },
           },
         },
       },
       alunos: {
         select: {
+          matricula: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              matricula: true,
             },
           },
         },
@@ -256,20 +251,20 @@ async function buscarPacientePorId(pacienteId: number, fisioterapeutaId: number,
       alergias: true,
       professor: {
         select: {
+          codigoPessoa: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              codigoPessoa: true,
             },
           },
         },
       },
       alunos: {
         select: {
+          matricula: true,
           fisioterapeuta: {
             select: {
               nomeCompleto: true,
-              matricula: true,
             },
           },
         },
