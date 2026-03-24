@@ -1,32 +1,25 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { FileText, Save, Send, AlertCircle, Plus } from 'lucide-react'
 import { FormularioHeaderSection } from './FormularioHeaderSection'
 import { CIFItemCard } from './CartaoItemCIF'
 import { obterPrefixoCIF } from '../../utils/regrascif'
+import { fetchCIFReferences } from '../../services/cifApi'
 import './FormularioRelatorio.css'
+import ModalItemCIF from './ModalItemCIF'
 
 const CIF_TYPES = [
-  { 
-    key: 'b', 
-    label: 'Funções do Corpo',
-    description: 'Funções fisiológicas dos sistemas do corpo',
-  },
-  { 
-    key: 's', 
-    label: 'Estruturas do Corpo',
-    description: 'Partes anatômicas do corpo',
-  },
-  { 
-    key: 'd', 
-    label: 'Atividades e Participação',
-    description: 'Execução de tarefas e envolvimento em situações da vida',
-  },
-  { 
-    key: 'e', 
-    label: 'Fatores Ambientais',
-    description: 'Ambiente físico, social e de atitudes',
-  },
+  { key: 'b', label: 'Funções do Corpo', description: 'Funções fisiológicas dos sistemas do corpo' },
+  { key: 's', label: 'Estruturas do Corpo', description: 'Partes anatômicas do corpo' },
+  { key: 'd', label: 'Atividades e Participação', description: 'Execução de tarefas e envolvimento em situações da vida' },
+  { key: 'e', label: 'Fatores Ambientais', description: 'Ambiente físico, social e de atitudes' },
 ]
+
+const CATEGORIA_MAP = {
+  b: 'FUNCAO',
+  s: 'ESTRUTURA',
+  d: 'ACTIVIDADE_PARTICIPACAO',
+  e: 'FACTOR_AMBIENTAL',
+}
 
 /**
  * Formulário completo de relatório CIF (View)
@@ -35,7 +28,13 @@ const CIF_TYPES = [
  * @param {function} props.onSaveDraft - Callback para salvar rascunho
  * @param {function} props.onSubmitReport - Callback para enviar relatório
  */
-export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
+export function ReportForm({ onSaveDraft, onSubmitReport }) {
+  const [itemModalOpen, setItemModalOpen] = useState(false)
+  const [editingIndex, setEditingIndex] = useState(null)
+  const [currentType, setCurrentType] = useState('b')
+  const [referencias, setReferencias] = useState([])
+  const [carregandoRefs, setCarregandoRefs] = useState(false)
+
   const initialForm = {
     tipoCIF: 'CIF',
     dataPreenchimento: new Date().toISOString().slice(0, 16),
@@ -49,7 +48,16 @@ export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
 
   const [form, setForm] = useState(initialForm)
 
-  const updateForm = (updates) => setForm(prev => ({ ...prev, ...updates }))
+  const updateForm = (updates) => {
+    console.log('Atualizando form:', updates)
+    setForm(prev => {
+      const newForm = { ...prev, ...updates }
+      console.log('Estado anterior:', prev)
+      console.log('Novo estado:', newForm)
+      console.log('tipoCIF mudou de', prev.tipoCIF, 'para', newForm.tipoCIF)
+      return newForm
+    })
+  }
   const updateItens = (itens) => setForm(prev => ({ ...prev, itens }))
   const canSubmit = form.condicaoSaudeDescricao.trim().length > 0 && form.itens.length > 0
 
@@ -65,12 +73,56 @@ export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
     return grouped
   }, [form.itens])
 
-  const handleAddItem = (type) => {
-    alert(`Funcionalidade de adicionar item CIF tipo "${type}" em desenvolvimento`)
-  }
+  const abrirModal = useCallback(async (type, globalIndex = null) => {
+    console.log('=== abrirModal chamado ===')
+    console.log('Type:', type)
+    console.log('Usando form.tipoCIF:', form.tipoCIF)
+    setCarregandoRefs(true)
+    setReferencias([])
+
+    try {
+      console.log('Buscando CIF com tipoCIF:', form.tipoCIF)
+      const data = await fetchCIFReferences(
+        CATEGORIA_MAP[type],
+        undefined,
+        2000,
+        0,
+        form.tipoCIF
+      )
+      console.log('Dados recebidos:', data.length, 'itens')
+      console.log('Primeiro item:', data[0])
+      setReferencias(data)
+    } catch (e) {
+      console.error('Erro ao carregar referências CIF:', e)
+      setReferencias([])
+    } finally {
+      setCarregandoRefs(false)
+    }
+
+    setCurrentType(type)
+    setEditingIndex(globalIndex)
+    setItemModalOpen(true)
+  }, [form.tipoCIF])
+
+
+  const handleAddItem = (type) => abrirModal(type, null)
 
   const handleEditItem = (globalIndex) => {
-    alert(`Funcionalidade de editar item em desenvolvimento (índice: ${globalIndex})`)
+    const item = form.itens[globalIndex]
+    const prefix = String(item.codigoCIF || '').charAt(0).toLowerCase() || 'b'
+    abrirModal(prefix, globalIndex)
+  }
+
+  const handleSaveItem = (itemData) => {
+    if (editingIndex !== null) {
+      const novosItens = [...form.itens]
+      novosItens[editingIndex] = itemData
+      updateItens(novosItens)
+    } else {
+      updateItens([...form.itens, itemData])
+    }
+    setItemModalOpen(false)
+    setEditingIndex(null)
   }
 
   const handleRemoveItem = (globalIndex) => {
@@ -102,7 +154,6 @@ export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
         <div className="cif-sections-container">
           {CIF_TYPES.map((type) => {
             const typeItems = itemsByType[type.key]
-            
             return (
               <div key={type.key} className={`cif-type-section type-${type.key}`}>
                 <div className="cif-type-header">
@@ -118,8 +169,8 @@ export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
                       <p className="cif-type-description">{type.description}</p>
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     type="button"
                     className="add-item-button"
                     onClick={() => handleAddItem(type.key)}
@@ -130,9 +181,7 @@ export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
                 </div>
 
                 {typeItems.length === 0 ? (
-                  <div className="empty-state">
-                    Nenhum item adicionado nesta seção
-                  </div>
+                  <div className="empty-state">Nenhum item adicionado nesta seção</div>
                 ) : (
                   <div className="cif-items-list">
                     {typeItems.map((item) => (
@@ -152,17 +201,26 @@ export function ReportForm({ references, onSaveDraft, onSubmitReport }) {
 
         {/* Ações */}
         <div className="form-actions">
-
           <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
             <Send size={18} />
             Enviar relatório
           </button>
         </div>
 
+        <ModalItemCIF
+          isOpen={itemModalOpen}
+          onClose={() => { setItemModalOpen(false); setEditingIndex(null) }}
+          onSave={handleSaveItem}
+          item={editingIndex !== null ? form.itens[editingIndex] : null}
+          currentType={currentType}
+          references={referencias}
+          isLoading={carregandoRefs}
+        />
+
         {!canSubmit && (
           <div className="validation-message">
             <AlertCircle size={16} style={{ display: 'inline', marginRight: 8 }} />
-            Para enviar, preencha a descrição da condição de saúde e corrija os itens incompletos.
+            Para enviar, preencha a descrição da condição de saúde e adicione pelo menos um item.
           </div>
         )}
       </form>

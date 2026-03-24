@@ -1,9 +1,9 @@
 import { z } from 'zod'
 
 const categoriaCIFSchema = z.enum(
-    ["ESTRUTURA", "FUNCAO", "ACTIVIDADE", "PARTICIPACAO", "FACTOR_AMBIENTAL"],
+    ["ESTRUTURA", "FUNCAO", "ACTIVIDADE_PARTICIPACAO", "FACTOR_AMBIENTAL"],
     {
-        error: 'Categoria deve ser uma das seguintes: ESTRUTURA, FUNCAO, ATIVIDADE, PARTICIPACAO, FACTOR_AMBIENTAL'
+        error: 'Categoria deve ser uma das seguintes: ESTRUTURA, FUNCAO, ATIVIDADE_PARTICIPACAO, FACTOR_AMBIENTAL'
     }
 )
 

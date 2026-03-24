@@ -1,0 +1,390 @@
+.modal-item-cif__overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 999;
+    backdrop-filter: blur(2px);
+}
+
+.modal-item-cif {
+    width: 100%;
+    max-width: 780px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow:
+        0 4px 6px rgba(15, 23, 42, 0.04),
+        0 20px 60px rgba(15, 23, 42, 0.16);
+    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Scrollbar personalizada */
+.modal-item-cif::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-item-cif::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-item-cif::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 99px;
+}
+
+.modal-item-cif::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+
+.modal-item-cif__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid #f0f2f5;
+    flex-shrink: 0;
+}
+
+.modal-item-cif__header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.3;
+}
+
+.modal-item-cif__header p {
+    margin: 5px 0 0;
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.modal-item-cif__close {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: background 0.15s ease, color 0.15s ease;
+    padding: 0;
+}
+
+.modal-item-cif__close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+/* ── Form ────────────────────────────────────────────────── */
+
+.modal-item-cif__form {
+    padding: 24px 28px 28px;
+    flex: 1;
+}
+
+.modal-item-cif__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+/* ── Field ───────────────────────────────────────────────── */
+
+.modal-item-cif__field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modal-item-cif__field--full {
+    grid-column: 1 / -1;
+}
+
+.modal-item-cif__field label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.01em;
+}
+
+.modal-item-cif__field input:not([type="checkbox"]),
+.modal-item-cif__field select,
+.modal-item-cif__field textarea {
+    width: 100%;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 13px;
+    font-size: 0.9375rem;
+    font-family: inherit;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.modal-item-cif__field input:focus,
+.modal-item-cif__field select:focus,
+.modal-item-cif__field textarea:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-item-cif__field input:hover:not(:focus):not([readonly]),
+.modal-item-cif__field select:hover:not(:focus),
+.modal-item-cif__field textarea:hover:not(:focus) {
+    border-color: #d1d5db;
+    background: #fafafa;
+}
+
+/* Select — ícone customizado */
+.modal-item-cif__field select {
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+}
+
+/* Input readonly */
+.modal-item-cif__field input[readonly] {
+    background: #f9fafb;
+    color: #6b7280;
+    cursor: default;
+    border-color: #f0f2f5;
+}
+
+.modal-item-cif__field textarea {
+    resize: vertical;
+    min-height: 90px;
+    line-height: 1.5;
+}
+
+/* ── Checkbox (modo avançado) ────────────────────────────── */
+
+.modal-item-cif__checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    padding: 10px 13px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    user-select: none;
+}
+
+.modal-item-cif__checkbox-label:hover {
+    border-color: #3b82f6;
+    background: #f0f7ff;
+}
+
+.modal-item-cif__checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0;
+    cursor: pointer;
+    accent-color: #3b82f6;
+    flex-shrink: 0;
+}
+
+/* ── Autocomplete ────────────────────────────────────────── */
+
+.modal-item-cif__autocomplete {
+    position: relative;
+}
+
+.modal-item-cif__options {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.04),
+        0 10px 30px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+
+    /* Scrollbar interna */
+    scrollbar-width: thin;
+    scrollbar-color: #e5e7eb transparent;
+}
+
+.modal-item-cif__options::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal-item-cif__options::-webkit-scrollbar-thumb {
+    background: #e5e7eb;
+    border-radius: 99px;
+}
+
+.modal-item-cif__option {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 14px;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: #374151;
+    transition: background 0.12s ease;
+    line-height: 1.4;
+}
+
+.modal-item-cif__option:last-child {
+    border-bottom: none;
+}
+
+.modal-item-cif__option:hover {
+    background: #f0f7ff;
+    color: #1d4ed8;
+}
+
+.modal-item-cif__option strong {
+    font-weight: 700;
+    color: #2563eb;
+    font-size: 0.8125rem;
+    flex-shrink: 0;
+}
+
+.modal-item-cif__option--empty {
+    padding: 14px;
+    color: #9ca3af;
+    font-size: 0.875rem;
+    text-align: center;
+    cursor: default;
+    pointer-events: none;
+    border: none;
+}
+
+/* ── Actions ─────────────────────────────────────────────── */
+
+.modal-item-cif__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid #f0f2f5;
+}
+
+.modal-item-cif__button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition:
+        transform 0.12s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease,
+        opacity 0.15s ease;
+}
+
+.modal-item-cif__button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.modal-item-cif__button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.modal-item-cif__button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.modal-item-cif__button--secondary {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.modal-item-cif__button--secondary:hover:not(:disabled) {
+    background: #e5e7eb;
+}
+
+.modal-item-cif__button--primary {
+    background: #2563eb;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.modal-item-cif__button--primary:hover:not(:disabled) {
+    background: #1d4ed8;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+/* ── Mobile ──────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    .modal-item-cif__overlay {
+        padding: 12px;
+        align-items: flex-end;
+    }
+
+    .modal-item-cif {
+        max-height: 92vh;
+        border-radius: 20px 20px 16px 16px;
+        max-width: 100%;
+    }
+
+    .modal-item-cif__header {
+        padding: 20px 20px 16px;
+    }
+
+    .modal-item-cif__form {
+        padding: 20px 20px 24px;
+    }
+
+    .modal-item-cif__grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .modal-item-cif__actions {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+
+    .modal-item-cif__button {
+        width: 100%;
+        text-align: center;
+        padding: 13px;
+    }
+}

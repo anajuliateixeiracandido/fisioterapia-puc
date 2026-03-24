@@ -3,6 +3,7 @@ import fisioterapeutaRoutes from './fisioterapeuta.routes'
 import pacienteRoutes from './paciente.routes'
 import authRoutes from './auth.routes'
 import relatorioRoutes from './relatorio.routes'
+import cifReferenciaRoutes from './cif-referencia.routes'
 
 const router = Router()
 
@@ -12,5 +13,6 @@ router.use('/auth', authRoutes)
 router.use('/fisioterapeuta', fisioterapeutaRoutes)
 router.use('/pacientes', pacienteRoutes)
 router.use('/relatorios', relatorioRoutes)
+router.use('/cif-referencias', cifReferenciaRoutes)
 
 export default router

@@ -60,11 +60,6 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
             },
         });
 
-        console.log(
-            'ITENS RECEBIDOS:',
-            JSON.stringify(dados.formularioCIF.itens, null, 2)
-        )
-
         const relatorio = await tx.relatorio.create({
             data: {
                 pacienteId: dados.pacienteId,

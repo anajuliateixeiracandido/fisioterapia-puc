@@ -25,50 +25,50 @@ enum StatusRelatorio {
 }
 
 model Fisioterapeuta {
-id           Int       @id @default(autoincrement())
-uid          String    @unique @default(uuid())
-nomeCompleto String
-email        String    @unique
-senha        String
-role         Role
-createdAt    DateTime  @default(now())
-updatedAt    DateTime  @updatedAt
+    id           Int      @id @default(autoincrement())
+    uid          String   @unique @default(uuid())
+    nomeCompleto String
+    email        String   @unique
+    senha        String
+    role         Role
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 
-refreshTokenHash      String?    
-refreshTokenExpiresAt DateTime? 
+    refreshTokenHash      String?
+    refreshTokenExpiresAt DateTime?
 
-passwordResetToken          String?
-passwordResetTokenExpiresAt DateTime?
+    passwordResetToken          String?
+    passwordResetTokenExpiresAt DateTime?
 
-professor    Professor?
-aluno        Aluno?
-relatorios   Relatorio[]
+    professor  Professor?
+    aluno      Aluno?
+    relatorios Relatorio[]
 }
 
 model Professor {
-id               Int            @id @default(autoincrement())
-codigoPessoa     String?
-coordenador  Boolean   @default(false)
+    id           Int     @id @default(autoincrement())
+    codigoPessoa String?
+    coordenador  Boolean @default(false)
 
-fisioterapeutaId Int            @unique
-fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+    fisioterapeutaId Int            @unique
+    fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
 
-alunos           Aluno[]    @relation("ProfessorAlunos")
-pacientes        Paciente[] @relation("ProfessorPacientes")
-relatoriosSupervisionados Relatorio[] @relation("ProfessorResponsavel")
+    alunos                    Aluno[]     @relation("ProfessorAlunos")
+    pacientes                 Paciente[]  @relation("ProfessorPacientes")
+    relatoriosSupervisionados Relatorio[] @relation("ProfessorResponsavel")
 }
 
 model Aluno {
-id               Int            @id @default(autoincrement())
-matricula    String?
+    id        Int     @id @default(autoincrement())
+    matricula String?
 
-fisioterapeutaId Int            @unique
-fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+    fisioterapeutaId Int            @unique
+    fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
 
-professorId      Int?   
-professor        Professor?     @relation("ProfessorAlunos", fields: [professorId], references: [id])
+    professorId Int?
+    professor   Professor? @relation("ProfessorAlunos", fields: [professorId], references: [id])
 
-pacientes        Paciente[] @relation("AlunoPacientes")
+    pacientes Paciente[] @relation("AlunoPacientes")
 }
 
 model Paciente {
@@ -109,8 +109,7 @@ model ContatoEmergencia {
 enum CategoriaCIF {
     ESTRUTURA
     FUNCAO
-    ACTIVIDADE
-    PARTICIPACAO
+    ACTIVIDADE_PARTICIPACAO
     FACTOR_AMBIENTAL
 }
 
@@ -127,14 +126,14 @@ enum TipoFactorAmbiental {
 model FormularioCIF {
     id                     Int       @id @default(autoincrement())
     tipoCIF                TipoCIF
-    dataPreenchimento      DateTime @default(now())
+    dataPreenchimento      DateTime  @default(now())
     ultimaAlteracao        DateTime? @updatedAt
     condicaoSaude          String?
     condicaoSaudeDescricao String
     factoresPessoais       String?
     planoTerapeutico       String?
 
-    itens ItemCIF[]
+    itens     ItemCIF[]
     relatorio Relatorio?
 
     @@map("formulario_cif")
@@ -177,19 +176,20 @@ model CIFReferencia {
     itens ItemCIF[]
 
     @@index([categoria])
+    @@index([tipoCIF])
     @@map("cif_referencia")
 }
 
 model Relatorio {
-    id           Int              @id @default(autoincrement())
-    status       StatusRelatorio  @default(ENVIADO)
-    dataCriacao  DateTime         @default(now())
+    id            Int             @id @default(autoincrement())
+    status        StatusRelatorio @default(ENVIADO)
+    dataCriacao   DateTime        @default(now())
     dataAprovacao DateTime?
-    
-    feedbacks         String[]    @default([])
-    datasFeedback     DateTime[]  @default([])
-    
-    datasEdicao       DateTime[]  @default([])
+
+    feedbacks     String[]   @default([])
+    datasFeedback DateTime[] @default([])
+
+    datasEdicao DateTime[] @default([])
 
     fisioterapeutaId Int
     fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id])
@@ -200,7 +200,7 @@ model Relatorio {
     professorResponsavelId Int?
     professorResponsavel   Professor? @relation("ProfessorResponsavel", fields: [professorResponsavelId], references: [id])
 
-    formularioCIFId Int?            @unique
+    formularioCIFId Int?           @unique
     formularioCIF   FormularioCIF? @relation(fields: [formularioCIFId], references: [id])
 
     @@index([fisioterapeutaId])

@@ -43,43 +43,31 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      {/* Sidebar */}
       <div className={`sidebar-wrapper ${isSidebarOpen ? 'open' : ''}`}>
-        <SideBar 
+        <SideBar
           user={user}
           currentPage={currentPage}
           onNavigate={navigateTo}
-          onClose={closeSidebar} 
+          onClose={closeSidebar}
         />
       </div>
 
-      {/* Mobile Overlay */}
       {isSidebarOpen && (
-        <div 
-          className="sidebar-overlay" 
-          onClick={closeSidebar}
-        />
+        <div className="sidebar-overlay" onClick={closeSidebar} />
       )}
 
-      {/* Main Content */}
       <div className="main-content">
-        {/* Header */}
         <div className="header">
-          <button 
-            className="menu-toggle"
-            onClick={toggleSidebar}
-          >
+          <button className="menu-toggle" onClick={toggleSidebar}>
             <Menu size={24} />
           </button>
           <div className="header-spacer" />
-          
-          {/* Notification Bell */}
+
           <button className="icon-button notification-button">
             <Bell size={20} />
             {hasNotifications && <span className="notification-badge"></span>}
           </button>
 
-          {/* User Profile */}
           <div className="header-profile">
             <div className="profile-name-wrapper">
               <div className="profile-name-small">{user.nome}</div>
@@ -90,7 +78,6 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Logout Button */}
           <button className="icon-button logout-button">
             <LogOut size={20} />
           </button>
@@ -98,56 +85,51 @@ const Home = () => {
 
         <Separator />
 
-        {/* Content Section */}
         {currentPage === 'dashboard' && (
-        <div className="content-section">
-          <div className="greeting-section">
-            <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]} 👋</h1>
-            <p className="greeting-subtitle">Matrícula: {user.matricula} · {user.curso}</p>
-          </div>
-          
-          {/* Stats Grid */}
-          <div className="stats-grid">
-            {stats.map((stat, index) => (
-              <StatCard
-                key={index}
-                icon={stat.icon}
-                label={stat.label}
-                value={stat.value}
-                colorClass={stat.colorClass}
-              />
-            ))}
-          </div>
+          <div className="content-section">
+            <div className="greeting-section">
+              <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]} 👋</h1>
+              <p className="greeting-subtitle">Matrícula: {user.matricula} · {user.curso}</p>
+            </div>
 
-          {/* Patients Card */}
-          <div className="patients-card">
-            <div className="stat-icon stat-purple">
-              <Users size={24} />
+            <div className="stats-grid">
+              {stats.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  icon={stat.icon}
+                  label={stat.label}
+                  value={stat.value}
+                  colorClass={stat.colorClass}
+                />
+              ))}
             </div>
-            <div className="stat-content">
-              <div className="stat-label">Meus pacientes</div>
-              <div className="stat-value">3</div>
+
+            <div className="patients-card">
+              <div className="stat-icon stat-purple">
+                <Users size={24} />
+              </div>
+              <div className="stat-content">
+                <div className="stat-label">Meus pacientes</div>
+                <div className="stat-value">3</div>
+              </div>
             </div>
           </div>
-        </div>
         )}
 
-        {/* Relatórios Page */}
         {currentPage === 'relatorios' && (
           <div className="content-section">
             <div className="page-header">
               <h1 className="page-title">Relatórios CIF</h1>
               <p className="page-subtitle">Criar e gerenciar relatórios de fisioterapia</p>
             </div>
-            <ReportForm 
-              references={[]} 
+            {/* ReportForm gere as suas próprias referências agora */}
+            <ReportForm
               onSaveDraft={(data) => console.log('Salvar rascunho:', data)}
               onSubmitReport={(data) => console.log('Enviar relatório:', data)}
             />
           </div>
         )}
 
-        {/* Pacientes Page */}
         {currentPage === 'pacientes' && (
           <div className="content-section">
             <div className="page-header">
@@ -160,7 +142,6 @@ const Home = () => {
           </div>
         )}
 
-        {/* Perfil Page */}
         {currentPage === 'perfil' && (
           <div className="content-section">
             <div className="page-header">
