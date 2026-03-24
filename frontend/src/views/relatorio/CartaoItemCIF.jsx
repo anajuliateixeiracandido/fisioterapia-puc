@@ -1,34 +1,46 @@
 import React from 'react'
 import { Edit2, Trash2 } from 'lucide-react'
-import { obterPrefixoCIF, QUALIFICADOR_0_A_4_8_9 } from '../../utils/regrascif'
+import {
+  obterPrefixoCIF,
+  QUALIFICADOR_0_A_4_8_9,
+  OPCOES_NATUREZA_ESTRUTURA,
+  OPCOES_LOCALIZACAO_ESTRUTURA,
+} from '../../utils/regrascif'
 import './CartaoItemCIF.css'
 
+// Mapas de labels por tipo de opção
 const QUALIFICADOR_LABELS = Object.fromEntries(
   QUALIFICADOR_0_A_4_8_9.map((q) => [q.valor, q.rotulo.split(' - ')[1]])
 )
+const NATUREZA_LABELS = Object.fromEntries(
+  OPCOES_NATUREZA_ESTRUTURA.map((q) => [q.valor, q.rotulo.split(' - ')[1]])
+)
+const LOCALIZACAO_LABELS = Object.fromEntries(
+  OPCOES_LOCALIZACAO_ESTRUTURA.map((q) => [q.valor, q.rotulo.split(' - ')[1]])
+)
 
-function QualifierDisplay({ value }) {
-  if (value === null || value === undefined || value === '') {
+function temValor(v) {
+  return v !== null && v !== undefined && v !== ''
+}
+
+function QualifierDisplay({ value, labelMap = QUALIFICADOR_LABELS }) {
+  if (!temValor(value)) {
     return <span className="qualifier-value empty">Não preenchido</span>
   }
   return (
     <span className="qualifier-value">
-      {value} — {QUALIFICADOR_LABELS[value] ?? value}
+      {value} — {labelMap[value] ?? value}
     </span>
   )
 }
 
-function QualifierItem({ label, value }) {
+function QualifierItem({ label, value, labelMap }) {
   return (
     <div className="qualifier-item">
       <div className="qualifier-label">{label}</div>
-      <QualifierDisplay value={value} />
+      <QualifierDisplay value={value} labelMap={labelMap} />
     </div>
   )
-}
-
-function temValor(v) {
-  return v !== null && v !== undefined && v !== ''
 }
 
 export function CIFItemCard({ item, onEdit, onRemove }) {
@@ -45,46 +57,67 @@ export function CIFItemCard({ item, onEdit, onRemove }) {
 
       <div className="cif-item-qualifiers">
 
-        {/* ── Funções do Corpo (b) ─────────────────── */}
+        {/* ── b: Funções do Corpo ──────────────────── */}
         {prefixo === 'b' && (
           <QualifierItem
             label="Gravidade da deficiência"
             value={item.qualificador1}
+            labelMap={QUALIFICADOR_LABELS}
           />
         )}
 
-        {/* ── Estruturas do Corpo (s) ──────────────── */}
+        {/* ── s: Estruturas do Corpo ───────────────── */}
         {prefixo === 's' && (
           <>
-            <QualifierItem label="Extensão" value={item.qualificador1} />
-            <QualifierItem label="Natureza" value={item.qualificador2} />
-            <QualifierItem label="Localização" value={item.qualificador3} />
+            <QualifierItem
+              label="Extensão"
+              value={item.qualificador1}
+              labelMap={QUALIFICADOR_LABELS}
+            />
+            <QualifierItem
+              label="Natureza"
+              value={item.qualificador2}
+              labelMap={NATUREZA_LABELS}
+            />
+            <QualifierItem
+              label="Localização"
+              value={item.qualificador3}
+              labelMap={LOCALIZACAO_LABELS}
+            />
           </>
         )}
 
-        {/* ── Actividades e Participação (d) ───────── */}
+        {/* ── d: Actividades e Participação ────────── */}
         {prefixo === 'd' && (
           <>
-            <QualifierItem label="Desempenho" value={item.qualificador1} />
-            <QualifierItem label="Capacidade" value={item.qualificador2} />
-
-            {/* Modo avançado — só mostra se tem valores */}
+            <QualifierItem
+              label="Desempenho"
+              value={item.qualificador1}
+              labelMap={QUALIFICADOR_LABELS}
+            />
+            <QualifierItem
+              label="Capacidade"
+              value={item.qualificador2}
+              labelMap={QUALIFICADOR_LABELS}
+            />
             {temValor(item.qualificador3) && (
               <QualifierItem
                 label="Capacidade com auxílio"
                 value={item.qualificador3}
+                labelMap={QUALIFICADOR_LABELS}
               />
             )}
             {temValor(item.qualificador4) && (
               <QualifierItem
                 label="Desempenho sem auxílio"
                 value={item.qualificador4}
+                labelMap={QUALIFICADOR_LABELS}
               />
             )}
           </>
         )}
 
-        {/* ── Factores Ambientais (e) ──────────────── */}
+        {/* ── e: Factores Ambientais ────────────────── */}
         {prefixo === 'e' && (
           <>
             <div className="qualifier-item">
@@ -97,13 +130,11 @@ export function CIFItemCard({ item, onEdit, onRemove }) {
                     : 'Não definido'}
               </span>
             </div>
-            <QualifierItem label="Grau" value={item.qualificador1} />
-            {item.itemRelacionadoCodigo && (
-              <div className="qualifier-item">
-                <div className="qualifier-label">Relacionado a</div>
-                <span className="qualifier-value">{item.itemRelacionadoCodigo}</span>
-              </div>
-            )}
+            <QualifierItem
+              label="Grau"
+              value={item.qualificador1}
+              labelMap={QUALIFICADOR_LABELS}
+            />
           </>
         )}
       </div>
