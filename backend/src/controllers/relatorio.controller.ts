@@ -3,14 +3,12 @@ import {
   cadastrarRelatorio,
   editarRelatorio,
   deletarRelatorio,
-  avaliarRelatorio as avaliarRelatorioService,
   listarRelatorios,
   obterRelatorioPorId,
 } from '../services/relatorio.service'
 import {
   cadastroRelatorioSchema,
   editarRelatorioSchema,
-  avaliarRelatorioSchema,
   listarRelatoriosSchema,
 } from '../validators/relatorio.validator'
 import { AppError } from '../errors/AppError'
@@ -65,26 +63,6 @@ async function deletar(req: Request, res: Response, next: NextFunction): Promise
   }
 }
 
-async function avaliar(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const id = parseInt(req.params.id as string)
-
-    if (isNaN(id)) {
-      throw new AppError(400, 'INVALID_ID', 'ID inválido')
-    }
-
-    const dados = avaliarRelatorioSchema.parse(req.body)
-    const resultado = await avaliarRelatorioService(id, dados, (req as any).user)
-
-    res.status(200).json({
-      message: 'Relatório avaliado com sucesso',
-      data: resultado,
-    })
-  } catch (err) {
-    next(err)
-  }
-}
-
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const filtros = listarRelatoriosSchema.parse(req.query)
@@ -121,4 +99,4 @@ async function gerarPDF(req: Request, res: Response, next: NextFunction): Promis
   }
 }
 
-export { criar, editar, deletar, avaliar, listar, obterPorId, gerarPDF }
+export { criar, editar, deletar, listar, obterPorId, gerarPDF }

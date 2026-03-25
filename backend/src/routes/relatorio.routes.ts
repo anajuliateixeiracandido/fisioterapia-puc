@@ -3,7 +3,6 @@ import {
   criar,
   editar,
   deletar,
-  avaliar,
   listar,
   obterPorId,
   gerarPDF,
@@ -20,13 +19,6 @@ router.use(authenticate)
 router.post('/', authorize('ALUNO', 'PROFESSOR'), criar)
 
 // GET /relatorios - Listar relatórios com filtros e paginação
-// Query params: 
-//   - page (default: 1), limit (default: 10)
-//   - Paciente: codigoPaciente, nomePaciente
-//   - Responsável: nomeResponsavel, matriculaAluno, codigoPessoaResponsavel
-//   - Geral: status (ENVIADO|APROVADO|NEGADO|CORRIGIDO), dataInicio, dataFim
-//   - Ordenação: ordenarPor (dataCriacao|dataFeedback|dataEdicao|nomeAluno|nomeProfessor|nomePaciente), ordem (asc|desc)
-//   - Tipo: tipo (meus|supervisionados|todos)
 router.get('/', authorize('ALUNO', 'PROFESSOR'), listar)
 
 // GET /relatorios/:id - Obter relatório por ID
@@ -34,9 +26,6 @@ router.get('/:id', authorize('ALUNO', 'PROFESSOR'), obterPorId)
 
 // GET /relatorios/:id/pdf - Gerar PDF
 router.get('/:id/pdf', authorize('ALUNO', 'PROFESSOR'), gerarPDF)
-
-// PATCH /relatorios/avaliacao/:id - Avaliar relatório (apenas Professor)
-router.patch('/avaliacao/:id', authorize('PROFESSOR'), avaliar)
 
 // PATCH /relatorios/:id - Editar relatório
 router.patch('/:id', authorize('ALUNO', 'PROFESSOR'), editar)

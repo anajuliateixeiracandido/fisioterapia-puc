@@ -201,6 +201,15 @@ export function ReportForm({ onSaveDraft, onSubmitReport }) {
 
         {/* Ações */}
         <div className="form-actions">
+          {!canSubmit ? (
+            <div className="validation-message">
+              <AlertCircle size={16} />
+              Para enviar, preencha a descrição da condição de saúde e adicione pelo menos um item.
+            </div>
+          ) : (
+            <div></div>
+          )}
+
           <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
             <Send size={18} />
             Enviar relatório
@@ -216,13 +225,6 @@ export function ReportForm({ onSaveDraft, onSubmitReport }) {
           references={referencias}
           isLoading={carregandoRefs}
         />
-
-        {!canSubmit && (
-          <div className="validation-message">
-            <AlertCircle size={16} style={{ display: 'inline', marginRight: 8 }} />
-            Para enviar, preencha a descrição da condição de saúde e adicione pelo menos um item.
-          </div>
-        )}
       </form>
     </div>
   )

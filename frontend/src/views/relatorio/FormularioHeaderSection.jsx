@@ -23,23 +23,6 @@ export function FormularioHeaderSection({ value, onChange }) {
           <option value="CIF">CIF - Adultos</option>
           <option value="CIF_CJ">CIF-CJ - Crianças e Jovens</option>
         </select>
-        {value.tipoCIF === 'CIF_CJ' && (
-          <div className="cif-type-badge-header">
-            📋 Formulário CIF para Crianças e Jovens
-          </div>
-        )}
-      </div>
-
-      <div className="form-group">
-        <label className="form-label">
-          Data de preenchimento
-        </label>
-        <input
-          type="datetime-local"
-          className="form-input"
-          value={value.dataPreenchimento}
-          onChange={(e) => patch('dataPreenchimento', e.target.value)}
-        />
       </div>
 
       <div className="form-group">
@@ -48,13 +31,10 @@ export function FormularioHeaderSection({ value, onChange }) {
         </label>
         <input
           className="form-input"
-          placeholder="CID, diagnóstico ou texto curto"
+          placeholder="Ex: CID-10, diagnóstico clínico"
           value={value.condicaoSaude ?? ''}
           onChange={(e) => patch('condicaoSaude', e.target.value)}
         />
-        <span className="form-help-text">
-          Opcional - Ex: CID-10, diagnóstico clínico
-        </span>
       </div>
 
       <div className="form-group full-width">
@@ -69,9 +49,6 @@ export function FormularioHeaderSection({ value, onChange }) {
           onChange={(e) => patch('condicaoSaudeDescricao', e.target.value)}
           required
         />
-        <span className="form-help-text">
-          Obrigatório - Descreva a condição de saúde do paciente
-        </span>
       </div>
 
       <div className="form-group full-width">
@@ -84,9 +61,6 @@ export function FormularioHeaderSection({ value, onChange }) {
           value={value.factoresPessoais ?? ''}
           onChange={(e) => patch('factoresPessoais', e.target.value)}
         />
-        <span className="form-help-text">
-          Aspectos pessoais que influenciam a condição
-        </span>
       </div>
 
       <div className="form-group full-width">
