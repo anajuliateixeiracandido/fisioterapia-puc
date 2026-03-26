@@ -3,10 +3,9 @@ import { AppError } from "../errors/AppError";
 import { 
     CadastroRelatorioInput, 
     EditarRelatorioInput, 
-    AvaliarRelatorioInput,
     ListarRelatoriosInput 
 } from "../validators/relatorio.validator";
-import { Prisma } from "@prisma/client";
+import { Prisma, CategoriaCIF, TipoFactorAmbiental } from "@prisma/client";
 
 function parseDateBR(data: string): Date {
     const [dia, mes, ano] = data.split('/')
@@ -42,10 +41,10 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
                             data: dados.formularioCIF.itens.map((item) => ({
                                 codigoCIF: item.codigoCIF,
                                 descricao: item.descricao,
-                                categoria: item.categoria,
+                                categoria: item.categoria as CategoriaCIF,
                                 nivel: item.nivel,
                                 qualificador1: item.qualificador1,
-                                tipoQualificador1: item.tipoQualificador1,
+                                tipoQualificador1: item.tipoQualificador1 as TipoFactorAmbiental | undefined,
                                 qualificador2: item.qualificador2,
                                 qualificador3: item.qualificador3,
                                 qualificador4: item.qualificador4,
@@ -125,47 +124,120 @@ async function editarRelatorio(
         throw new AppError(404, "RELATORIO_NOT_FOUND", "Relatório não encontrado");
     }
 
-    // Verificar se o usuário pode editar, só pode editar seus próprios relatórios
-    if (relatorio.fisioterapeutaId !== usuario.fisioterapeutaId) {
-        throw new AppError(403, "FORBIDDEN", "Você não tem permissão para editar este relatório");
-    }
-    
-    // Não pode editar relatórios aprovados
-    if (relatorio.status === 'APROVADO') {
-        throw new AppError(400, "RELATORIO_JA_APROVADO", "Não é possível editar um relatório que já foi aprovado");
-    }
+    // CASO 1: Edição normal (professorResponsavelId)
+    if (dados.professorResponsavelId !== undefined && !dados.status && !dados.feedback) {
+        // Verificar se o usuário pode editar, só pode editar seus próprios relatórios
+        if (relatorio.fisioterapeutaId !== usuario.fisioterapeutaId) {
+            throw new AppError(403, "FORBIDDEN", "Você não tem permissão para editar este relatório");
+        }
+        
+        // Não pode editar relatórios aprovados
+        if (relatorio.status === 'APROVADO') {
+            throw new AppError(400, "RELATORIO_JA_APROVADO", "Não é possível editar um relatório que já foi aprovado");
+        }
 
-    // Determinar novo status baseado no status atual
-    // Se estava NEGADO e aluno está corrigindo → muda para CORRIGIDO
-    // Se estava ENVIADO ou CORRIGIDO → mantém o mesmo status
-    let novoStatus = relatorio.status;
-    if (relatorio.status === 'NEGADO') {
-        novoStatus = 'CORRIGIDO';
-    }
+        // Determinar novo status baseado no status atual
+        // Se estava NEGADO e aluno está corrigindo → muda para CORRIGIDO
+        // Se estava ENVIADO ou CORRIGIDO → mantém o mesmo status
+        let novoStatus = relatorio.status;
+        if (relatorio.status === 'NEGADO') {
+            novoStatus = 'CORRIGIDO';
+        }
 
-    // Atualizar relatório e adicionar data de edição
-    const resultado = await prisma.relatorio.update({
-        where: { id },
-        data: {
-            professorResponsavelId: dados.professorResponsavelId,
-            status: novoStatus,
-            datasEdicao: {
-                push: new Date(),
-            },
-        },
-        include: {
-            paciente: true,
-            fisioterapeuta: true,
-            professorResponsavel: true,
-            formularioCIF: {
-                include: {
-                    itens: true,
+        // Atualizar relatório e adicionar data de edição
+        const resultado = await prisma.relatorio.update({
+            where: { id },
+            data: {
+                professorResponsavelId: dados.professorResponsavelId,
+                status: novoStatus,
+                datasEdicao: {
+                    push: new Date(),
                 },
             },
-        },
-    });
+            include: {
+                paciente: true,
+                fisioterapeuta: true,
+                professorResponsavel: true,
+                formularioCIF: {
+                    include: {
+                        itens: true,
+                    },
+                },
+            },
+        });
 
-    return resultado;
+        return resultado;
+    }
+
+    // CASO 2: Avaliação (status e/ou feedback)
+    if (dados.status || dados.feedback) {
+        // Não pode avaliar relatórios já aprovados
+        if (relatorio.status === 'APROVADO') {
+            throw new AppError(400, "RELATORIO_JA_APROVADO", "Este relatório já foi avaliado");
+        }
+
+        // Verificar se o professor tem permissão para avaliar
+        const professor = await prisma.professor.findFirst({
+            where: { fisioterapeutaId: usuario.fisioterapeutaId },
+        });
+
+        if (!professor) {
+            throw new AppError(403, "FORBIDDEN", "Professor não encontrado");
+        }
+
+        // Tanto professor normal quanto coordenador só podem avaliar se forem responsáveis
+        if (relatorio.professorResponsavelId !== professor.id) {
+            throw new AppError(403, "FORBIDDEN", "Você não é o professor responsável por este relatório");
+        }
+
+        const dataAtual = new Date();
+        const updateData: any = {};
+
+        // Se enviou status, valida que seja APROVADO ou NEGADO
+        if (dados.status) {
+            if (dados.status !== 'APROVADO' && dados.status !== 'NEGADO') {
+                throw new AppError(400, "INVALID_STATUS", "Status de avaliação deve ser APROVADO ou NEGADO");
+            }
+            
+            // Se status for NEGADO, feedback é obrigatório
+            if (dados.status === 'NEGADO' && (!dados.feedback || dados.feedback.trim().length === 0)) {
+                throw new AppError(400, "FEEDBACK_OBRIGATORIO", "Feedback é obrigatório ao negar um relatório");
+            }
+            
+            updateData.status = dados.status;
+            updateData.dataAprovacao = dados.status === 'APROVADO' ? dataAtual : null;
+        }
+
+        // Se enviou feedback, adiciona ao histórico
+        if (dados.feedback) {
+            updateData.feedbacks = {
+                push: dados.feedback,
+            };
+            updateData.datasFeedback = {
+                push: dataAtual,
+            };
+        }
+
+        const resultado = await prisma.relatorio.update({
+            where: { id },
+            data: updateData,
+            include: {
+                paciente: true,
+                fisioterapeuta: true,
+                professorResponsavel: true,
+                formularioCIF: {
+                    include: {
+                        itens: true,
+                    },
+                },
+            },
+        });
+
+        return resultado;
+    }
+
+    // Se chegou aqui, não tem nada para atualizar
+    throw new AppError(400, "NO_DATA_TO_UPDATE", "Nenhum dado foi fornecido para atualização");
 }
 
 async function deletarRelatorio(id: number, usuario: any) {
@@ -177,82 +249,14 @@ async function deletarRelatorio(id: number, usuario: any) {
         throw new AppError(404, "RELATORIO_NOT_FOUND", "Relatório não encontrado");
     }
 
-    if (usuario.role === 'ALUNO') {
-        if (relatorio.fisioterapeutaId !== usuario.fisioterapeutaId) {
-            throw new AppError(403, "FORBIDDEN", "Você não tem permissão para deletar este relatório");
-        }
+    // Tanto ALUNO quanto PROFESSOR só podem deletar seus próprios relatórios
+    if (relatorio.fisioterapeutaId !== usuario.fisioterapeutaId) {
+        throw new AppError(403, "FORBIDDEN", "Você não tem permissão para deletar este relatório");
     }
 
     await prisma.relatorio.delete({
         where: { id },
     });
-}
-
-async function avaliarRelatorio(
-    id: number, 
-    dados: AvaliarRelatorioInput, 
-    usuario: any
-) {
-    const relatorio = await prisma.relatorio.findUnique({
-        where: { id },
-        include: {
-            professorResponsavel: {
-                include: {
-                    fisioterapeuta: true,
-                },
-            },
-        },
-    });
-
-    if (!relatorio) {
-        throw new AppError(404, "RELATORIO_NOT_FOUND", "Relatório não encontrado");
-    }
-
-    if (relatorio.status == 'APROVADO') {
-        throw new AppError(400, "RELATORIO_JA_APROVADO", "Este relatório já foi avaliado");
-    }
-
-    if (usuario.role === 'PROFESSOR') {
-        const professor = await prisma.professor.findFirst({
-            where: { fisioterapeutaId: usuario.fisioterapeutaId },
-        });
-
-        if (!professor) {
-            throw new AppError(403, "FORBIDDEN", "Professor não encontrado");
-        }
-
-        if (!professor.coordenador && relatorio.professorResponsavelId !== professor.id) {
-            throw new AppError(403, "FORBIDDEN", "Você não é o professor responsável por este relatório");
-        }
-    }
-
-    const dataAtual = new Date();
-    
-    const resultado = await prisma.relatorio.update({
-        where: { id },
-        data: {
-            status: dados.status,
-            feedbacks: {
-                push: dados.feedback,
-            },
-            datasFeedback: {
-                push: dataAtual,
-            },
-            dataAprovacao: dados.status === 'APROVADO' ? dataAtual : null,
-        },
-        include: {
-            paciente: true,
-            fisioterapeuta: true,
-            professorResponsavel: true,
-            formularioCIF: {
-                include: {
-                    itens: true,
-                },
-            },
-        },
-    });
-
-    return resultado;
 }
 
 async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
@@ -275,15 +279,30 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
     const where: Prisma.RelatorioWhereInput = {};
     const andConditions: Prisma.RelatorioWhereInput[] = [];
 
-    if (tipo === 'meus') {
+    if (tipo === 'authored') {
+        // Apenas relatórios criados pelo usuário
         where.fisioterapeutaId = usuario.fisioterapeutaId;
-    } else if (tipo === 'supervisionados') {
+    } else if (tipo === 'all') {
+        // PROFESSOR: relatórios que supervisiona (os de outros que ele é responsável e também os seus)
         if (usuario.role === 'PROFESSOR') {
             const professor = await prisma.professor.findFirst({
                 where: { fisioterapeutaId: usuario.fisioterapeutaId },
             });
             if (professor) {
                 where.professorResponsavelId = professor.id;
+            }
+        }
+    } else if (tipo === 'supervised') {
+        // Apenas relatórios que o professor supervisiona (não criou)
+        if (usuario.role === 'PROFESSOR') {
+            const professor = await prisma.professor.findFirst({
+                where: { fisioterapeutaId: usuario.fisioterapeutaId },
+            });
+            if (professor) {
+                where.professorResponsavelId = professor.id;
+                where.NOT = {
+                    fisioterapeutaId: usuario.fisioterapeutaId,
+                };
             }
         }
     } else if (tipo === 'todos') {
@@ -569,7 +588,6 @@ export {
     cadastrarRelatorio,
     editarRelatorio,
     deletarRelatorio,
-    avaliarRelatorio,
     listarRelatorios,
     obterRelatorioPorId,
 }
