@@ -6,7 +6,7 @@ import './FormularioHeaderSection.css'
  */
 export function FormularioHeaderSection({ value, onChange }) {
   function patch(key, fieldValue) {
-    onChange({ ...value, [key]: fieldValue })
+    onChange({ [key]: fieldValue })
   }
 
   return (

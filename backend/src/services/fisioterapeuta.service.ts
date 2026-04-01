@@ -12,10 +12,12 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
         nomeCompleto: dados.nomeCompleto,
         email: dados.email,
         senha: senhaHash,
-        codigoPessoa: dados.codigoPessoa,
         role: 'PROFESSOR',
         professor: {
-          create: {},
+          create: {
+            codigoPessoa: dados.codigoPessoa ?? null,
+            coordenador: false,
+          },
         },
       },
       select: {
@@ -23,21 +25,22 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
         nomeCompleto: true,
         email: true,
         role: true,
-        codigoPessoa: true,
         createdAt: true,
+        professor: {
+          select: {
+            id: true,
+            codigoPessoa: true,
+          },
+        },
       },
     })
   }
 
-  let professorId: number | undefined = undefined
+  let professorId: number | null = null
 
   if (dados.codigoPessoaProfessor) {
     const professor = await prisma.professor.findFirst({
-      where: {
-        fisioterapeuta: {
-          codigoPessoa: dados.codigoPessoaProfessor,
-        },
-      },
+      where: { codigoPessoa: dados.codigoPessoaProfessor },
     })
 
     if (!professor) {
@@ -52,11 +55,11 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
       nomeCompleto: dados.nomeCompleto,
       email: dados.email,
       senha: senhaHash,
-      matricula: dados.matricula,
       role: 'ALUNO',
       aluno: {
         create: {
-          professorId: professorId ?? null,
+          matricula: dados.matricula ?? null,
+          professorId: professorId,
         },
       },
     },
@@ -65,8 +68,13 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
       nomeCompleto: true,
       email: true,
       role: true,
-      matricula: true,
       createdAt: true,
+      aluno: {
+        select: {
+          id: true,
+          matricula: true,
+        },
+      },
     },
   })
 }

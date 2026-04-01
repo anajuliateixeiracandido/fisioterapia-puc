@@ -238,6 +238,50 @@
   flex: 1;
 }
 
+/* Linha de dois campos */
+.form-row-dois {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 16px;
+margin-bottom: 20px;
+}
+
+.form-field {
+display: flex;
+flex-direction: column;
+gap: 6px;
+}
+
+.form-label {
+font-size: 0.875rem;
+font-weight: 600;
+color: #374151;
+}
+
+.form-select {
+padding: 10px 36px 10px 13px;
+border: 1.5px solid #e5e7eb;
+border-radius: 10px;
+font-size: 0.9375rem;
+font-family: inherit;
+color: #374151;
+background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
+-webkit-appearance: none;
+appearance: none;
+outline: none;
+cursor: pointer;
+transition: border-color 0.2s ease;
+}
+
+.form-select:focus {
+border-color: #3b82f6;
+box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+@media (max-width: 640px) {
+.form-row-dois { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
   .form-section,
   .cif-type-section {

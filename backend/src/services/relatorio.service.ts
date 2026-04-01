@@ -1,9 +1,9 @@
 import prisma from "../lib/prisma";
 import { AppError } from "../errors/AppError";
-import { 
-    CadastroRelatorioInput, 
-    EditarRelatorioInput, 
-    ListarRelatoriosInput 
+import {
+    CadastroRelatorioInput,
+    EditarRelatorioInput,
+    ListarRelatoriosInput
 } from "../validators/relatorio.validator";
 import { Prisma, CategoriaCIF, TipoFactorAmbiental } from "@prisma/client";
 
@@ -19,6 +19,21 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
 
     if (!paciente) {
         throw new AppError(404, "PACIENTE_NOT_FOUND", "Paciente não encontrado");
+    }
+
+    let professorResponsavelId: number | null = null;
+    if (usuario.role === 'PROFESSOR') {
+        const professor = await prisma.professor.findFirst({
+            where: { fisioterapeutaId: usuario.fisioterapeutaId },
+        })
+        professorResponsavelId = professor?.id ?? null;
+
+    } else if (usuario.role === 'ALUNO') {
+        const aluno = await prisma.aluno.findFirst({
+            where: { fisioterapeutaId: usuario.fisioterapeutaId },
+            select: { professorId: true },
+        })
+        professorResponsavelId = aluno?.professorId ?? null;
     }
 
     const statusInicial = usuario.role === 'ALUNO' ? 'ENVIADO' : 'APROVADO';
@@ -63,7 +78,7 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
             data: {
                 pacienteId: dados.pacienteId,
                 fisioterapeutaId: usuario.fisioterapeutaId,
-                professorResponsavelId: dados.professorResponsavelId ?? null,
+                professorResponsavelId,
                 status: statusInicial,
                 formularioCIFId: formulario.id,
             },
@@ -108,13 +123,13 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
 }
 
 async function editarRelatorio(
-    id: number, 
-    dados: EditarRelatorioInput, 
+    id: number,
+    dados: EditarRelatorioInput,
     usuario: any
 ) {
     const relatorio = await prisma.relatorio.findUnique({
         where: { id },
-        include: { 
+        include: {
             fisioterapeuta: true,
             professorResponsavel: true,
         },
@@ -130,7 +145,7 @@ async function editarRelatorio(
         if (relatorio.fisioterapeutaId !== usuario.fisioterapeutaId) {
             throw new AppError(403, "FORBIDDEN", "Você não tem permissão para editar este relatório");
         }
-        
+
         // Não pode editar relatórios aprovados
         if (relatorio.status === 'APROVADO') {
             throw new AppError(400, "RELATORIO_JA_APROVADO", "Não é possível editar um relatório que já foi aprovado");
@@ -198,12 +213,12 @@ async function editarRelatorio(
             if (dados.status !== 'APROVADO' && dados.status !== 'NEGADO') {
                 throw new AppError(400, "INVALID_STATUS", "Status de avaliação deve ser APROVADO ou NEGADO");
             }
-            
+
             // Se status for NEGADO, feedback é obrigatório
             if (dados.status === 'NEGADO' && (!dados.feedback || dados.feedback.trim().length === 0)) {
                 throw new AppError(400, "FEEDBACK_OBRIGATORIO", "Feedback é obrigatório ao negar um relatório");
             }
-            
+
             updateData.status = dados.status;
             updateData.dataAprovacao = dados.status === 'APROVADO' ? dataAtual : null;
         }
@@ -260,20 +275,20 @@ async function deletarRelatorio(id: number, usuario: any) {
 }
 
 async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
-    const { 
-        page, 
-        limit, 
-        codigoPaciente, 
+    const {
+        page,
+        limit,
+        codigoPaciente,
         nomePaciente,
         nomeResponsavel,
         codigoPessoaResponsavel,
-        status, 
-        dataInicio, 
-        dataFim, 
+        status,
+        dataInicio,
+        dataFim,
         ordenarPor,
         ordem,
-        tipo, 
-        matriculaAluno 
+        tipo,
+        matriculaAluno
     } = filtros;
 
     const where: Prisma.RelatorioWhereInput = {};
@@ -366,11 +381,11 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
             }
         });
     }
-    
+
     // Nome ou código de pessoa do responsável
     if (nomeResponsavel || codigoPessoaResponsavel) {
         const responsavelConditions: Prisma.RelatorioWhereInput[] = [];
-        
+
         // Busca por nome no fisioterapeuta autor
         if (nomeResponsavel) {
             responsavelConditions.push({
@@ -418,7 +433,7 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
 
     // Ordenação avançada
     let orderBy: Prisma.RelatorioOrderByWithRelationInput = {};
-    
+
     switch (ordenarPor) {
         case 'dataCriacao':
             orderBy = { dataCriacao: ordem };
@@ -584,7 +599,7 @@ async function obterRelatorioPorId(id: number, usuario: any) {
     return relatorio;
 }
 
-export { 
+export {
     cadastrarRelatorio,
     editarRelatorio,
     deletarRelatorio,

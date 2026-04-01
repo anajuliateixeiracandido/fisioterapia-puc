@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Menu, Bell, LogOut, ClipboardList, Clock, X, Check, Users } from 'lucide-react';
 import SideBar from './BarraLateral';
 import Separator from '../geral/Separador';
-import { ReportForm } from '../relatorio/FormularioRelatorio';
+import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import './Home.css';
 
 const StatCard = ({ icon: Icon, label, value, colorClass }) => (
@@ -29,6 +29,7 @@ const Home = () => {
   const [hasNotifications] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [relatorioSeleccionado, setRelatorioSeleccionado] = useState(null)
 
   const navigateTo = (page) => setCurrentPage(page);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -118,15 +119,64 @@ const Home = () => {
 
         {currentPage === 'relatorios' && (
           <div className="content-section">
-            <div className="page-header">
-              <h1 className="page-title">Relatórios CIF</h1>
-              <p className="page-subtitle">Criar e gerenciar relatórios de fisioterapia</p>
-            </div>
-            {/* ReportForm gere as suas próprias referências agora */}
-            <ReportForm
-              onSaveDraft={(data) => console.log('Salvar rascunho:', data)}
-              onSubmitReport={(data) => console.log('Enviar relatório:', data)}
+            <ListaRelatorios
+              user={user}
+              onVerRelatorio={(r) => {
+                setRelatorioSeleccionado(r)
+                setCurrentPage('ver-relatorio')
+              }}
+              onEditarRelatorio={(r) => {
+                setRelatorioSeleccionado(r)
+                setCurrentPage('editar-relatorio')
+              }}
+              onAvaliarRelatorio={(r) => {
+                setRelatorioSeleccionado(r)
+                setCurrentPage('avaliar-relatorio')
+              }}
             />
+          </div>
+        )}
+
+        {/* Placeholder — Ver relatório */}
+        {currentPage === 'ver-relatorio' && relatorioSeleccionado && (
+          <div className="content-section">
+            <div className="page-header">
+              <button
+                type="button"
+                onClick={() => setCurrentPage('relatorios')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '0.9rem' }}
+              >
+                ← Voltar
+              </button>
+              <h1 className="page-title">
+                REL-{new Date(relatorioSeleccionado.dataCriacao).getFullYear()}-{String(relatorioSeleccionado.id).padStart(3, '0')}
+              </h1>
+              <p className="page-subtitle">
+                Paciente: {relatorioSeleccionado.paciente?.nomeCompleto}
+              </p>
+            </div>
+            <div className="placeholder-message">
+              <p>Página de visualização do relatório em desenvolvimento</p>
+            </div>
+          </div>
+        )}
+
+        {/* Placeholder — Avaliar relatório */}
+        {currentPage === 'avaliar-relatorio' && relatorioSeleccionado && (
+          <div className="content-section">
+            <div className="page-header">
+              <button
+                type="button"
+                onClick={() => setCurrentPage('relatorios')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '0.9rem' }}
+              >
+                ← Voltar
+              </button>
+              <h1 className="page-title">Avaliar Relatório</h1>
+            </div>
+            <div className="placeholder-message">
+              <p>Página de avaliação em desenvolvimento</p>
+            </div>
           </div>
         )}
 
