@@ -145,16 +145,22 @@ export function CIFItemCard({ item, onEdit, onRemove }) {
         </div>
       )}
 
-      <div className="cif-item-actions">
-        <button type="button" className="cif-item-btn" onClick={onEdit}>
-          <Edit2 size={14} />
-          Editar
-        </button>
-        <button type="button" className="cif-item-btn danger" onClick={onRemove}>
-          <Trash2 size={14} />
-          Remover
-        </button>
-      </div>
+      {(onEdit || onRemove) && (
+        <div className="cif-item-actions">
+          {onEdit && (
+            <button type="button" className="cif-item-btn" onClick={onEdit}>
+              <Edit2 size={14} />
+              Editar
+            </button>
+          )}
+          {onRemove && (
+            <button type="button" className="cif-item-btn danger" onClick={onRemove}>
+              <Trash2 size={14} />
+              Remover
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

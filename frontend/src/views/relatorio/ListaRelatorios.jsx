@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Eye, Pencil, CheckCircle, FileText, Lock, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
+import React from 'react'
+import { Plus, Search, FileText, Lock, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 import { ReportForm } from './FormularioRelatorio'
 import './ListaRelatorios.css'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+import { useListaRelatoriosViewModel } from '../../viewmodels/useListaRelatoriosViewModel'
 
 const STATUS_CONFIG = {
     ENVIADO: { label: 'Enviado', cor: 'blue' },
@@ -40,15 +39,9 @@ function StatusBadge({ status }) {
     )
 }
 
-function RelatorioRow({ relatorio, user, onVer, onEditar, onAvaliar }) {
+function RelatorioRow({ relatorio, onVer }) {
     const isAprovado = relatorio.status === 'APROVADO'
     const codigo = formatarCodigo(relatorio.id, relatorio.dataCriacao)
-
-    const isAutor = relatorio.fisioterapeuta?.id === user?.fisioterapeutaId
-    const podeEditar = user?.role === 'ALUNO' && isAutor && !isAprovado
-
-    const isSupervisor = relatorio.professorResponsavel?.fisioterapeuta?.id === user?.fisioterapeutaId
-    const podeAvaliar = user?.role === 'PROFESSOR' && isSupervisor && !isAprovado
 
     return (
         <tr className="relatorio-row">
@@ -65,28 +58,6 @@ function RelatorioRow({ relatorio, user, onVer, onEditar, onAvaliar }) {
             <td><span className="nome-secundario">{relatorio.professorResponsavel?.fisioterapeuta?.nomeCompleto ?? '—'}</span></td>
             <td><StatusBadge status={relatorio.status} /></td>
             <td className="data-cell">{formatarData(relatorio.dataAprovacao ?? relatorio.dataCriacao)}</td>
-            <td>
-                <div className="acoes">
-                    <button type="button" className="acao-btn acao-btn--ver" onClick={() => onVer(relatorio)}>
-                        <Eye size={14} /> Ver
-                    </button>
-                    {podeEditar && (
-                        <button
-                            type="button"
-                            className="acao-btn acao-btn--editar"
-                            onClick={() => onEditar(relatorio)}
-                        >
-                            <Pencil size={14} />
-                            {relatorio.status === 'NEGADO' ? 'Corrigir' : 'Editar'}
-                        </button>
-                    )}
-                    {podeAvaliar && (
-                        <button type="button" className="acao-btn acao-btn--avaliar" onClick={() => onAvaliar(relatorio)}>
-                            <CheckCircle size={14} /> Avaliar
-                        </button>
-                    )}
-                </div>
-            </td>
         </tr>
     )
 }
@@ -139,91 +110,26 @@ function Paginacao({ pagination, onMudarPagina }) {
     )
 }
 
-export function ListaRelatorios({ user, onVerRelatorio, onEditarRelatorio, onAvaliarRelatorio }) {
-    const [view, setView] = useState('lista')
-    const [relatorios, setRelatorios] = useState([])
-    const [pagination, setPagination] = useState(null)
-    const [carregando, setCarregando] = useState(false)
-    const [erro, setErro] = useState(null)
-    const [busca, setBusca] = useState('')
-    const [status, setStatus] = useState('')
-    const [dataInicio, setDataInicio] = useState('')
-    const [dataFim, setDataFim] = useState('')
-    const [pagina, setPagina] = useState(1)
-
-    const fetchRelatorios = useCallback(async () => {
-        setCarregando(true)
-        setErro(null)
-        try {
-            const params = new URLSearchParams()
-            params.append('page', String(pagina))
-            params.append('limit', '15')
-            params.append('tipo', 'todos')
-
-            if (busca.trim()) {
-                params.append('nomePaciente', busca.trim())
-                params.append('nomeResponsavel', busca.trim())
-            }
-            if (status) params.append('status', status)
-            if (dataInicio) params.append('dataInicio', dataInicio)
-            if (dataFim) params.append('dataFim', dataFim)
-
-            const token = localStorage.getItem('accessToken')
-
-            const res = await fetch(`${API_BASE}/relatorios?${params}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-            })
-            if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`)
-
-            const json = await res.json()
-            setRelatorios(json.data ?? [])
-            setPagination(json.pagination ?? null)
-        } catch (e) {
-            setErro(e.message)
-        } finally {
-            setCarregando(false)
-        }
-    }, [busca, status, dataInicio, dataFim, pagina])
-
-    useEffect(() => {
-        if (view === 'lista') fetchRelatorios()
-    }, [fetchRelatorios, view])
-
-    useEffect(() => { setPagina(1) }, [busca, status, dataInicio, dataFim])
-
-
-    const handleSalvarRelatorio = async (dadosFormulario) => {
-        try {
-            const token = localStorage.getItem('accessToken')
-
-            const res = await fetch(`${API_BASE}/relatorios`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                },
-                body: JSON.stringify({
-                    pacienteId: dadosFormulario.pacienteId,
-                    formularioCIF: {
-                        tipoCIF: dadosFormulario.tipoCIF,
-                        dataPreenchimento: dadosFormulario.dataPreenchimento,
-                        condicaoSaude: dadosFormulario.condicaoSaude,
-                        condicaoSaudeDescricao: dadosFormulario.condicaoSaudeDescricao,
-                        factoresPessoais: dadosFormulario.factoresPessoais,
-                        planoTerapeutico: dadosFormulario.planoTerapeutico,
-                        itens: dadosFormulario.itens ?? [],
-                    },
-                }),
-            })
-            if (!res.ok) throw new Error('Erro ao guardar relatório')
-            setView('lista')
-        } catch (e) {
-            alert(`Erro: ${e.message}`)
-        }
-    }
+export function ListaRelatorios({ onVerRelatorio }) {
+    const {
+        view,
+        relatorios,
+        pagination,
+        carregando,
+        erro,
+        busca,
+        status,
+        dataInicio,
+        dataFim,
+        setView,
+        setBusca,
+        setStatus,
+        setDataInicio,
+        setDataFim,
+        handleSalvarRelatorio,
+        handleMudarPagina,
+        fetchRelatorios,
+    } = useListaRelatoriosViewModel()
 
     if (view === 'form') {
         return (
@@ -361,7 +267,6 @@ export function ListaRelatorios({ user, onVerRelatorio, onEditarRelatorio, onAva
                                     <th>Professor</th>
                                     <th>Status</th>
                                     <th>Atualização</th>
-                                    <th className="th-acoes">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -369,17 +274,14 @@ export function ListaRelatorios({ user, onVerRelatorio, onEditarRelatorio, onAva
                                     <RelatorioRow
                                         key={r.id}
                                         relatorio={r}
-                                        user={user}
                                         onVer={onVerRelatorio}
-                                        onEditar={onEditarRelatorio}
-                                        onAvaliar={onAvaliarRelatorio}
                                     />
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
-                    <Paginacao pagination={pagination} onMudarPagina={setPagina} />
+                    <Paginacao pagination={pagination} onMudarPagina={handleMudarPagina} />
                 </>
             )}
         </div>

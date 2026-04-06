@@ -5,7 +5,7 @@ const ItemMenu = ({ icon, label, counter, onClick }) => {
   return (
     <div className="item-menu" onClick={onClick}>
       <div className="item-menu-icon">
-        {icon || '📄'}
+        {icon || ''}
       </div>
       <div className="item-menu-content">
         <span className="item-menu-label">{label}</span>

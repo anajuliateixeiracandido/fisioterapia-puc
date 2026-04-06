@@ -11,6 +11,7 @@ const editarRelatorioSchema = z.object({
     professorResponsavelId: z.number().int().positive().optional(),
     status: z.enum(['ENVIADO', 'APROVADO', 'NEGADO', 'CORRIGIDO']).optional(),
     feedback: z.string().min(1).max(1000, 'Feedback deve ter no máximo 1000 caracteres').optional(),
+    formularioCIF: cadastroFormularioCIFSchema.optional(),
 }).refine(
     (data) => {
         if (data.status === 'NEGADO') {

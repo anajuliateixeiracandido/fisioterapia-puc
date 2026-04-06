@@ -1,0 +1,498 @@
+/* ================================
+   VISUALIZAÇÃO DE RELATÓRIO
+   ================================ */
+
+.visualizacao-relatorio {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+/* ── Loading e Error States ────────── */
+.visualizacao-loading,
+.visualizacao-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.visualizacao-error {
+  color: #dc2626;
+}
+
+.visualizacao-error h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.visualizacao-error p {
+  margin: 0;
+  color: #64748b;
+}
+
+/* ── Header ────────────────────────── */
+.visualizacao-header {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.relatorio-codigo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.btn-editar-relatorio,
+.btn-deletar-relatorio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(10px);
+}
+
+.btn-editar-relatorio {
+  color: #2563eb;
+}
+
+.btn-deletar-relatorio {
+  color: #dc2626;
+}
+
+.btn-editar-relatorio:hover,
+.btn-deletar-relatorio:hover {
+  background: white;
+  border-color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-editar-relatorio:active,
+.btn-deletar-relatorio:active {
+  transform: translateY(0);
+}
+
+.status-badge-large {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.status-badge-large--blue {
+  background: rgba(59, 130, 246, 0.3);
+  color: #dbeafe;
+}
+
+.status-badge-large--green {
+  background: rgba(34, 197, 94, 0.3);
+  color: #d1fae5;
+}
+
+.status-badge-large--red {
+  background: rgba(239, 68, 68, 0.3);
+  color: #fecaca;
+}
+
+.status-badge-large--orange {
+  background: rgba(249, 115, 22, 0.3);
+  color: #fed7aa;
+}
+
+.header-meta {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.95;
+}
+
+/* ── Seções ────────────────────────── */
+.visualizacao-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 1.25rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* ── Responsáveis ──────────────────── */
+.responsaveis-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.responsavel-card {
+  padding: 1.25rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.responsavel-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.responsavel-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.responsavel-nome {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.responsavel-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+/* ── Informações do Paciente ───────── */
+.paciente-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.info-value {
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+.info-value-link {
+  font-size: 0.95rem;
+  color: #2563eb;
+  font-weight: 500;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.info-value-link:hover {
+  color: #1e40af;
+  text-decoration-style: solid;
+}
+
+/* ── Formulário CIF ─────────────────── */
+.cif-header-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.cif-field {
+  margin-bottom: 1.25rem;
+}
+
+.cif-field:last-child {
+  margin-bottom: 0;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.field-value {
+  font-size: 0.95rem;
+  color: #1e293b;
+  line-height: 1.6;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+/* ── Itens CIF por Categoria ───────── */
+.categoria-section {
+  margin-bottom: 2rem;
+}
+
+.categoria-section:last-child {
+  margin-bottom: 0;
+}
+
+.categoria-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #2563eb;
+}
+
+.categoria-titulo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  flex: 1;
+}
+
+.categoria-descricao {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  flex-basis: 100%;
+}
+
+.categoria-contador {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2563eb;
+  background: white;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid #2563eb;
+}
+
+.categoria-itens {
+  display: grid;
+  gap: 1rem;
+}
+
+.item-visualizacao {
+  transition: transform 0.2s;
+}
+
+.item-visualizacao:hover {
+  transform: translateX(4px);
+}
+
+/* Ocultar botões de edição/remoção na visualização */
+.item-visualizacao .cif-item-actions {
+  display: none;
+}
+
+/* ── Feedbacks ─────────────────────── */
+.feedbacks-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feedback-item {
+  padding: 1.25rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid #dc2626;
+  border-radius: 8px;
+}
+
+.feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.feedback-numero {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #dc2626;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.feedback-data {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.feedback-conteudo {
+  font-size: 0.95rem;
+  color: #1e293b;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* ── Responsividade ────────────────── */
+@media (max-width: 768px) {
+  .visualizacao-relatorio {
+    padding: 1rem;
+  }
+
+  .visualizacao-header {
+    padding: 1.5rem;
+  }
+
+  .header-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-editar-relatorio,
+  .btn-deletar-relatorio {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .relatorio-codigo {
+    font-size: 1.5rem;
+  }
+
+  .responsaveis-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .paciente-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cif-header-info {
+    grid-template-columns: 1fr;
+  }
+
+  .categoria-header {
+    padding: 0.875rem;
+  }
+
+  .categoria-titulo {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .visualizacao-section {
+    padding: 1rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+  }
+
+  .meta-item {
+    font-size: 0.8rem;
+  }
+}

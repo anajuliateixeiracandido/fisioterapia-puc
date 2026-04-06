@@ -132,11 +132,104 @@ async function editarRelatorio(
         include: {
             fisioterapeuta: true,
             professorResponsavel: true,
+            formularioCIF: {
+                include: {
+                    itens: true,
+                },
+            },
         },
     });
 
     if (!relatorio) {
         throw new AppError(404, "RELATORIO_NOT_FOUND", "Relatório não encontrado");
+    }
+
+    // CASO 0: Edição completa do formulário CIF
+    if (dados.formularioCIF) {
+        // Verificar permissões
+        const isProfessor = usuario.role === 'PROFESSOR';
+        const isAutor = relatorio.fisioterapeutaId === usuario.fisioterapeutaId;
+        const isAprovado = relatorio.status === 'APROVADO';
+
+        // Professor pode editar sempre, Aluno só se for autor e não estiver aprovado
+        if (!isProfessor && (!isAutor || isAprovado)) {
+            throw new AppError(403, "FORBIDDEN", "Você não tem permissão para editar este relatório");
+        }
+
+        // Determinar novo status baseado no status atual
+        let novoStatus = relatorio.status;
+        if (relatorio.status === 'NEGADO' && !isProfessor) {
+            novoStatus = 'CORRIGIDO';
+        }
+
+        // Atualizar formulário CIF e itens em uma transação
+        const resultado = await prisma.$transaction(async (tx) => {
+            // Deletar itens existentes
+            await tx.itemCIF.deleteMany({
+                where: { formularioCIFId: relatorio.formularioCIF!.id },
+            });
+
+            // Atualizar formulário CIF e criar novos itens
+            await tx.formularioCIF.update({
+                where: { id: relatorio.formularioCIF!.id },
+                data: {
+                    tipoCIF: dados.formularioCIF!.tipoCIF,
+                    dataPreenchimento: parseDateBR(dados.formularioCIF!.dataPreenchimento),
+                    ultimaAlteracao: new Date(),
+                    condicaoSaude: dados.formularioCIF!.condicaoSaude,
+                    condicaoSaudeDescricao: dados.formularioCIF!.condicaoSaudeDescricao,
+                    factoresPessoais: dados.formularioCIF!.factoresPessoais,
+                    planoTerapeutico: dados.formularioCIF!.planoTerapeutico,
+                    itens: dados.formularioCIF!.itens?.length
+                        ? {
+                            createMany: {
+                                data: dados.formularioCIF!.itens.map((item) => ({
+                                    codigoCIF: item.codigoCIF,
+                                    descricao: item.descricao,
+                                    categoria: item.categoria as CategoriaCIF,
+                                    nivel: item.nivel,
+                                    qualificador1: item.qualificador1,
+                                    tipoQualificador1: item.tipoQualificador1 as TipoFactorAmbiental | undefined,
+                                    qualificador2: item.qualificador2,
+                                    qualificador3: item.qualificador3,
+                                    qualificador4: item.qualificador4,
+                                    observacao: item.observacao,
+                                })),
+                            },
+                        }
+                        : undefined,
+                },
+            });
+
+            // Atualizar relatório com novo status e data de edição
+            const relatorioAtualizado = await tx.relatorio.update({
+                where: { id },
+                data: {
+                    status: novoStatus,
+                    datasEdicao: {
+                        push: new Date(),
+                    },
+                },
+                include: {
+                    paciente: true,
+                    fisioterapeuta: true,
+                    professorResponsavel: {
+                        include: {
+                            fisioterapeuta: true,
+                        },
+                    },
+                    formularioCIF: {
+                        include: {
+                            itens: true,
+                        },
+                    },
+                },
+            });
+
+            return relatorioAtualizado;
+        });
+
+        return resultado;
     }
 
     // CASO 1: Edição normal (professorResponsavelId)

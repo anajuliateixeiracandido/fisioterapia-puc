@@ -1,13 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
+import React from 'react'
 import { FileText, Send, AlertCircle, Plus } from 'lucide-react'
 import { FormularioHeaderSection } from './FormularioHeaderSection'
 import { CIFItemCard } from './CartaoItemCIF'
-import { obterPrefixoCIF } from '../../utils/regrascif'
-import { fetchCIFReferences } from '../../services/cifApi'
 import './FormularioRelatorio.css'
 import ModalItemCIF from './ModalItemCIF'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+import { useFormularioRelatorioViewModel } from '../../viewmodels/useFormularioRelatorioViewModel'
 
 const CIF_TYPES = [
   { key: 'b', label: 'Funções do Corpo', description: 'Funções fisiológicas dos sistemas do corpo' },
@@ -16,123 +13,68 @@ const CIF_TYPES = [
   { key: 'e', label: 'Fatores Ambientais', description: 'Ambiente físico, social e de atitudes' },
 ]
 
-const CATEGORIA_MAP = {
-  b: 'FUNCAO',
-  s: 'ESTRUTURA',
-  d: 'ACTIVIDADE_PARTICIPACAO',
-  e: 'FACTOR_AMBIENTAL',
-}
-
 function isoParaDataBR(iso) {
   if (!iso) return new Date().toLocaleDateString('pt-BR')
   const d = new Date(iso)
   return d.toLocaleDateString('pt-BR')
 }
 
-export function ReportForm({ onSaveDraft, onSubmitReport }) {
-  const [itemModalOpen, setItemModalOpen] = useState(false)
-  const [editingIndex, setEditingIndex] = useState(null)
-  const [currentType, setCurrentType] = useState('b')
-  const [referencias, setReferencias] = useState([])
-  const [carregandoRefs, setCarregandoRefs] = useState(false)
-
-  const [pacientes, setPacientes] = useState([])
-
-  const [form, setForm] = useState({
-    tipoCIF: 'CIF',
-    dataPreenchimento: new Date().toISOString().slice(0, 16),
-    pacienteId: '',
-    condicaoSaude: '',
-    condicaoSaudeDescricao: '',
-    factoresPessoais: '',
-    planoTerapeutico: '',
-    observacoes: '',
-    itens: [],
-  })
-
-  const updateForm = (updates) => setForm(prev => ({ ...prev, ...updates }))
-  const updateItens = (itens) => setForm(prev => ({ ...prev, itens }))
-
-  const canSubmit = form.condicaoSaudeDescricao.trim().length > 0
-    && form.itens.length > 0
-    && !!form.pacienteId 
-
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    }
-
-    fetch(`${API_BASE}/pacientes`, { headers })
-      .then(r => r.ok ? r.json() : { data: [] })
-      .then(d => setPacientes(Array.isArray(d) ? d : d.data ?? []))
-      .catch(() => setPacientes([]))
-  }, [])
-
-  const abrirModal = useCallback(async (type, globalIndex = null) => {
-    setCarregandoRefs(true)
-    setReferencias([])
-    try {
-      const data = await fetchCIFReferences(
-        CATEGORIA_MAP[type], undefined, 2000, 0, form.tipoCIF
-      )
-      setReferencias(data)
-    } catch (e) {
-      console.error('Erro ao carregar referências CIF:', e)
-      setReferencias([])
-    } finally {
-      setCarregandoRefs(false)
-    }
-    setCurrentType(type)
-    setEditingIndex(globalIndex)
-    setItemModalOpen(true)
-  }, [form.tipoCIF])
-
-  const handleAddItem = (type) => abrirModal(type, null)
-  const handleEditItem = (globalIndex) => {
-    const item = form.itens[globalIndex]
-    const prefix = String(item.codigoCIF || '').charAt(0).toLowerCase() || 'b'
-    abrirModal(prefix, globalIndex)
-  }
-  const handleSaveItem = (itemData) => {
-    if (editingIndex !== null) {
-      const novosItens = [...form.itens]
-      novosItens[editingIndex] = itemData
-      updateItens(novosItens)
-    } else {
-      updateItens([...form.itens, itemData])
-    }
-    setItemModalOpen(false)
-    setEditingIndex(null)
-  }
-  const handleRemoveItem = (globalIndex) => {
-    if (confirm('Deseja realmente remover este item?')) {
-      updateItens(form.itens.filter((_, i) => i !== globalIndex))
-    }
-  }
+export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = null, modoEdicao = false }) {
+  const {
+    form,
+    pacientes,
+    canSubmit,
+    itemModalOpen,
+    editingIndex,
+    currentType,
+    referencias,
+    carregandoRefs,
+    itemsByType,
+    updateForm,
+    handleAddItem,
+    handleEditItem,
+    handleSaveItem,
+    handleRemoveItem,
+    setItemModalOpen,
+    setEditingIndex,
+  } = useFormularioRelatorioViewModel(relatorioInicial, modoEdicao)
 
   const handleSubmit = (e) => {
     e.preventDefault()
     if (!canSubmit) return
 
-    onSubmitReport?.({
+    const dadosEnvio = {
       ...form,
       pacienteId: Number(form.pacienteId),
       dataPreenchimento: isoParaDataBR(form.dataPreenchimento),
-    })
+    }
+
+    if (modoEdicao && relatorioInicial?.id) {
+      dadosEnvio.relatorioId = relatorioInicial.id
+    }
+
+    onSubmitReport?.(dadosEnvio)
   }
-  const itemsByType = useMemo(() => {
-    const grouped = { b: [], s: [], d: [], e: [] }
-    form.itens.forEach((item, index) => {
-      const prefix = obterPrefixoCIF(item.codigoCIF)
-      if (grouped[prefix]) grouped[prefix].push({ ...item, globalIndex: index })
-    })
-    return grouped
-  }, [form.itens])
 
   return (
     <div className="report-form-container">
+      {modoEdicao && (
+        <div style={{
+          padding: '1rem',
+          background: '#eff6ff',
+          border: '1px solid #3b82f6',
+          borderRadius: '8px',
+          marginBottom: '1.5rem',
+          color: '#1e40af',
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
+          <FileText size={18} />
+          <span>Você está editando um relatório existente. Faça as alterações necessárias e clique em "Salvar alterações".</span>
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
 
         <div className="form-section">
@@ -152,6 +94,8 @@ export function ReportForm({ onSaveDraft, onSubmitReport }) {
                 value={form.pacienteId}
                 onChange={(e) => updateForm({ pacienteId: e.target.value })}
                 required
+                disabled={modoEdicao}
+                style={modoEdicao ? { backgroundColor: '#f3f4f6', cursor: 'not-allowed' } : {}}
               >
                 <option value="">Selecione o paciente</option>
                 {pacientes.map((p) => (
@@ -160,7 +104,12 @@ export function ReportForm({ onSaveDraft, onSubmitReport }) {
                   </option>
                 ))}
               </select>
-              {pacientes.length === 0 && (
+              {modoEdicao && (
+                <span style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem', display: 'block' }}>
+                  O paciente não pode ser alterado após a criação do relatório
+                </span>
+              )}
+              {!modoEdicao && pacientes.length === 0 && (
                 <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
                   Nenhum paciente encontrado
                 </span>
@@ -225,7 +174,7 @@ export function ReportForm({ onSaveDraft, onSubmitReport }) {
             </div>
           )}
           <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
-            <Send size={18} /> Enviar relatório
+            <Send size={18} /> {modoEdicao ? 'Salvar alterações' : 'Enviar relatório'}
           </button>
         </div>
 
