@@ -13,12 +13,6 @@ const CIF_TYPES = [
   { key: 'e', label: 'Fatores Ambientais', description: 'Ambiente físico, social e de atitudes' },
 ]
 
-function isoParaDataBR(iso) {
-  if (!iso) return new Date().toLocaleDateString('pt-BR')
-  const d = new Date(iso)
-  return d.toLocaleDateString('pt-BR')
-}
-
 export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = null, modoEdicao = false }) {
   const {
     form,
@@ -44,15 +38,21 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
     if (!canSubmit) return
 
     const dadosEnvio = {
-      ...form,
       pacienteId: Number(form.pacienteId),
-      dataPreenchimento: isoParaDataBR(form.dataPreenchimento),
+      tipoCIF: form.tipoCIF,
+      dataPreenchimento: form.dataPreenchimento,
+      condicaoSaude: form.condicaoSaude,
+      condicaoSaudeDescricao: form.condicaoSaudeDescricao,
+      factoresPessoais: form.factoresPessoais,
+      planoTerapeutico: form.planoTerapeutico,
+      itens: Array.isArray(form.itens) ? form.itens : [],
     }
 
     if (modoEdicao && relatorioInicial?.id) {
       dadosEnvio.relatorioId = relatorioInicial.id
     }
 
+    console.log('FormularioRelatorio enviando dados:', dadosEnvio)
     onSubmitReport?.(dadosEnvio)
   }
 

@@ -64,29 +64,52 @@ export function useListaRelatoriosViewModel() {
   const handleSalvarRelatorio = async (dadosFormulario) => {
     try {
       const token = localStorage.getItem('accessToken')
+      
+      const itens = Array.isArray(dadosFormulario.itens) ? dadosFormulario.itens : []
+      
+      const payload = {
+        pacienteId: dadosFormulario.pacienteId,
+        formularioCIF: {
+          tipoCIF: dadosFormulario.tipoCIF || 'CIF',
+          dataPreenchimento: dadosFormulario.dataPreenchimento,
+          condicaoSaude: dadosFormulario.condicaoSaude || '',
+          condicaoSaudeDescricao: dadosFormulario.condicaoSaudeDescricao,
+          factoresPessoais: dadosFormulario.factoresPessoais || '',
+          planoTerapeutico: dadosFormulario.planoTerapeutico || '',
+          observacoes: '',
+          itens: itens.map(item => {
+            const itemData = {
+              codigoCIF: item.codigoCIF || '',
+              descricao: item.descricao || item.nome || '',
+              categoria: item.categoria || 'FUNCAO',
+            }
+            if (item.nivel !== undefined && item.nivel !== null) itemData.nivel = item.nivel
+            if (item.qualificador1 !== undefined && item.qualificador1 !== null) itemData.qualificador1 = item.qualificador1
+            if (item.tipoQualificador1) itemData.tipoQualificador1 = item.tipoQualificador1
+            if (item.qualificador2 !== undefined && item.qualificador2 !== null) itemData.qualificador2 = item.qualificador2
+            if (item.qualificador3 !== undefined && item.qualificador3 !== null) itemData.qualificador3 = item.qualificador3
+            if (item.qualificador4 !== undefined && item.qualificador4 !== null) itemData.qualificador4 = item.qualificador4
+            if (item.observacao) itemData.observacao = item.observacao
+            return itemData
+          }),
+        },
+      }
+      
+      console.log('Enviando payload:', JSON.stringify(payload, null, 2))
+      
       const response = await fetch(`${API_BASE}/relatorios`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({
-          pacienteId: dadosFormulario.pacienteId,
-          formularioCIF: {
-            tipoCIF: dadosFormulario.tipoCIF,
-            dataPreenchimento: dadosFormulario.dataPreenchimento,
-            condicaoSaude: dadosFormulario.condicaoSaude,
-            condicaoSaudeDescricao: dadosFormulario.condicaoSaudeDescricao,
-            factoresPessoais: dadosFormulario.factoresPessoais,
-            planoTerapeutico: dadosFormulario.planoTerapeutico,
-            itens: dadosFormulario.itens,
-          },
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Erro ao criar relatório')
+        console.error('Erro detalhado do servidor:', errorData)
+        throw new Error(errorData.message || JSON.stringify(errorData.errors || errorData))
       }
 
       modal.showSuccess('Relatório criado com sucesso!')

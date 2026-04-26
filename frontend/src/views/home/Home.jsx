@@ -329,28 +329,50 @@ const Home = () => {
               onSubmitReport={async (dados) => {
                 try {
                   const token = localStorage.getItem('accessToken')
+                  
+                  const payload = {
+                    formularioCIF: {
+                      tipoCIF: dados.tipoCIF || 'CIF',
+                      dataPreenchimento: dados.dataPreenchimento,
+                      ultimaAlteracao: new Date().toISOString(),
+                      condicaoSaude: dados.condicaoSaude || '',
+                      condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
+                      factoresPessoais: dados.factoresPessoais || '',
+                      planoTerapeutico: dados.planoTerapeutico || '',
+                      observacoes: '',
+                      itens: (Array.isArray(dados.itens) ? dados.itens : []).map(item => {
+                        const itemData = {
+                          codigoCIF: item.codigoCIF || '',
+                          descricao: item.descricao || item.nome || '',
+                          categoria: item.categoria || 'FUNCAO',
+                        }
+                        if (item.nivel !== undefined && item.nivel !== null) itemData.nivel = item.nivel
+                        if (item.qualificador1 !== undefined && item.qualificador1 !== null) itemData.qualificador1 = item.qualificador1
+                        if (item.tipoQualificador1) itemData.tipoQualificador1 = item.tipoQualificador1
+                        if (item.qualificador2 !== undefined && item.qualificador2 !== null) itemData.qualificador2 = item.qualificador2
+                        if (item.qualificador3 !== undefined && item.qualificador3 !== null) itemData.qualificador3 = item.qualificador3
+                        if (item.qualificador4 !== undefined && item.qualificador4 !== null) itemData.qualificador4 = item.qualificador4
+                        if (item.observacao) itemData.observacao = item.observacao
+                        return itemData
+                      }),
+                    }
+                  }
+                  
+                  console.log('Editando relatório com payload:', JSON.stringify(payload, null, 2))
+                  
                   const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioCompleto.id}`, {
                     method: 'PATCH',
                     headers: {
                       'Content-Type': 'application/json',
                       ...(token ? { Authorization: `Bearer ${token}` } : {}),
                     },
-                    body: JSON.stringify({
-                      formularioCIF: {
-                        tipoCIF: dados.tipoCIF,
-                        dataPreenchimento: dados.dataPreenchimento,
-                        condicaoSaude: dados.condicaoSaude,
-                        condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
-                        factoresPessoais: dados.factoresPessoais,
-                        planoTerapeutico: dados.planoTerapeutico,
-                        itens: dados.itens,
-                      }
-                    }),
+                    body: JSON.stringify(payload),
                   })
 
                   if (!response.ok) {
                     const error = await response.json()
-                    throw new Error(error.message || 'Erro ao salvar alterações')
+                    console.error('Erro detalhado:', error)
+                    throw new Error(error.message || JSON.stringify(error.errors || error))
                   }
 
                   const resultado = await response.json()

@@ -8,6 +8,9 @@ import {
 import { Prisma, CategoriaCIF, TipoFactorAmbiental } from "@prisma/client";
 
 function parseDateBR(data: string): Date {
+    if (data.includes('-') && !data.includes('/')) {
+        return new Date(data)
+    }
     const [dia, mes, ano] = data.split('/')
     return new Date(`${ano}-${mes}-${dia}`)
 }

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plus, Search, FileText, Lock, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Plus, Search, FileText, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 import { ReportForm } from './FormularioRelatorio'
 import './ListaRelatorios.css'
 import { useListaRelatoriosViewModel } from '../../viewmodels/useListaRelatoriosViewModel'
@@ -40,22 +40,19 @@ function StatusBadge({ status }) {
 }
 
 function RelatorioRow({ relatorio, onVer }) {
-    const isAprovado = relatorio.status === 'APROVADO'
     const codigo = formatarCodigo(relatorio.id, relatorio.dataCriacao)
+    const mostraProfessor = relatorio.professorResponsavel?.fisioterapeuta?.nomeCompleto ?? '—'
 
     return (
         <tr className="relatorio-row">
             <td>
-                <div className="relatorio-codigo">
-                    <button type="button" className="codigo-link" onClick={() => onVer(relatorio)}>
-                        {codigo}
-                    </button>
-                    {isAprovado && <Lock size={12} className="codigo-lock" />}
-                </div>
+                <button type="button" className="codigo-link" onClick={() => onVer(relatorio)}>
+                    {codigo}
+                </button>
             </td>
             <td><span className="nome-principal">{relatorio.paciente?.nomeCompleto ?? '—'}</span></td>
             <td><span className="nome-secundario">{relatorio.fisioterapeuta?.nomeCompleto ?? '—'}</span></td>
-            <td><span className="nome-secundario">{relatorio.professorResponsavel?.fisioterapeuta?.nomeCompleto ?? '—'}</span></td>
+            <td><span className="nome-secundario">{mostraProfessor}</span></td>
             <td><StatusBadge status={relatorio.status} /></td>
             <td className="data-cell">{formatarData(relatorio.dataAprovacao ?? relatorio.dataCriacao)}</td>
         </tr>
