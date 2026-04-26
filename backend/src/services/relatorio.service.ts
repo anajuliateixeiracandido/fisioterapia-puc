@@ -296,9 +296,13 @@ async function editarRelatorio(
             throw new AppError(403, "FORBIDDEN", "Professor não encontrado");
         }
 
-        // Tanto professor normal quanto coordenador só podem avaliar se forem responsáveis
-        if (relatorio.professorResponsavelId !== professor.id) {
-            throw new AppError(403, "FORBIDDEN", "Você não é o professor responsável por este relatório");
+        // Coordenador pode avaliar qualquer relatório
+        // Professor normal só pode avaliar se for responsável
+        const isCoordenador = professor.coordenador === true;
+        const isProfessorResponsavel = relatorio.professorResponsavelId === professor.id;
+
+        if (!isCoordenador && !isProfessorResponsavel) {
+            throw new AppError(403, "FORBIDDEN", "Você não tem permissão para avaliar este relatório");
         }
 
         const dataAtual = new Date();

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Menu, Bell, LogOut, ClipboardList, Clock, X, Check, Users, Pencil, Trash2 } from 'lucide-react';
+import { Menu, Bell, LogOut, ClipboardList, Clock, X, Check, Users, Pencil, Trash2, CheckCircle } from 'lucide-react';
 import SideBar from './BarraLateral';
 import Separator from '../geral/Separador';
 import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
 import { ReportForm } from '../relatorio/FormularioRelatorio'
+import { ModalAvaliacaoRelatorio } from '../relatorio/ModalAvaliacaoRelatorio'
 import { useModal } from '../../contexts/ModalContext'
 import './Home.css';
 
@@ -24,24 +25,25 @@ const Home = () => {
   const modal = useModal()
   
   // MOCK ALUNA - Maria Oliveira (ATIVO)
-  const [user] = useState({
-    nome: 'Maria Oliveira',
-    role: 'ALUNO',
-    initials: 'MO',
-    matricula: 'ALU2024001',
-    curso: 'Fisioterapia',
-    fisioterapeutaId: 2 // ID da aluna
-  });
-
-  // MOCK PROFESSOR - Prof. Dr. João Silva (COMENTADO)
   // const [user] = useState({
-  //   nome: 'Prof. Dr. João Silva',
-  //   role: 'PROFESSOR',
-  //   initials: 'JS',
-  //   codigoPessoa: 'PROF001',
+  //   nome: 'Maria Oliveira',
+  //   role: 'ALUNO',
+  //   initials: 'MO',
+  //   matricula: 'ALU2024001',
   //   curso: 'Fisioterapia',
-  //   fisioterapeutaId: 1 // ID do professor
+  //   fisioterapeutaId: 2 // ID da aluna
   // });
+
+  // MOCK PROFESSOR - Profa. Maria Santos (ATIVO)
+  const [user] = useState({
+    nome: 'Profa. Maria Santos',
+    role: 'PROFESSOR',
+    initials: 'MS',
+    codigoPessoa: 'PROF001',
+    curso: 'Fisioterapia',
+    fisioterapeutaId: 1, // ID do professor
+    coordenador: false, // Mudar para true para testar coordenador
+  });
 
   const [hasNotifications] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -49,6 +51,8 @@ const Home = () => {
   const [relatorioSeleccionado, setRelatorioSeleccionado] = useState(null)
   const [relatorioCompleto, setRelatorioCompleto] = useState(null)
   const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
+  const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
+  const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
 
   const navigateTo = (page) => setCurrentPage(page);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -208,7 +212,6 @@ const Home = () => {
                         color: 'white',
                         border: 'none',
                         borderRadius: '0.375rem',
-                        cursor: 'pointer',
                         fontSize: '0.875rem',
                         fontWeight: '500',
                         opacity: carregandoRelatorio ? 0.6 : 1,
@@ -280,6 +283,39 @@ const Home = () => {
                     </button>
                   )
                 })()}
+                {/* Botão Avaliar - apenas para professor responsável ou coordenador */}
+                {(() => {
+                  const isProfessor = user?.role === 'PROFESSOR'
+                  const isProfessorResponsavel = relatorioSeleccionado?.professorResponsavel?.fisioterapeuta?.id === user?.fisioterapeutaId
+                  const isCoordenador = user?.coordenador === true
+                  const podeAvaliar = isProfessor && (isProfessorResponsavel || isCoordenador) && 
+                    ['ENVIADO', 'CORRIGIDO'].includes(relatorioSeleccionado?.status)
+                  
+                  return podeAvaliar && (
+                    <button
+                      type="button"
+                      onClick={() => setModalAvaliacaoAberto(true)}
+                      disabled={enviandoAvaliacao}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        background: '#16a34a',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        cursor: enviandoAvaliacao ? 'not-allowed' : 'pointer',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        opacity: enviandoAvaliacao ? 0.6 : 1,
+                      }}
+                    >
+                      <CheckCircle size={16} />
+                      {enviandoAvaliacao ? 'Enviando...' : 'Avaliar'}
+                    </button>
+                  )
+                })()}
               </div>
             </div>
             <VisualizacaoRelatorio 
@@ -292,6 +328,72 @@ const Home = () => {
                   `TODO: Implementar tela de detalhes do paciente\n\nPaciente: ${paciente.nomeCompleto}\nCódigo: ${paciente.codigo}`,
                   'Funcionalidade em desenvolvimento'
                 )
+              }}
+            />
+            <ModalAvaliacaoRelatorio
+              isOpen={modalAvaliacaoAberto}
+              relatorio={relatorioSeleccionado}
+              isLoading={enviandoAvaliacao}
+              onClose={() => setModalAvaliacaoAberto(false)}
+              onSubmit={async (avaliacao) => {
+                setEnviandoAvaliacao(true)
+                try {
+                  const token = localStorage.getItem('accessToken')
+                  const payload = {
+                    status: avaliacao.status,
+                    feedback: avaliacao.feedback,
+                  }
+                  
+                  // Se APROVADO, adicionar data de aprovação
+                  if (avaliacao.status === 'APROVADO') {
+                    payload.dataAprovacao = new Date().toISOString()
+                  }
+                  
+                  console.log('📤 Enviando avaliação:', payload)
+                  
+                  const response = await fetch(
+                    `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSeleccionado.id}`,
+                    {
+                      method: 'PATCH',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                      },
+                      body: JSON.stringify(payload),
+                    }
+                  )
+                  
+                  if (!response.ok) {
+                    const error = await response.json()
+                    console.error('❌ Erro do servidor:', error)
+                    throw new Error(error.message || JSON.stringify(error.errors || error))
+                  }
+                  
+                  const resultado = await response.json()
+                  const relatorioAtualizado = resultado.data || resultado
+                  
+                  console.log('✅ Avaliação salva, novo status:', relatorioAtualizado.status)
+                  
+                  // Atualizar o relatório selecionado com os dados completos
+                  setRelatorioSeleccionado(relatorioAtualizado)
+                  
+                  // Fechar o modal imediatamente
+                  setModalAvaliacaoAberto(false)
+                  
+                  // Mostrar mensagem de sucesso
+                  modal.showSuccess(`Relatório ${avaliacao.status.toLowerCase()} com sucesso!`)
+                  
+                  // Fazer refresh da página após 1.5 segundos (para o usuário ver a mensagem de sucesso)
+                  setTimeout(() => {
+                    window.location.reload()
+                  }, 1500)
+                  
+                } catch (error) {
+                  console.error('Erro ao salvar avaliação:', error)
+                  modal.showError('Erro ao salvar avaliação: ' + error.message)
+                } finally {
+                  setEnviandoAvaliacao(false)
+                }
               }}
             />
           </div>
