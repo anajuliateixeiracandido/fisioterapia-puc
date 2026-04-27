@@ -2,16 +2,10 @@ import React from 'react'
 import { FileText, Send, AlertCircle, Plus } from 'lucide-react'
 import { FormularioHeaderSection } from './FormularioHeaderSection'
 import { CIFItemCard } from './CartaoItemCIF'
+import { CIF_TIPOS_ARRAY } from '../../constants/relatorio.constants'
 import './FormularioRelatorio.css'
 import ModalItemCIF from './ModalItemCIF'
 import { useFormularioRelatorioViewModel } from '../../viewmodels/useFormularioRelatorioViewModel'
-
-const CIF_TYPES = [
-  { key: 'b', label: 'Funções do Corpo', description: 'Funções fisiológicas dos sistemas do corpo' },
-  { key: 's', label: 'Estruturas do Corpo', description: 'Partes anatômicas do corpo' },
-  { key: 'd', label: 'Atividades e Participação', description: 'Execução de tarefas e envolvimento em situações da vida' },
-  { key: 'e', label: 'Fatores Ambientais', description: 'Ambiente físico, social e de atitudes' },
-]
 
 export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = null, modoEdicao = false }) {
   const {
@@ -52,25 +46,13 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
       dadosEnvio.relatorioId = relatorioInicial.id
     }
 
-    console.log('FormularioRelatorio enviando dados:', dadosEnvio)
     onSubmitReport?.(dadosEnvio)
   }
 
   return (
     <div className="report-form-container">
       {modoEdicao && (
-        <div style={{
-          padding: '1rem',
-          background: '#eff6ff',
-          border: '1px solid #3b82f6',
-          borderRadius: '8px',
-          marginBottom: '1.5rem',
-          color: '#1e40af',
-          fontSize: '0.9rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem'
-        }}>
+        <div className="edit-mode-notice">
           <FileText size={18} />
           <span>Você está editando um relatório existente. Faça as alterações necessárias e clique em "Salvar alterações".</span>
         </div>
@@ -95,7 +77,7 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
                 onChange={(e) => updateForm({ pacienteId: e.target.value })}
                 required
                 disabled={modoEdicao}
-                style={modoEdicao ? { backgroundColor: '#f3f4f6', cursor: 'not-allowed' } : {}}
+                className={modoEdicao ? 'form-select form-select--disabled' : 'form-select'}
               >
                 <option value="">Selecione o paciente</option>
                 {pacientes.map((p) => (
@@ -105,12 +87,12 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
                 ))}
               </select>
               {modoEdicao && (
-                <span style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem', display: 'block' }}>
+                <span className="paciente-disabled-note">
                   O paciente não pode ser alterado após a criação do relatório
                 </span>
               )}
               {!modoEdicao && pacientes.length === 0 && (
-                <span style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                <span className="pacientes-empty-note">
                   Nenhum paciente encontrado
                 </span>
               )}
@@ -121,7 +103,7 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
         </div>
 
         <div className="cif-sections-container">
-          {CIF_TYPES.map((type) => {
+          {CIF_TIPOS_ARRAY.map((type) => {
             const typeItems = itemsByType[type.key]
             return (
               <div key={type.key} className={`cif-type-section type-${type.key}`}>

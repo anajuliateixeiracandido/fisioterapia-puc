@@ -7,6 +7,8 @@ import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
 import { ReportForm } from '../relatorio/FormularioRelatorio'
 import { ModalAvaliacaoRelatorio } from '../relatorio/ModalAvaliacaoRelatorio'
 import { useModal } from '../../contexts/ModalContext'
+import { podeEditarRelatorio, podeDeletarRelatorio, podeAvaliarRelatorio } from '../../utils/permissoes'
+import { avaliarRelatorio, obterRelatorio } from '../../services/relatorioService'
 import './Home.css';
 
 const StatCard = ({ icon: Icon, label, value, colorClass }) => (
@@ -48,8 +50,7 @@ const Home = () => {
   const [hasNotifications] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [relatorioSeleccionado, setRelatorioSeleccionado] = useState(null)
-  const [relatorioCompleto, setRelatorioCompleto] = useState(null)
+  const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
   const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
   const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
@@ -144,195 +145,117 @@ const Home = () => {
           <div className="content-section">
             <ListaRelatorios
               onVerRelatorio={(r) => {
-                setRelatorioSeleccionado(r)
+                setRelatorioSelecionado(r)
                 setCurrentPage('ver-relatorio')
               }}
             />
           </div>
         )}
 
-        {/* Visualização de relatório */}
-        {currentPage === 'ver-relatorio' && relatorioSeleccionado && (
+        {currentPage === 'ver-relatorio' && relatorioSelecionado && (
           <div className="content-section">
-            <div className="page-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <button
-                type="button"
-                onClick={() => setCurrentPage('relatorios')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '0.9rem' }}
-              >
-                ← Voltar para lista de relatórios
-              </button>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                {/* Botão Editar - apenas se o usuário pode editar */}
-                {(() => {
-                  const isProfessor = user?.role === 'PROFESSOR'
-                  const isAluno = user?.role === 'ALUNO'
-                  const isAutor = relatorioSeleccionado.fisioterapeuta?.id === user?.fisioterapeutaId
-                  const isAprovado = relatorioSeleccionado.status === 'APROVADO'
-                  const podeEditar = (isProfessor || (isAluno && isAutor)) && !isAprovado
-                  
-                  return podeEditar && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        // Buscar relatório completo do backend antes de editar
-                        setCarregandoRelatorio(true)
-                        try {
-                          const token = localStorage.getItem('accessToken')
-                          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSeleccionado.id}`, {
-                            headers: {
-                              'Content-Type': 'application/json',
-                              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                            },
-                          })
+            <div className="page-header">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage('relatorios')}
+                  className="back-link"
+                >
+                  ← Voltar para lista de relatórios
+                </button>
+                <div className="button-group">
+                {podeEditarRelatorio(relatorioSelecionado, user) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setCarregandoRelatorio(true)
+                      try {
+                        const dados = await obterRelatorio(relatorioSelecionado.id)
+                        setRelatorioSelecionado(dados)
+                        setCurrentPage('editar-relatorio')
+                      } catch (error) {
+                        modal.showError('Erro ao carregar relatório para edição')
+                      } finally {
+                        setCarregandoRelatorio(false)
+                      }
+                    }}
+                    disabled={carregandoRelatorio}
+                    className="btn btn-primary"
+                  >
+                    <Pencil size={16} />
+                    {carregandoRelatorio ? 'Carregando...' : 'Editar'}
+                  </button>
+                )}
 
-                          if (!response.ok) {
-                            throw new Error('Erro ao carregar relatório')
-                          }
-
-                          const data = await response.json()
-                          const relatorioCompleto = data.data || data
-                          
-                          setRelatorioCompleto(relatorioCompleto)
-                          setCurrentPage('editar-relatorio')
-                        } catch (error) {
-                          console.error('Erro ao carregar relatório:', error)
-                          modal.showError('Erro ao carregar relatório para edição')
-                        } finally {
-                          setCarregandoRelatorio(false)
-                        }
-                      }}
-                      disabled={carregandoRelatorio}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.5rem 1rem',
-                        background: '#2563eb',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0.375rem',
-                        fontSize: '0.875rem',
-                        fontWeight: '500',
-                        opacity: carregandoRelatorio ? 0.6 : 1,
-                        cursor: carregandoRelatorio ? 'not-allowed' : 'pointer'
-                      }}
-                    >
-                      <Pencil size={16} />
-                      {carregandoRelatorio ? 'Carregando...' : 'Editar'}
-                    </button>
-                  )
-                })()}
-                {/* Botão Deletar - apenas ícone */}
-                {(() => {
-                  const isProfessor = user?.role === 'PROFESSOR'
-                  const isAluno = user?.role === 'ALUNO'
-                  const isAutor = relatorioSeleccionado.fisioterapeuta?.id === user?.fisioterapeutaId
-                  const isAprovado = relatorioSeleccionado.status === 'APROVADO'
-                  const podeDeletar = (isProfessor || (isAluno && isAutor)) && !isAprovado
-                  
-                  return podeDeletar && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        const confirmed = await modal.showConfirm(
-                          'Tem certeza que deseja deletar este relatório? Esta ação não pode ser desfeita.',
-                          'Confirmar exclusão'
-                        )
-                        
-                        if (!confirmed) return
-                        
-                        try {
-                          const token = localStorage.getItem('accessToken')
-                          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSeleccionado.id}`, {
+                {podeDeletarRelatorio(relatorioSelecionado, user) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const confirmed = await modal.showConfirm(
+                        'Tem certeza que deseja deletar este relatório? Esta ação não pode ser desfeita.',
+                        'Confirmar exclusão'
+                      )
+                      
+                      if (!confirmed) return
+                      
+                      try {
+                        const token = localStorage.getItem('accessToken')
+                        const response = await fetch(
+                          `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSelecionado.id}`,
+                          {
                             method: 'DELETE',
                             headers: {
                               'Content-Type': 'application/json',
                               ...(token ? { Authorization: `Bearer ${token}` } : {}),
                             },
-                          })
-
-                          if (!response.ok) {
-                            const error = await response.json()
-                            throw new Error(error.message || 'Erro ao deletar relatório')
                           }
+                        )
 
-                          modal.showSuccess('Relatório deletado com sucesso!')
-                          setRelatorioSeleccionado(null)
-                          setCurrentPage('relatorios')
-                        } catch (error) {
-                          console.error('Erro ao deletar relatório:', error)
-                          modal.showError('Erro ao deletar relatório: ' + error.message)
+                        if (!response.ok) {
+                          const error = await response.json()
+                          throw new Error(error.message || 'Erro ao deletar relatório')
                         }
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '0.5rem',
-                        background: '#dc2626',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0.375rem',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem'
-                      }}
-                      title="Deletar relatório"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )
-                })()}
-                {/* Botão Avaliar - apenas para professor responsável ou coordenador */}
-                {(() => {
-                  const isProfessor = user?.role === 'PROFESSOR'
-                  const isProfessorResponsavel = relatorioSeleccionado?.professorResponsavel?.fisioterapeuta?.id === user?.fisioterapeutaId
-                  const isCoordenador = user?.coordenador === true
-                  const podeAvaliar = isProfessor && (isProfessorResponsavel || isCoordenador) && 
-                    ['ENVIADO', 'CORRIGIDO'].includes(relatorioSeleccionado?.status)
-                  
-                  return podeAvaliar && (
-                    <button
-                      type="button"
-                      onClick={() => setModalAvaliacaoAberto(true)}
-                      disabled={enviandoAvaliacao}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        padding: '0.5rem 1rem',
-                        background: '#16a34a',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0.375rem',
-                        cursor: enviandoAvaliacao ? 'not-allowed' : 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: '500',
-                        opacity: enviandoAvaliacao ? 0.6 : 1,
-                      }}
-                    >
-                      <CheckCircle size={16} />
-                      {enviandoAvaliacao ? 'Enviando...' : 'Avaliar'}
-                    </button>
-                  )
-                })()}
+
+                        modal.showSuccess('Relatório deletado com sucesso!')
+                        setRelatorioSelecionado(null)
+                        setCurrentPage('relatorios')
+                      } catch (error) {
+                        modal.showError('Erro ao deletar relatório: ' + error.message)
+                      }
+                    }}
+                    className="btn btn-danger"
+                    title="Deletar relatório"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                )}
+
+                {podeAvaliarRelatorio(relatorioSelecionado, user) && (
+                  <button
+                    type="button"
+                    onClick={() => setModalAvaliacaoAberto(true)}
+                    disabled={enviandoAvaliacao}
+                    className="btn btn-success"
+                  >
+                    <CheckCircle size={16} />
+                    {enviandoAvaliacao ? 'Enviando...' : 'Avaliar'}
+                  </button>
+                )}
+              </div>
               </div>
             </div>
+
             <VisualizacaoRelatorio 
-              relatorio={relatorioSeleccionado} 
+              relatorio={relatorioSelecionado} 
               user={user}
               onVisualizarPaciente={(paciente) => {
-                // TODO: Implementar visualização de detalhes do paciente
-                console.log('Visualizar paciente:', paciente)
-                modal.showInfo(
-                  `TODO: Implementar tela de detalhes do paciente\n\nPaciente: ${paciente.nomeCompleto}\nCódigo: ${paciente.codigo}`,
-                  'Funcionalidade em desenvolvimento'
-                )
+                // TODO: Redirecionar para página de detalhes do paciente
               }}
             />
+
             <ModalAvaliacaoRelatorio
               isOpen={modalAvaliacaoAberto}
-              relatorio={relatorioSeleccionado}
+              relatorio={relatorioSelecionado}
               isLoading={enviandoAvaliacao}
               onClose={() => setModalAvaliacaoAberto(false)}
               onSubmit={async (avaliacao) => {
@@ -344,15 +267,12 @@ const Home = () => {
                     feedback: avaliacao.feedback,
                   }
                   
-                  // Se APROVADO, adicionar data de aprovação
                   if (avaliacao.status === 'APROVADO') {
                     payload.dataAprovacao = new Date().toISOString()
                   }
                   
-                  console.log('📤 Enviando avaliação:', payload)
-                  
                   const response = await fetch(
-                    `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSeleccionado.id}`,
+                    `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSelecionado.id}`,
                     {
                       method: 'PATCH',
                       headers: {
@@ -365,31 +285,22 @@ const Home = () => {
                   
                   if (!response.ok) {
                     const error = await response.json()
-                    console.error('❌ Erro do servidor:', error)
                     throw new Error(error.message || JSON.stringify(error.errors || error))
                   }
                   
                   const resultado = await response.json()
                   const relatorioAtualizado = resultado.data || resultado
                   
-                  console.log('✅ Avaliação salva, novo status:', relatorioAtualizado.status)
-                  
-                  // Atualizar o relatório selecionado com os dados completos
-                  setRelatorioSeleccionado(relatorioAtualizado)
-                  
-                  // Fechar o modal imediatamente
+                  setRelatorioSelecionado(relatorioAtualizado)
                   setModalAvaliacaoAberto(false)
                   
-                  // Mostrar mensagem de sucesso
                   modal.showSuccess(`Relatório ${avaliacao.status.toLowerCase()} com sucesso!`)
                   
-                  // Fazer refresh da página após 1.5 segundos (para o usuário ver a mensagem de sucesso)
                   setTimeout(() => {
                     window.location.reload()
                   }, 1500)
                   
                 } catch (error) {
-                  console.error('Erro ao salvar avaliação:', error)
                   modal.showError('Erro ao salvar avaliação: ' + error.message)
                 } finally {
                   setEnviandoAvaliacao(false)
@@ -399,112 +310,99 @@ const Home = () => {
           </div>
         )}
 
-        {/* Editar relatório */}
         {currentPage === 'editar-relatorio' && (
           <div className="content-section">
             {carregandoRelatorio ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1rem' }}>
+              <div className="loading-container">
                 <div className="loading-spinner"></div>
                 <p>Carregando relatório para edição...</p>
               </div>
-            ) : relatorioCompleto ? (
+            ) : relatorioSelecionado ? (
               <>
                 <div className="page-header">
                   <button
                     type="button"
                     onClick={() => {
-                      setRelatorioCompleto(null)
                       setCurrentPage('ver-relatorio')
                     }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '0.9rem' }}
+                    className="back-link"
                   >
                     ← Voltar para visualização
                   </button>
-                  <h1 className="page-title">Editar Relatório</h1>
-                  <p className="page-subtitle">
-                    REL-{new Date(relatorioCompleto.dataCriacao).getFullYear()}-{String(relatorioCompleto.id).padStart(3, '0')}
-                  </p>
+                  <div>
+                    <h1 className="page-title">Editar Relatório</h1>
+                    <p className="page-subtitle">
+                      REL-{new Date(relatorioSelecionado.dataCriacao).getFullYear()}-{String(relatorioSelecionado.id).padStart(3, '0')}
+                    </p>
+                  </div>
                 </div>
                 <ReportForm 
-              relatorioInicial={relatorioCompleto}
-              modoEdicao={true}
-              onSubmitReport={async (dados) => {
-                try {
-                  const token = localStorage.getItem('accessToken')
-                  
-                  const payload = {
-                    formularioCIF: {
-                      tipoCIF: dados.tipoCIF || 'CIF',
-                      dataPreenchimento: dados.dataPreenchimento,
-                      ultimaAlteracao: new Date().toISOString(),
-                      condicaoSaude: dados.condicaoSaude || '',
-                      condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
-                      factoresPessoais: dados.factoresPessoais || '',
-                      planoTerapeutico: dados.planoTerapeutico || '',
-                      observacoes: '',
-                      itens: (Array.isArray(dados.itens) ? dados.itens : []).map(item => {
-                        const itemData = {
-                          codigoCIF: item.codigoCIF || '',
-                          descricao: item.descricao || item.nome || '',
-                          categoria: item.categoria || 'FUNCAO',
+                  relatorioInicial={relatorioSelecionado}
+                  modoEdicao={true}
+                  onSubmitReport={async (dados) => {
+                    try {
+                      const token = localStorage.getItem('accessToken')
+                      
+                      const payload = {
+                        formularioCIF: {
+                          tipoCIF: dados.tipoCIF || 'CIF',
+                          dataPreenchimento: dados.dataPreenchimento,
+                          ultimaAlteracao: new Date().toISOString(),
+                          condicaoSaude: dados.condicaoSaude || '',
+                          condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
+                          factoresPessoais: dados.factoresPessoais || '',
+                          planoTerapeutico: dados.planoTerapeutico || '',
+                          observacoes: '',
+                          itens: (Array.isArray(dados.itens) ? dados.itens : []).map(item => {
+                            const itemData = {
+                              codigoCIF: item.codigoCIF || '',
+                              descricao: item.descricao || item.nome || '',
+                              categoria: item.categoria || 'FUNCAO',
+                            }
+                            if (item.nivel !== undefined && item.nivel !== null) itemData.nivel = item.nivel
+                            if (item.qualificador1 !== undefined && item.qualificador1 !== null) itemData.qualificador1 = item.qualificador1
+                            if (item.tipoQualificador1) itemData.tipoQualificador1 = item.tipoQualificador1
+                            if (item.qualificador2 !== undefined && item.qualificador2 !== null) itemData.qualificador2 = item.qualificador2
+                            if (item.qualificador3 !== undefined && item.qualificador3 !== null) itemData.qualificador3 = item.qualificador3
+                            if (item.qualificador4 !== undefined && item.qualificador4 !== null) itemData.qualificador4 = item.qualificador4
+                            if (item.observacao) itemData.observacao = item.observacao
+                            return itemData
+                          }),
                         }
-                        if (item.nivel !== undefined && item.nivel !== null) itemData.nivel = item.nivel
-                        if (item.qualificador1 !== undefined && item.qualificador1 !== null) itemData.qualificador1 = item.qualificador1
-                        if (item.tipoQualificador1) itemData.tipoQualificador1 = item.tipoQualificador1
-                        if (item.qualificador2 !== undefined && item.qualificador2 !== null) itemData.qualificador2 = item.qualificador2
-                        if (item.qualificador3 !== undefined && item.qualificador3 !== null) itemData.qualificador3 = item.qualificador3
-                        if (item.qualificador4 !== undefined && item.qualificador4 !== null) itemData.qualificador4 = item.qualificador4
-                        if (item.observacao) itemData.observacao = item.observacao
-                        return itemData
-                      }),
+                      }
+                      
+                      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSelecionado.id}`, {
+                        method: 'PATCH',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                        },
+                        body: JSON.stringify(payload),
+                      })
+
+                      if (!response.ok) {
+                        const error = await response.json()
+                        throw new Error(error.message || JSON.stringify(error.errors || error))
+                      }
+
+                      const resultado = await response.json()
+                      modal.showSuccess('Relatório atualizado com sucesso!')
+                      
+                      setRelatorioSelecionado(resultado.data || resultado)
+                      setCurrentPage('ver-relatorio')
+                    } catch (error) {
+                      modal.showError('Erro ao salvar alterações: ' + error.message)
                     }
-                  }
-                  
-                  console.log('Editando relatório com payload:', JSON.stringify(payload, null, 2))
-                  
-                  const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioCompleto.id}`, {
-                    method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                    },
-                    body: JSON.stringify(payload),
-                  })
-
-                  if (!response.ok) {
-                    const error = await response.json()
-                    console.error('Erro detalhado:', error)
-                    throw new Error(error.message || JSON.stringify(error.errors || error))
-                  }
-
-                  const resultado = await response.json()
-                  modal.showSuccess('Relatório atualizado com sucesso!')
-                  
-                  // Atualizar o relatório selecionado com os novos dados
-                  setRelatorioSeleccionado(resultado.data || resultado)
-                  setRelatorioCompleto(resultado.data || resultado)
-                  setCurrentPage('ver-relatorio')
-                } catch (error) {
-                  console.error('Erro ao editar relatório:', error)
-                  modal.showError('Erro ao salvar alterações: ' + error.message)
-                }
-              }}
-            />
+                  }}
+                />
               </>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem', gap: '1rem' }}>
+              <div className="empty-state">
                 <p>Nenhum relatório selecionado para edição</p>
                 <button
                   type="button"
                   onClick={() => setCurrentPage('relatorios')}
-                  style={{
-                    padding: '0.5rem 1rem',
-                    background: '#2563eb',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.375rem',
-                    cursor: 'pointer'
-                  }}
+                  className="btn btn-primary"
                 >
                   Voltar para lista
                 </button>
@@ -513,14 +411,13 @@ const Home = () => {
           </div>
         )}
 
-        {/* Placeholder — Avaliar relatório */}
-        {currentPage === 'avaliar-relatorio' && relatorioSeleccionado && (
+        {currentPage === 'avaliar-relatorio' && relatorioSelecionado && (
           <div className="content-section">
             <div className="page-header">
               <button
                 type="button"
                 onClick={() => setCurrentPage('relatorios')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#2563eb', fontSize: '0.9rem' }}
+                className="back-link"
               >
                 ← Voltar
               </button>

@@ -1,36 +1,13 @@
 import React from 'react'
 import { Plus, Search, FileText, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 import { ReportForm } from './FormularioRelatorio'
+import { STATUS_RELATORIO, STATUS_OPTIONS } from '../../constants/relatorio.constants'
+import { formatarCodigo, formatarData } from '../../utils/formatadores'
 import './ListaRelatorios.css'
 import { useListaRelatoriosViewModel } from '../../viewmodels/useListaRelatoriosViewModel'
 
-const STATUS_CONFIG = {
-    ENVIADO: { label: 'Enviado', cor: 'blue' },
-    APROVADO: { label: 'Aprovado', cor: 'green' },
-    NEGADO: { label: 'Negado', cor: 'red' },
-    CORRIGIDO: { label: 'Corrigido', cor: 'orange' },
-}
-
-const STATUS_OPTIONS = [
-    { value: '', label: 'Todos os status' },
-    { value: 'ENVIADO', label: 'Enviado' },
-    { value: 'APROVADO', label: 'Aprovado' },
-    { value: 'NEGADO', label: 'Negado' },
-    { value: 'CORRIGIDO', label: 'Corrigido' },
-]
-
-function formatarCodigo(id, dataCriacao) {
-    const ano = dataCriacao ? new Date(dataCriacao).getFullYear() : new Date().getFullYear()
-    return `REL-${ano}-${String(id).padStart(3, '0')}`
-}
-
-function formatarData(isoString) {
-    if (!isoString) return '—'
-    return new Date(isoString).toLocaleDateString('pt-BR')
-}
-
 function StatusBadge({ status }) {
-    const cfg = STATUS_CONFIG[status] ?? { label: status, cor: 'gray' }
+    const cfg = STATUS_RELATORIO[status] ?? { label: status, cor: 'gray' }
     return (
         <span className={`status-badge status-badge--${cfg.cor}`}>
             <span className="status-badge__dot" />
@@ -149,7 +126,6 @@ export function ListaRelatorios({ onVerRelatorio }) {
                 </div>
 
                 <ReportForm
-                    onSaveDraft={(dados) => console.log('Rascunho:', dados)}
                     onSubmitReport={handleSalvarRelatorio}
                 />
             </div>
@@ -177,7 +153,7 @@ export function ListaRelatorios({ onVerRelatorio }) {
                     <Search size={16} className="filtro-busca__icon" />
                     <input
                         type="text"
-                        placeholder="Buscar por código, paciente ou aluno..."
+                        placeholder="Buscar por nome do paciente..."
                         value={busca}
                         onChange={(e) => setBusca(e.target.value)}
                         className="filtro-busca__input"
@@ -195,22 +171,26 @@ export function ListaRelatorios({ onVerRelatorio }) {
                 </select>
 
                 <div className="filtro-data">
+                    <label className="filtro-data__label">De:</label>
                     <Calendar size={14} className="filtro-data__icon" />
                     <input
                         type="date"
                         value={dataInicio}
                         onChange={(e) => setDataInicio(e.target.value)}
                         className="filtro-data__input"
+                        title="Data de criação - início"
                     />
                 </div>
 
                 <div className="filtro-data">
+                    <label className="filtro-data__label">Até:</label>
                     <Calendar size={14} className="filtro-data__icon" />
                     <input
                         type="date"
                         value={dataFim}
                         onChange={(e) => setDataFim(e.target.value)}
                         className="filtro-data__input"
+                        title="Data de criação - fim"
                     />
                 </div>
             </div>

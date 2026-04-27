@@ -6,6 +6,8 @@
   background: #1e3a8a;
   color: white;
   overflow-y: auto;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .sidebar-header {
@@ -96,12 +98,18 @@
 .profile-name {
   font-size: 15px;
   font-weight: 600;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 200px;
 }
 
 .profile-role {
   font-size: 13px;
   opacity: 0.85;
   font-weight: 400;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  max-width: 200px;
 }
 
 .sidebar-menu {
@@ -137,6 +145,8 @@
   flex: 1;
   font-size: 14px;
   font-weight: 400;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .menu-arrow {

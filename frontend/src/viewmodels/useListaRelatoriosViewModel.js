@@ -27,7 +27,6 @@ export function useListaRelatoriosViewModel() {
 
       if (busca.trim()) {
         params.append('nomePaciente', busca.trim())
-        params.append('nomeResponsavel', busca.trim())
       }
       if (status) params.append('status', status)
       if (dataInicio) params.append('dataInicio', dataInicio)
@@ -95,8 +94,6 @@ export function useListaRelatoriosViewModel() {
         },
       }
       
-      console.log('Enviando payload:', JSON.stringify(payload, null, 2))
-      
       const response = await fetch(`${API_BASE}/relatorios`, {
         method: 'POST',
         headers: {
@@ -108,7 +105,6 @@ export function useListaRelatoriosViewModel() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('Erro detalhado do servidor:', errorData)
         throw new Error(errorData.message || JSON.stringify(errorData.errors || errorData))
       }
 
@@ -116,7 +112,6 @@ export function useListaRelatoriosViewModel() {
       setView('lista')
       fetchRelatorios()
     } catch (error) {
-      console.error('Erro ao criar relatório:', error)
       modal.showError('Erro ao criar relatório: ' + error.message)
     }
   }

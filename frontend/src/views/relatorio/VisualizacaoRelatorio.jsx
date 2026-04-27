@@ -1,57 +1,13 @@
 import React from 'react'
 import { User, Calendar, FileText, AlertCircle, CheckCircle, XCircle, Clock, Mail } from 'lucide-react'
 import { CIFItemCard } from './CartaoItemCIF'
+import { STATUS_RELATORIO, CIF_TYPES } from '../../constants/relatorio.constants'
+import { formatarData, formatarDataHora, calcularIdade } from '../../utils/formatadores'
 import './VisualizacaoRelatorio.css'
 import { useVisualizacaoRelatorioViewModel } from '../../viewmodels/useVisualizacaoRelatorioViewModel'
 
-const STATUS_CONFIG = {
-  ENVIADO: { label: 'Enviado', cor: 'blue', icon: Clock },
-  APROVADO: { label: 'Aprovado', cor: 'green', icon: CheckCircle },
-  NEGADO: { label: 'Negado', cor: 'red', icon: XCircle },
-  CORRIGIDO: { label: 'Corrigido', cor: 'orange', icon: AlertCircle },
-}
-
-const CIF_TYPES = {
-  b: { label: 'Funções do Corpo', description: 'Funções fisiológicas dos sistemas do corpo' },
-  s: { label: 'Estruturas do Corpo', description: 'Partes anatômicas do corpo' },
-  d: { label: 'Atividades e Participação', description: 'Execução de tarefas e envolvimento em situações da vida' },
-  e: { label: 'Fatores Ambientais', description: 'Ambiente físico, social e de atitudes' },
-}
-
-function formatarData(isoString) {
-  if (!isoString) return '—'
-  return new Date(isoString).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
-}
-
-function formatarDataHora(isoString) {
-  if (!isoString) return '—'
-  return new Date(isoString).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-function calcularIdade(dataNascimento) {
-  if (!dataNascimento) return '—'
-  const hoje = new Date()
-  const nascimento = new Date(dataNascimento)
-  let idade = hoje.getFullYear() - nascimento.getFullYear()
-  const mes = hoje.getMonth() - nascimento.getMonth()
-  if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
-    idade--
-  }
-  return `${idade} anos`
-}
-
 function StatusBadge({ status }) {
-  const cfg = STATUS_CONFIG[status] ?? { label: status, cor: 'gray', icon: FileText }
+  const cfg = STATUS_RELATORIO[status] ?? { label: status, cor: 'gray', icon: FileText }
   const Icon = cfg.icon
   return (
     <div className={`status-badge-large status-badge-large--${cfg.cor}`}>
@@ -62,11 +18,6 @@ function StatusBadge({ status }) {
 }
 
 export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVisualizarPaciente }) {
-  // TODO: Implementar visualização completa de detalhes do paciente
-  // - Criar componente/página dedicada para visualizar todos os dados do paciente
-  // - Incluir histórico de relatórios, contatos de emergência, evoluções, etc.
-  // - Permitir navegação de volta para o relatório atual
-  
   const {
     relatorio,
     carregando,

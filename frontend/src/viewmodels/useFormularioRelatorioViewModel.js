@@ -11,14 +11,11 @@ const CATEGORIA_MAP = {
 }
 
 function converterRelatorioParaForm(relatorio) {
-  // Validação mais rigorosa
   if (!relatorio) {
-    console.warn('converterRelatorioParaForm: relatorio é null/undefined')
     return null
   }
   
   if (!relatorio.formularioCIF) {
-    console.warn('converterRelatorioParaForm: formularioCIF não encontrado')
     return null
   }
 
@@ -43,7 +40,6 @@ function converterRelatorioParaForm(relatorio) {
       })),
     }
   } catch (error) {
-    console.error('Erro ao converter relatório:', error)
     return null
   }
 }
@@ -116,7 +112,6 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
       )
       setReferencias(data)
     } catch (e) {
-      console.error('Erro ao carregar referências CIF:', e)
       setReferencias([])
     } finally {
       setCarregandoRefs(false)

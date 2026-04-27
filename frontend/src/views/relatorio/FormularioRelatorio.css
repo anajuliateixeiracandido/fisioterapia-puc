@@ -305,3 +305,34 @@ box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     justify-content: center;
   }
 }
+
+/* New styles for refactored components */
+.edit-mode-notice {
+  padding: 1rem;
+  background: #eff6ff;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: #1e40af;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paciente-disabled-note {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.pacientes-empty-note {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.form-select--disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
