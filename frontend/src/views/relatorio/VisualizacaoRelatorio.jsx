@@ -252,6 +252,17 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
         )}
       </div>
 
+      {/* Observações adicionais se houver */}
+      {formularioCIF.observacoes && (
+        <div className="visualizacao-section">
+          <h3 className="section-title">
+            <FileText size={20} />
+            Observações Gerais
+          </h3>
+          <div className="field-value">{formularioCIF.observacoes}</div>
+        </div>
+      )}
+      
       {/* Itens CIF por Categoria */}
       {Object.keys(itensPorCategoria).length > 0 && (
         <div className="visualizacao-section">
@@ -308,16 +319,7 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
         </div>
       )}
 
-      {/* Observações adicionais se houver */}
-      {relatorio.observacoes && (
-        <div className="visualizacao-section">
-          <h3 className="section-title">
-            <FileText size={20} />
-            Observações
-          </h3>
-          <div className="field-value">{relatorio.observacoes}</div>
-        </div>
-      )}
+
     </div>
   )
 }
