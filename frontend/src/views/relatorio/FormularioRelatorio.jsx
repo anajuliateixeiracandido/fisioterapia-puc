@@ -72,12 +72,11 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
                 Paciente <span style={{ color: '#ef4444' }}>*</span>
               </label>
               <select
-                className="form-select"
+                className={modoEdicao ? 'form-select form-select--disabled' : 'form-select'}
                 value={form.pacienteId}
                 onChange={(e) => updateForm({ pacienteId: e.target.value })}
                 required
                 disabled={modoEdicao}
-                className={modoEdicao ? 'form-select form-select--disabled' : 'form-select'}
               >
                 <option value="">Selecione o paciente</option>
                 {pacientes.map((p) => (
