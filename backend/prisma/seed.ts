@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { PrismaClient, CategoriaCIF, TipoCIF } from '@prisma/client'
 import * as fs from 'fs'
 import * as path from 'path'
