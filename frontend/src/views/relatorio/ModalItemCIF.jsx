@@ -26,6 +26,13 @@ const TITLE_PREFIX = {
     e: 'Fator Ambiental',
 }
 
+const CATEGORIA_LABEL = {
+    FUNCAO: 'Função do Corpo',
+    ESTRUTURA: 'Estrutura do Corpo',
+    ACTIVIDADE_PARTICIPACAO: 'Atividade e Participação',
+    FACTOR_AMBIENTAL: 'Fator Ambiental',
+}
+
 const EMPTY_FORM = {
     codigoCIF: '',
     descricao: '',
@@ -107,14 +114,16 @@ export default function ModalItemCIF({
     }, [form, currentType])
 
     const filteredReferences = useMemo(() => {
+        const sem = (str) =>
+            String(str || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
         const base = references.filter((ref) =>
             String(ref.codigo || '').toLowerCase().startsWith(String(currentType || '').toLowerCase())
         )
-        const term = searchTerm.trim().toLowerCase()
+        const term = sem(searchTerm.trim())
         if (!term) return base
         return base.filter((ref) => {
-            const codigo = String(ref.codigo || '').toLowerCase()
-            const descricao = String(ref.descricao || '').toLowerCase()
+            const codigo = sem(ref.codigo)
+            const descricao = sem(ref.descricao)
             return codigo.includes(term) || descricao.includes(term)
         })
     }, [references, currentType, searchTerm])
@@ -251,7 +260,7 @@ export default function ModalItemCIF({
                         {/* Categoria (readonly) */}
                         <div className="modal-item-cif__field">
                             <label htmlFor="categoria">Categoria</label>
-                            <input id="categoria" type="text" value={form.categoria} readOnly />
+                            <input id="categoria" type="text" value={CATEGORIA_LABEL[form.categoria] || form.categoria} readOnly />
                         </div>
 
                         {/* Nível (readonly se veio da referência) */}
@@ -262,7 +271,8 @@ export default function ModalItemCIF({
                                 type="number"
                                 min="0"
                                 value={form.nivel}
-                                onChange={(e) => handleChange('nivel', e.target.value)}
+                                readOnly
+                                style={{ cursor: 'not-allowed', opacity: 0.6 }}
                                 placeholder="Ex.: 2"
                             />
                         </div>
