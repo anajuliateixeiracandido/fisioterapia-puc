@@ -132,6 +132,7 @@ model FormularioCIF {
     condicaoSaudeDescricao String
     factoresPessoais       String?
     planoTerapeutico       String?
+    observacoes            String?
 
     itens     ItemCIF[]
     relatorio Relatorio?
