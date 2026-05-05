@@ -32,6 +32,7 @@ function converterRelatorioParaForm(relatorio) {
       condicaoSaudeDescricao: formularioCIF.condicaoSaudeDescricao || '',
       factoresPessoais: formularioCIF.factoresPessoais || '',
       planoTerapeutico: formularioCIF.planoTerapeutico || '',
+      observacoes: formularioCIF.observacoes || '',
       itens: (formularioCIF.itens || []).map(item => ({
         ...item,
         codigoCIF: item.codigoCIF || item.codigo || '',
@@ -61,6 +62,7 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
     condicaoSaudeDescricao: '',
     factoresPessoais: '',
     planoTerapeutico: '',
+    observacoes: '',
     itens: [],
   }
 
