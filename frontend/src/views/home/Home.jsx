@@ -26,26 +26,37 @@ const StatCard = ({ icon: Icon, label, value, colorClass }) => (
 const Home = () => {
   const modal = useModal()
   
-  // MOCK ALUNA - Maria Oliveira (ATIVO)
+  // MOCK ALUNA - João Silva (ATIVO)
   // const [user] = useState({
-  //   nome: 'Maria Oliveira',
+  //   nome: 'João Silva',
   //   role: 'ALUNO',
-  //   initials: 'MO',
+  //   initials: 'JS',
   //   matricula: 'ALU2024001',
   //   curso: 'Fisioterapia',
-  //   fisioterapeutaId: 2 // ID da aluna
+  //   fisioterapeutaId: 3 // ID da aluna no banco
   // });
 
-  // MOCK PROFESSOR - Profa. Maria Santos (ATIVO)
+  // MOCK PROFESSOR - Carlos Eduardo (ATIVO)
   const [user] = useState({
-    nome: 'Profa. Maria Santos',
+    nome: 'Carlos Eduardo',
     role: 'PROFESSOR',
-    initials: 'MS',
+    initials: 'CE',
     codigoPessoa: 'PROF001',
     curso: 'Fisioterapia',
-    fisioterapeutaId: 1, // ID do professor
-    coordenador: false, // Mudar para true para testar coordenador
+    fisioterapeutaId: 2, // ID do professor no banco
+    coordenador: false, 
   });
+
+   // MOCK COORDENADOR - Ana Paula (ATIVO)
+  //const [user] = useState({
+  //   nome: 'Ana Paula',
+  //   role: 'PROFESSOR',
+  //   initials: 'AP',
+  //   codigoPessoa: 'COORD001',
+  //   curso: 'Fisioterapia',
+  //   fisioterapeutaId: 1, // ID do professor no banco
+  //   coordenador: true,
+  // });
 
   const [hasNotifications] = useState(true);
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -73,13 +84,14 @@ const Home = () => {
     Promise.all([
       fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos`, { headers }).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=ENVIADO`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=CORRIGIDO`, { headers }).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=NEGADO`, { headers }).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=APROVADO`, { headers }).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/pacientes?page=1&limit=1`, { headers }).then(r => r.ok ? r.json() : null),
-    ]).then(([todos, enviados, negados, aprovados, pacientes]) => {
+    ]).then(([todos, enviados, corrigidos, negados, aprovados, pacientes]) => {
       setStats([
         { icon: ClipboardList, label: 'Total de relatórios', value: todos?.pagination?.total ?? 0, colorClass: 'stat-blue' },
-        { icon: Clock, label: 'Aguardando aprovação', value: enviados?.pagination?.total ?? 0, colorClass: 'stat-yellow' },
+        { icon: Clock, label: 'Aguardando aprovação', value: (enviados?.pagination?.total ?? 0) + (corrigidos?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
         { icon: X, label: 'Negados', value: negados?.pagination?.total ?? 0, colorClass: 'stat-red' },
         { icon: Check, label: 'Aprovados', value: aprovados?.pagination?.total ?? 0, colorClass: 'stat-green' },
       ])
@@ -382,7 +394,7 @@ const Home = () => {
                           condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
                           factoresPessoais: dados.factoresPessoais || '',
                           planoTerapeutico: dados.planoTerapeutico || '',
-                          observacoes: '',
+                          observacoes: dados.observacoes || '',
                           itens: (Array.isArray(dados.itens) ? dados.itens : []).map(item => {
                             const itemData = {
                               codigoCIF: item.codigoCIF || '',
