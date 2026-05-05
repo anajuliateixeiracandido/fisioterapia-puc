@@ -53,6 +53,7 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
                 condicaoSaudeDescricao: dados.formularioCIF.condicaoSaudeDescricao,
                 factoresPessoais: dados.formularioCIF.factoresPessoais,
                 planoTerapeutico: dados.formularioCIF.planoTerapeutico,
+                observacoes: dados.formularioCIF.observacoes,
                 itens: dados.formularioCIF.itens?.length
                     ? {
                         createMany: {
@@ -99,6 +100,7 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
                         condicaoSaudeDescricao: true,
                         factoresPessoais: true,
                         planoTerapeutico: true,
+                        observacoes: true,
                         itens: {
                             select: {
                                 id: true,
@@ -183,6 +185,7 @@ async function editarRelatorio(
                     condicaoSaudeDescricao: dados.formularioCIF!.condicaoSaudeDescricao,
                     factoresPessoais: dados.formularioCIF!.factoresPessoais,
                     planoTerapeutico: dados.formularioCIF!.planoTerapeutico,
+                    observacoes: dados.formularioCIF!.observacoes,
                     itens: dados.formularioCIF!.itens?.length
                         ? {
                             createMany: {
