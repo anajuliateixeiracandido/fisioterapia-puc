@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Bell, LogOut, ClipboardList, Clock, X, Check, Users, Pencil, Trash2, CheckCircle } from 'lucide-react';
 import SideBar from './BarraLateral';
 import Separator from '../geral/Separador';
@@ -55,16 +55,41 @@ const Home = () => {
   const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
   const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
 
+  const [stats, setStats] = useState([
+    { icon: ClipboardList, label: 'Total de relatórios', value: '—', colorClass: 'stat-blue' },
+    { icon: Clock, label: 'Aguardando aprovação', value: '—', colorClass: 'stat-yellow' },
+    { icon: X, label: 'Negados', value: '—', colorClass: 'stat-red' },
+    { icon: Check, label: 'Aprovados', value: '—', colorClass: 'stat-green' },
+  ])
+  const [totalPacientes, setTotalPacientes] = useState('—')
+
+  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken')
+    if (!token) return
+    const headers = { Authorization: `Bearer ${token}` }
+
+    Promise.all([
+      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=ENVIADO`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=NEGADO`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=APROVADO`, { headers }).then(r => r.ok ? r.json() : null),
+      fetch(`${API_BASE}/pacientes?page=1&limit=1`, { headers }).then(r => r.ok ? r.json() : null),
+    ]).then(([todos, enviados, negados, aprovados, pacientes]) => {
+      setStats([
+        { icon: ClipboardList, label: 'Total de relatórios', value: todos?.pagination?.total ?? 0, colorClass: 'stat-blue' },
+        { icon: Clock, label: 'Aguardando aprovação', value: enviados?.pagination?.total ?? 0, colorClass: 'stat-yellow' },
+        { icon: X, label: 'Negados', value: negados?.pagination?.total ?? 0, colorClass: 'stat-red' },
+        { icon: Check, label: 'Aprovados', value: aprovados?.pagination?.total ?? 0, colorClass: 'stat-green' },
+      ])
+      setTotalPacientes(pacientes?.pagination?.total ?? pacientes?.total ?? (Array.isArray(pacientes) ? pacientes.length : 0))
+    }).catch(() => {})
+  }, [])
+
   const navigateTo = (page) => setCurrentPage(page);
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
-
-  const stats = [
-    { icon: ClipboardList, label: 'Total de relatórios', value: 3, colorClass: 'stat-blue' },
-    { icon: Clock, label: 'Aguardando aprovação', value: 1, colorClass: 'stat-yellow' },
-    { icon: X, label: 'Negados', value: 0, colorClass: 'stat-red' },
-    { icon: Check, label: 'Aprovados', value: 1, colorClass: 'stat-green' },
-  ];
 
   return (
     <div className="home-container">
@@ -114,7 +139,12 @@ const Home = () => {
           <div className="content-section">
             <div className="greeting-section">
               <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]}</h1>
-              <p className="greeting-subtitle">Matrícula: {user.matricula} · {user.curso}</p>
+              <p className="greeting-subtitle">
+                {user.role === 'PROFESSOR'
+                  ? `Código: ${user.codigoPessoa ?? '—'}`
+                  : `Matrícula: ${user.matricula ?? '—'}`}
+                {user.curso ? ` · ${user.curso}` : ''}
+              </p>
             </div>
 
             <div className="stats-grid">
@@ -135,7 +165,7 @@ const Home = () => {
               </div>
               <div className="stat-content">
                 <div className="stat-label">Meus pacientes</div>
-                <div className="stat-value">3</div>
+                <div className="stat-value">{totalPacientes}</div>
               </div>
             </div>
           </div>
