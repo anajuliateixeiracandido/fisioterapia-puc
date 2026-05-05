@@ -40,7 +40,7 @@ function converterRelatorioParaForm(relatorio) {
         qualificador: item.qualificador?.toString() || '0',
       })),
     }
-  } catch (error) {
+  } catch {
     return null
   }
 }
@@ -75,7 +75,7 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
       return formVazio
     }
     return formVazio
-  }, [JSON.stringify(relatorioInicial), modoEdicao])
+  }, [JSON.stringify(relatorioInicial), modoEdicao]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [form, setForm] = useState(formInicial)
 
@@ -113,7 +113,7 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
         CATEGORIA_MAP[type], undefined, 2000, 0, form.tipoCIF
       )
       setReferencias(data)
-    } catch (e) {
+    } catch {
       setReferencias([])
     } finally {
       setCarregandoRefs(false)

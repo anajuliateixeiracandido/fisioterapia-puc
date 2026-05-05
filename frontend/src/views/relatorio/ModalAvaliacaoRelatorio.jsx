@@ -10,6 +10,7 @@ export function ModalAvaliacaoRelatorio({ isOpen, onClose, relatorio, onSubmit, 
   // Resetar formulário quando o modal abre
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFeedback('')
       setNovoStatus('APROVADO')
       setErrors({})

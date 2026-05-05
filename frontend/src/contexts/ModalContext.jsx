@@ -4,6 +4,15 @@ import { useModalViewModel } from '../viewmodels/useModalViewModel'
 
 const ModalContext = createContext(null)
 
+// eslint-disable-next-line react-refresh/only-export-components
+export function useModal() {
+  const context = useContext(ModalContext)
+  if (!context) {
+    throw new Error('useModal must be used within a ModalProvider')
+  }
+  return context
+}
+
 export function ModalProvider({ children }) {
   const modal = useModalViewModel()
 
@@ -25,10 +34,4 @@ export function ModalProvider({ children }) {
   )
 }
 
-export function useModal() {
-  const context = useContext(ModalContext)
-  if (!context) {
-    throw new Error('useModal must be used within a ModalProvider')
-  }
-  return context
-}
+

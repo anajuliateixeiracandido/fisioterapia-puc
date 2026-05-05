@@ -5,13 +5,12 @@
   "lib": ["ES2020"],
   "outDir": "./dist",
   "rootDir": ".",
-  "types": ["node"],
+  "types": ["node", "express"],
   "strict": true,
   "esModuleInterop": true,
   "skipLibCheck": true,
   "forceConsistentCasingInFileNames": true,
-  "resolveJsonModule": true,
-  "moduleResolution": "node"
+  "resolveJsonModule": true
 },
 "include": ["**/*.ts"],
 "exclude": ["node_modules", "dist"]

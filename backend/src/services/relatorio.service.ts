@@ -6,6 +6,7 @@ import {
     ListarRelatoriosInput
 } from "../validators/relatorio.validator";
 import { Prisma, CategoriaCIF, TipoFactorAmbiental } from "@prisma/client";
+import { TokenPayload } from "../utils/jwt.utils";
 
 function parseDateBR(data: string): Date {
     if (data.includes('-') && !data.includes('/')) {
@@ -15,7 +16,7 @@ function parseDateBR(data: string): Date {
     return new Date(`${ano}-${mes}-${dia}`)
 }
 
-async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
+async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: TokenPayload) {
     const paciente = await prisma.paciente.findUnique({
         where: { id: dados.pacienteId },
     });
@@ -130,7 +131,7 @@ async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario: any) {
 async function editarRelatorio(
     id: number,
     dados: EditarRelatorioInput,
-    usuario: any
+    usuario: TokenPayload
 ) {
     const relatorio = await prisma.relatorio.findUnique({
         where: { id },
@@ -309,7 +310,7 @@ async function editarRelatorio(
         }
 
         const dataAtual = new Date();
-        const updateData: any = {};
+        const updateData: Prisma.RelatorioUpdateInput = {};
 
         // Se enviou status, valida que seja APROVADO ou NEGADO
         if (dados.status) {
@@ -358,7 +359,7 @@ async function editarRelatorio(
     throw new AppError(400, "NO_DATA_TO_UPDATE", "Nenhum dado foi fornecido para atualização");
 }
 
-async function deletarRelatorio(id: number, usuario: any) {
+async function deletarRelatorio(id: number, usuario: TokenPayload) {
     const relatorio = await prisma.relatorio.findUnique({
         where: { id },
     });
@@ -377,7 +378,7 @@ async function deletarRelatorio(id: number, usuario: any) {
     });
 }
 
-async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
+async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: TokenPayload) {
     const {
         page,
         limit,
@@ -446,7 +447,7 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
     }
 
     if (dataInicio || dataFim) {
-        const dataCriacaoFilter: any = {};
+        const dataCriacaoFilter: { gte?: Date; lte?: Date } = {};
         if (dataInicio) {
             dataCriacaoFilter.gte = new Date(dataInicio);
         }
@@ -458,7 +459,7 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
         andConditions.push({ dataCriacao: dataCriacaoFilter });
     }
 
-    const pacienteFilters: any = {};
+    const pacienteFilters: Prisma.PacienteWhereInput = {};
     if (codigoPaciente) {
         pacienteFilters.codigo = codigoPaciente;
     }
@@ -625,7 +626,7 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: any) {
     };
 }
 
-async function obterRelatorioPorId(id: number, usuario: any) {
+async function obterRelatorioPorId(id: number, usuario: TokenPayload) {
     const relatorio = await prisma.relatorio.findUnique({
         where: { id },
         include: {

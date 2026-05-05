@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma'
 import { AppError } from '../errors/AppError'
 import { CadastroPacienteInput } from '../validators/paciente.validator'
+import { TokenPayload } from '../utils/jwt.utils'
 
 function parseDateBR(data: string): Date {
   const [dia, mes, ano] = data.split('/')
@@ -77,7 +78,7 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
   })
 }
 
-async function listarPacientes(usuario: any) {
+async function listarPacientes(usuario: TokenPayload) {
   const where =
     usuario.role === 'PROFESSOR'
       ? { professor: { fisioterapeutaId: usuario.fisioterapeutaId } }
@@ -98,7 +99,7 @@ async function listarPacientes(usuario: any) {
   })
 }
 
-async function obterPacientePorId(id: number, usuario: any) {
+async function obterPacientePorId(id: number, _usuario: TokenPayload) {
   const paciente = await prisma.paciente.findUnique({
     where: { id },
     include: {

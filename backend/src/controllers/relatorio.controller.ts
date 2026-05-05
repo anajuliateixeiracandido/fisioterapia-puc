@@ -16,7 +16,7 @@ import { AppError } from '../errors/AppError'
 async function criar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const dados = cadastroRelatorioSchema.parse(req.body)
-    const resultado = await cadastrarRelatorio(dados, (req as any).user)
+    const resultado = await cadastrarRelatorio(dados, req.user!)
 
     res.status(201).json({
       message: 'Relatório criado com sucesso',
@@ -36,7 +36,7 @@ async function editar(req: Request, res: Response, next: NextFunction): Promise<
     }
 
     const dados = editarRelatorioSchema.parse(req.body)
-    const resultado = await editarRelatorio(id, dados, (req as any).user)
+    const resultado = await editarRelatorio(id, dados, req.user!)
 
     res.status(200).json({
       message: 'Relatório editado com sucesso',
@@ -55,7 +55,7 @@ async function deletar(req: Request, res: Response, next: NextFunction): Promise
       throw new AppError(400, 'INVALID_ID', 'ID inválido')
     }
 
-    await deletarRelatorio(id, (req as any).user)
+    await deletarRelatorio(id, req.user!)
 
     res.status(204).send()
   } catch (err) {
@@ -66,7 +66,7 @@ async function deletar(req: Request, res: Response, next: NextFunction): Promise
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const filtros = listarRelatoriosSchema.parse(req.query)
-    const resultado = await listarRelatorios(filtros, (req as any).user)
+    const resultado = await listarRelatorios(filtros, req.user!)
 
     res.status(200).json(resultado)
   } catch (err) {
@@ -82,7 +82,7 @@ async function obterPorId(req: Request, res: Response, next: NextFunction): Prom
       throw new AppError(400, 'INVALID_ID', 'ID inválido')
     }
 
-    const resultado = await obterRelatorioPorId(id, (req as any).user)
+    const resultado = await obterRelatorioPorId(id, req.user!)
 
     res.status(200).json(resultado)
   } catch (err) {

@@ -8,20 +8,23 @@ import { ReportForm } from '../relatorio/FormularioRelatorio'
 import { ModalAvaliacaoRelatorio } from '../relatorio/ModalAvaliacaoRelatorio'
 import { useModal } from '../../contexts/ModalContext'
 import { podeEditarRelatorio, podeDeletarRelatorio, podeAvaliarRelatorio } from '../../utils/permissoes'
-import { avaliarRelatorio, obterRelatorio } from '../../services/relatorioService'
+import { obterRelatorio } from '../../services/relatorioService'
 import './Home.css';
 
-const StatCard = ({ icon: Icon, label, value, colorClass }) => (
-  <div className="stat-card">
-    <div className={`stat-icon ${colorClass}`}>
-      <Icon size={24} />
+const StatCard = ({ icon, label, value, colorClass }) => {
+  const Icon = icon;
+  return (
+    <div className="stat-card">
+      <div className={`stat-icon ${colorClass}`}>
+        <Icon size={24} />
+      </div>
+      <div className="stat-content">
+        <div className="stat-label">{label}</div>
+        <div className="stat-value">{value}</div>
+      </div>
     </div>
-    <div className="stat-content">
-      <div className="stat-label">{label}</div>
-      <div className="stat-value">{value}</div>
-    </div>
-  </div>
-);
+  );
+};
 
 const Home = () => {
   const modal = useModal()
@@ -88,15 +91,16 @@ const Home = () => {
       fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=NEGADO`, { headers }).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=APROVADO`, { headers }).then(r => r.ok ? r.json() : null),
       fetch(`${API_BASE}/pacientes?page=1&limit=1`, { headers }).then(r => r.ok ? r.json() : null),
-    ]).then(([todos, enviados, corrigidos, negados, aprovados, pacientes]) => {
+    ]).then(([todos, enviados, corrigidos, negados, aprovados, pacientesData]) => {
       setStats([
         { icon: ClipboardList, label: 'Total de relatórios', value: todos?.pagination?.total ?? 0, colorClass: 'stat-blue' },
         { icon: Clock, label: 'Aguardando aprovação', value: (enviados?.pagination?.total ?? 0) + (corrigidos?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
         { icon: X, label: 'Negados', value: negados?.pagination?.total ?? 0, colorClass: 'stat-red' },
         { icon: Check, label: 'Aprovados', value: aprovados?.pagination?.total ?? 0, colorClass: 'stat-green' },
       ])
-      setTotalPacientes(pacientes?.pagination?.total ?? pacientes?.total ?? (Array.isArray(pacientes) ? pacientes.length : 0))
+      setTotalPacientes(pacientesData?.pagination?.total ?? pacientesData?.total ?? (Array.isArray(pacientesData) ? pacientesData.length : 0))
     }).catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const navigateTo = (page) => setCurrentPage(page);
@@ -215,7 +219,7 @@ const Home = () => {
                         const dados = await obterRelatorio(relatorioSelecionado.id)
                         setRelatorioSelecionado(dados)
                         setCurrentPage('editar-relatorio')
-                      } catch (error) {
+                      } catch {
                         modal.showError('Erro ao carregar relatório para edição')
                       } finally {
                         setCarregandoRelatorio(false)
@@ -290,7 +294,7 @@ const Home = () => {
             <VisualizacaoRelatorio 
               relatorio={relatorioSelecionado} 
               user={user}
-              onVisualizarPaciente={(paciente) => {
+              onVisualizarPaciente={() => {
                 // TODO: Redirecionar para página de detalhes do paciente
               }}
             />

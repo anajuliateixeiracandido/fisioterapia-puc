@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
+import { Prisma } from '@prisma/client'
 
 export async function listarReferencias(req: Request, res: Response) {
     try {
@@ -11,10 +12,10 @@ export async function listarReferencias(req: Request, res: Response) {
         if (Array.isArray(limit)) limit = limit[0]
         if (Array.isArray(offset)) offset = offset[0]
 
-        const where: any = {}
+        const where: Prisma.CIFReferenciaWhereInput = {}
 
         if (categoria) {
-            where.categoria = categoria
+            where.categoria = String(categoria) as Prisma.EnumCategoriaCIFFilter['equals']
         }
 
         if (tipoCIF === 'CIF') {

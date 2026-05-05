@@ -7,7 +7,7 @@ import './FormularioRelatorio.css'
 import ModalItemCIF from './ModalItemCIF'
 import { useFormularioRelatorioViewModel } from '../../viewmodels/useFormularioRelatorioViewModel'
 
-export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = null, modoEdicao = false }) {
+export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao = false }) {
   const {
     form,
     pacientes,

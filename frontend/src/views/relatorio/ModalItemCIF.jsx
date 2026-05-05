@@ -133,6 +133,7 @@ export default function ModalItemCIF({
         const normalized = item
             ? normalizeItem(item, currentType)
             : normalizeItem({}, currentType)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setForm(normalized)
         setSearchTerm(
             normalized.codigoCIF

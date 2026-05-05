@@ -9,7 +9,7 @@ import {
 async function cadastrar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const dados = cadastroPacienteSchema.parse(req.body)
-    const resultado = await cadastrarPaciente(dados, (req as any).user.fisioterapeutaId)
+    const resultado = await cadastrarPaciente(dados, req.user!.fisioterapeutaId)
     res.status(201).json(resultado)
   } catch (err) {
     next(err)
@@ -18,7 +18,7 @@ async function cadastrar(req: Request, res: Response, next: NextFunction): Promi
 
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const resultado = await listarPacientes((req as any).user)
+    const resultado = await listarPacientes(req.user!)
     res.json(resultado)
   } catch (err) {
     next(err)
@@ -28,7 +28,7 @@ async function listar(req: Request, res: Response, next: NextFunction): Promise<
 async function obterPorId(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = parseInt(req.params.id as string)
-    const resultado = await obterPacientePorId(id, (req as any).user)
+    const resultado = await obterPacientePorId(id, req.user!)
     res.json(resultado)
   } catch (err) {
     next(err)
