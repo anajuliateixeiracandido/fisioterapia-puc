@@ -1,16 +1,95 @@
-# React + Vite
+# Frontend — Fisioterapia PUC
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web do sistema de gestão fisioterapêutica da PUC. Desenvolvida com React 19 e Vite, segue o padrão MVVM com ViewModels responsáveis pela lógica de estado e views focadas na apresentação.
 
-Currently, two official plugins are available:
+## Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+| Pacote          | Uso                                        |
+|-----------------|--------------------------------------------|
+| React 19        | Biblioteca de UI                           |
+| Vite            | Bundler e servidor de desenvolvimento      |
+| JavaScript (JSX)| Linguagem principal                        |
+| Lucide React    | Ícones                                     |
+| ESLint          | Linting e qualidade de código              |
 
-## React Compiler
+## Estrutura de Pastas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+frontend/src/
+├── App.jsx                        # Componente raiz
+├── main.jsx                       # Ponto de entrada React
+├── assets/                        # Imagens e recursos estáticos
+├── constants/
+│   └── relatorio.constants.js     # Constantes de status e configurações de relatório
+├── contexts/
+│   └── ModalContext.jsx           # Contexto global para controle de modais
+├── services/
+│   ├── cifApi.ts                  # Chamadas à API de referências CIF
+│   └── relatorioService.js        # Chamadas à API de relatórios
+├── utils/
+│   ├── formatadores.js            # Funções de formatação (datas, textos)
+│   ├── permissoes.js              # Helpers de controle de permissão por papel
+│   └── regrascif.js               # Regras de negócio para preenchimento da CIF
+├── viewmodels/
+│   ├── useFormularioRelatorioViewModel.js   # Estado e lógica do formulário CIF
+│   ├── useHomeViewModel.js                  # Estado da tela principal
+│   ├── useListaRelatoriosViewModel.js       # Estado da listagem de relatórios
+│   ├── useModalViewModel.js                 # Estado e ações dos modais
+│   └── useVisualizacaoRelatorioViewModel.js # Estado da visualização de relatório
+└── views/
+    ├── geral/
+    │   ├── Modal.jsx              # Componente de modal genérico
+    │   └── Separador.jsx          # Separador visual
+    ├── home/
+    │   ├── Home.jsx               # Tela principal / dashboard
+    │   ├── BarraLateral.jsx       # Menu lateral de navegação
+    │   └── ItemMenu.jsx           # Item individual do menu
+    └── relatorio/
+        ├── FormularioRelatorio.jsx      # Formulário de criação/edição de relatório
+        ├── FormularioHeaderSection.jsx  # Cabeçalho do formulário
+        ├── ListaRelatorios.jsx          # Listagem de relatórios
+        ├── VisualizacaoRelatorio.jsx    # Visualização detalhada de relatório
+        ├── ModalAvaliacaoRelatorio.jsx  # Modal de aprovação/negação (professor)
+        ├── ModalItemCIF.jsx             # Modal de seleção de item CIF
+        └── CartaoItemCIF.jsx            # Card de exibição de item CIF
+```
 
-## Expanding the ESLint configuration
+## Instalação e Execução
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+# Instalar dependências
+npm install
+
+# Iniciar em modo de desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
+
+# Pré-visualizar o build
+npm run preview
+```
+
+O servidor de desenvolvimento estará disponível em `http://localhost:5173` por padrão.
+
+## Scripts Disponíveis
+
+| Comando           | Descrição                              |
+|-------------------|----------------------------------------|
+| `npm run dev`     | Servidor de desenvolvimento com HMR   |
+| `npm run build`   | Build otimizado para produção          |
+| `npm run preview` | Serve o build de produção localmente   |
+| `npm run lint`    | Verifica problemas com ESLint          |
+
+## Arquitetura
+
+A aplicação adota o padrão **MVVM**:
+
+- **View** (`views/`) — componentes React focados exclusivamente em renderização
+- **ViewModel** (`viewmodels/`) — hooks customizados que encapsulam estado, efeitos e lógica de apresentação
+- **Service** (`services/`) — módulos responsáveis pela comunicação com a API REST do backend
+- **Context** (`contexts/`) — estado global compartilhado (ex.: controle de modais)
+
+## Integração com o Backend
+
+As chamadas à API apontam para a URL base do backend (`/api/v1`). Configure a URL no arquivo de serviços caso o endereço do backend seja diferente do padrão `http://localhost:3000`.
