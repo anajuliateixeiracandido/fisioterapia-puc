@@ -39,6 +39,7 @@ export function ReportForm({ onSaveDraft, onSubmitReport, relatorioInicial = nul
       condicaoSaudeDescricao: form.condicaoSaudeDescricao,
       factoresPessoais: form.factoresPessoais,
       planoTerapeutico: form.planoTerapeutico,
+      observacoes: form.observacoes,
       itens: Array.isArray(form.itens) ? form.itens : [],
     }
 
