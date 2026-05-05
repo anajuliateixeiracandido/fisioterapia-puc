@@ -1,9 +1,11 @@
+import { Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
+
 // Constantes centralizadas do sistema
 export const STATUS_RELATORIO = {
-  ENVIADO: { label: 'Enviado', cor: 'blue', icon: 'Clock' },
-  APROVADO: { label: 'Aprovado', cor: 'green', icon: 'CheckCircle' },
-  NEGADO: { label: 'Negado', cor: 'red', icon: 'XCircle' },
-  CORRIGIDO: { label: 'Corrigido', cor: 'orange', icon: 'AlertCircle' },
+  ENVIADO: { label: 'Enviado', cor: 'blue', icon: Clock },
+  APROVADO: { label: 'Aprovado', cor: 'green', icon: CheckCircle },
+  NEGADO: { label: 'Negado', cor: 'red', icon: XCircle },
+  CORRIGIDO: { label: 'Corrigido', cor: 'orange', icon: AlertCircle },
 }
 
 export const CIF_TYPES = {
