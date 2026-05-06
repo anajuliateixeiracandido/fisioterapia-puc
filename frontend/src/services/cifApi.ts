@@ -46,7 +46,6 @@ export async function fetchCIFReferences(
         params.append('offset', String(offset))
 
         const url = `${API_BASE}/api/v1/cif-referencias?${params.toString()}`
-        console.log('Buscando CIF:', { categoria, busca, tipoCIF, url })
 
         const response = await fetch(url, {
             method: 'GET',

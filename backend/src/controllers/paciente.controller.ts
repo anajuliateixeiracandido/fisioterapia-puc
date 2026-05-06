@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { cadastroPacienteSchema } from '../validators/paciente.validator'
+import { AppError } from '../errors/AppError'
 import {
   cadastrarPaciente,
   listarPacientes,
@@ -19,7 +20,7 @@ async function cadastrar(req: Request, res: Response, next: NextFunction): Promi
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const resultado = await listarPacientes(req.user!)
-    res.json(resultado)
+    res.status(200).json(resultado)
   } catch (err) {
     next(err)
   }
@@ -28,8 +29,14 @@ async function listar(req: Request, res: Response, next: NextFunction): Promise<
 async function obterPorId(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
     const resultado = await obterPacientePorId(id, req.user!)
-    res.json(resultado)
+
+    res.status(200).json(resultado)
   } catch (err) {
     next(err)
   }

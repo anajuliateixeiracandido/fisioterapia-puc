@@ -18,9 +18,7 @@ export async function listarReferencias(req: Request, res: Response) {
             where.categoria = String(categoria) as Prisma.EnumCategoriaCIFFilter['equals']
         }
 
-        if (tipoCIF === 'CIF') {
-            where.tipoCIF = 'CIF'
-        } else if (tipoCIF === 'CIF_CJ') {
+        if (tipoCIF === 'CIF_CJ') {
             where.tipoCIF = { in: ['CIF', 'CIF_CJ'] }
         } else {
             where.tipoCIF = 'CIF'

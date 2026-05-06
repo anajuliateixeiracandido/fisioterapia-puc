@@ -30,11 +30,7 @@ async function main() {
             data: chunk,
             skipDuplicates: true,
         })
-
-        console.log(`Inseridos ${Math.min(i + chunkSize, data.length)} de ${data.length}`)
     }
-
-    console.log('Seed finalizado com sucesso.')
 }
 
 main()

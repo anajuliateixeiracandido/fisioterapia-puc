@@ -57,13 +57,23 @@ export function obterPrefixoCIF(codigo) {
  */
 export function obterRotuloQualificador1(item) {
   const prefixo = obterPrefixoCIF(item.codigoCIF)
-  if (prefixo === 'b') return 'Gravidade da deficiência'
-  if (prefixo === 's') return 'Extensão da deficiência'
-  if (prefixo === 'd') return 'Desempenho'
-  if (prefixo === 'e') {
-    if (item.tipoQualificador1 === 'FACILITADOR') return 'Grau do facilitador'
-    return 'Grau da barreira'
+
+  const rotulosPorPrefixo = {
+    b: 'Gravidade da deficiência',
+    s: 'Extensão da deficiência',
+    d: 'Desempenho',
   }
+
+  if (prefixo in rotulosPorPrefixo) {
+    return rotulosPorPrefixo[prefixo]
+  }
+
+  if (prefixo === 'e') {
+    return item.tipoQualificador1 === 'FACILITADOR'
+      ? 'Grau do facilitador'
+      : 'Grau da barreira'
+  }
+
   return 'Qualificador 1'
 }
 
@@ -122,6 +132,10 @@ export function obterCamposVisiveis(item) {
   }
 }
 
+function apenasNumeros(valores) {
+  return valores.filter((valor) => typeof valor === 'number')
+}
+
 /**
  * Retorna os valores de qualificadores usados no item
  * @param {object} item - Item CIF
@@ -129,25 +143,19 @@ export function obterCamposVisiveis(item) {
  */
 export function obterValoresQualificadoresUsados(item) {
   const prefixo = obterPrefixoCIF(item.codigoCIF)
-  if (prefixo === 'b') {
-    return [item.qualificador1].filter((v) => typeof v === 'number')
+
+  const qualificadores = {
+    b: [item.qualificador1],
+    s: [item.qualificador1, item.qualificador2, item.qualificador3],
+    d: [
+      item.qualificador1,
+      item.qualificador2,
+      ...(item.modoAvancado ? [item.qualificador3, item.qualificador4] : []),
+    ],
+    e: [item.qualificador1],
   }
-  if (prefixo === 's') {
-    return [item.qualificador1, item.qualificador2, item.qualificador3].filter(
-      (v) => typeof v === 'number'
-    )
-  }
-  if (prefixo === 'd') {
-    const base = [item.qualificador1, item.qualificador2]
-    const avancado = item.modoAvancado
-      ? [item.qualificador3, item.qualificador4]
-      : []
-    return [...base, ...avancado].filter((v) => typeof v === 'number')
-  }
-  if (prefixo === 'e') {
-    return [item.qualificador1].filter((v) => typeof v === 'number')
-  }
-  return []
+
+  return apenasNumeros(qualificadores[prefixo] ?? [])
 }
 
 /**
@@ -205,40 +213,34 @@ export function sugerirFatorAmbiental(item) {
 export function validarItemCIF(item) {
   const erros = []
   const prefixo = obterPrefixoCIF(item.codigoCIF)
+
   if (!item.codigoCIF) erros.push('Selecione um código CIF.')
   if (!prefixo) erros.push('Código CIF inválido.')
-  if (prefixo === 'b') {
-    if (typeof item.qualificador1 !== 'number') {
-      erros.push('Itens de função do corpo exigem qualificador1.')
-    }
+
+  const validacoesPorPrefixo = {
+    b: () => {
+      if (typeof item.qualificador1 !== 'number') erros.push('Itens de função do corpo exigem qualificador1.')
+    },
+    s: () => {
+      if (typeof item.qualificador1 !== 'number') erros.push('Itens de estrutura do corpo exigem qualificador1.')
+    },
+    d: () => {
+      if (typeof item.qualificador1 !== 'number') erros.push('Itens de atividade/participação exigem desempenho.')
+      if (typeof item.qualificador2 !== 'number') erros.push('Itens de atividade/participação exigem capacidade.')
+    },
+    e: () => {
+      if (!item.tipoQualificador1) erros.push('Fator ambiental exige tipo: barreira ou facilitador.')
+      if (typeof item.qualificador1 !== 'number') erros.push('Fator ambiental exige grau.')
+    },
   }
-  if (prefixo === 's') {
-    if (typeof item.qualificador1 !== 'number') {
-      erros.push('Itens de estrutura do corpo exigem qualificador1.')
-    }
-  }
-  if (prefixo === 'd') {
-    if (typeof item.qualificador1 !== 'number') {
-      erros.push('Itens de atividade/participação exigem desempenho.')
-    }
-    if (typeof item.qualificador2 !== 'number') {
-      erros.push('Itens de atividade/participação exigem capacidade.')
-    }
-  }
-  if (prefixo === 'e') {
-    if (!item.tipoQualificador1) {
-      erros.push('Fator ambiental exige tipo: barreira ou facilitador.')
-    }
-    if (typeof item.qualificador1 !== 'number') {
-      erros.push('Fator ambiental exige grau.')
-    }
-  }
-  if (possuiNaoEspecificado(item) && !item.justificativaNaoEspecificado?.trim()) {
+
+  validacoesPorPrefixo[prefixo]?.()
+
+  if (possuiNaoEspecificado(item) && !item.justificativaNaoEspecificado?.trim())
     erros.push('Preencha o feedback de não especificado.')
-  }
-  if (possuiNaoAplicavel(item) && !item.justificativaNaoAplicavel?.trim()) {
+  if (possuiNaoAplicavel(item) && !item.justificativaNaoAplicavel?.trim())
     erros.push('Preencha o feedback de não aplicável.')
-  }
+
   return erros
 }
 

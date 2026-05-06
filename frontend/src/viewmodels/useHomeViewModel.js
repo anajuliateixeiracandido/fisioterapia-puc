@@ -107,7 +107,6 @@ export function useHomeViewModel() {
 
   const handleVisualizarPaciente = (paciente) => {
     // TODO: Implementar visualização de detalhes do paciente
-    console.log('Visualizar paciente:', paciente)
     modal.showInfo(
       `TODO: Implementar tela de detalhes do paciente\n\nPaciente: ${paciente.nomeCompleto}\nCódigo: ${paciente.codigo}`,
       'Funcionalidade em desenvolvimento'
