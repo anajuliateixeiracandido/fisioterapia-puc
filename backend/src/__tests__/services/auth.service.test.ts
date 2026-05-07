@@ -76,6 +76,18 @@ describe('login', () => {
       login({ email: 'user@sga.pucminas.br', senha: 'SenhaErrada@123' })
     ).rejects.toMatchObject({ code: 'CREDENCIAIS_INVALIDAS' })
   })
+
+  it('deve lançar CREDENCIAIS_INVALIDAS para usuário inativo', async () => {
+    prismaMock.fisioterapeuta.findUnique.mockResolvedValue({
+      id: 1,
+      ativo: false,
+      senha: 'hash',
+    })
+
+    await expect(
+      login({ email: 'user@sga.pucminas.br', senha: 'Senha@123' })
+    ).rejects.toMatchObject({ code: 'CREDENCIAIS_INVALIDAS' })
+  })
 })
 
 describe('logout', () => {
@@ -95,6 +107,11 @@ describe('forgotPassword', () => {
   it('deve retornar silenciosamente para email inexistente', async () => {
     prismaMock.fisioterapeuta.findUnique.mockResolvedValue(null)
     await expect(forgotPassword('naoexiste@sga.pucminas.br')).resolves.toBeUndefined()
+  })
+
+  it('deve retornar silenciosamente para usuário inativo', async () => {
+    prismaMock.fisioterapeuta.findUnique.mockResolvedValue({ id: 1, ativo: false })
+    await expect(forgotPassword('user@sga.pucminas.br')).resolves.toBeUndefined()
   })
 
   it('deve salvar token e enviar email para usuário válido', async () => {
