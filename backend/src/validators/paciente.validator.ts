@@ -26,6 +26,19 @@ const cadastroPacienteSchema = z.object({
     .optional(),
 })
 
-type CadastroPacienteInput = z.infer<typeof cadastroPacienteSchema>
+const listarPacientesSchema = z.object({
+  pagina: z.coerce.number().int().min(1).optional(),
+  limite: z.coerce.number().int().min(1).max(100).optional(),
+  busca: z.string().trim().optional(),
+  status: z.string().trim().optional(),
+})
 
-export { cadastroPacienteSchema, CadastroPacienteInput }
+type CadastroPacienteInput = z.infer<typeof cadastroPacienteSchema>
+type ListarPacientesInput = z.infer<typeof listarPacientesSchema>
+
+export {
+  cadastroPacienteSchema,
+  listarPacientesSchema,
+  CadastroPacienteInput,
+  ListarPacientesInput,
+}

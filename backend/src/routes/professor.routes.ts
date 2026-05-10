@@ -1,10 +1,9 @@
 import { Router } from 'express'
-import { cadastrar, getFisioterapeutas } from '../controllers/fisioterapeuta.controller'
+import { getAllProfessores } from '../controllers/professor.controller'
 import { authorize } from '../middlewares/role.middleware';
 import { authenticate } from '../middlewares/auth.middleware'
 
 const router = Router()
 
-router.post('/', cadastrar);
-router.get('/', authenticate, authorize('PROFESSOR', 'ALUNO'), getFisioterapeutas);
+router.get('/', authenticate, authorize('PROFESSOR'), getAllProfessores);
 export default router

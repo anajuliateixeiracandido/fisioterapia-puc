@@ -1,0 +1,153 @@
+import React, { useState } from 'react';
+import { Menu, Bell, LogOut, ClipboardList, Clock, X, Check, Users } from 'lucide-react';
+import SideBar from './BarraLateral';
+import Separator from '../geral/Separador';
+import Paciente from '../../paciente/Paciente';
+import './Home.css';
+
+const StatCard = ({ icon: Icon, label, value, colorClass }) => (
+  <div className="stat-card">
+    <div className={`stat-icon ${colorClass}`}>
+      <Icon size={24} />
+    </div>
+    <div className="stat-content">
+      <div className="stat-label">{label}</div>
+      <div className="stat-value">{value}</div>
+    </div>
+  </div>
+);
+
+const Home = ({ onLogout }) => {
+  const [user] = useState({
+    nome: 'João Paulo Silva',
+    role: 'Aluno',
+    initials: 'JP',
+    matricula: '642110',
+    curso: 'Fisioterapia'
+  });
+
+  const [hasNotifications] = useState(true);
+  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const navigateTo = (page) => setCurrentPage(page);
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const closeSidebar = () => setIsSidebarOpen(false);
+
+  const stats = [
+    { icon: ClipboardList, label: 'Total de relatórios', value: 3, colorClass: 'stat-blue' },
+    { icon: Clock, label: 'Aguardando aprovação', value: 1, colorClass: 'stat-yellow' },
+    { icon: X, label: 'Negados', value: 0, colorClass: 'stat-red' },
+    { icon: Check, label: 'Aprovados', value: 1, colorClass: 'stat-green' },
+  ];
+
+  return (
+    <div className="home-container">
+      <div className={`sidebar-wrapper ${isSidebarOpen ? 'open' : ''}`}>
+        <SideBar
+          user={user}
+          currentPage={currentPage}
+          onNavigate={navigateTo}
+          onClose={closeSidebar}
+        />
+      </div>
+
+      {isSidebarOpen && (
+        <div className="sidebar-overlay" onClick={closeSidebar} />
+      )}
+
+      <div className="main-content">
+        <div className="header">
+          <button className="menu-toggle" onClick={toggleSidebar}>
+            <Menu size={24} />
+          </button>
+          <div className="header-spacer" />
+
+          <button className="icon-button notification-button">
+            <Bell size={20} />
+            {hasNotifications && <span className="notification-badge"></span>}
+          </button>
+
+          <div className="header-profile">
+            <div className="profile-name-wrapper">
+              <div className="profile-name-small">{user.nome}</div>
+              <div className="profile-role-badge">{user.role}</div>
+            </div>
+            <div className="profile-avatar-small">
+              <span className="avatar-initials-small">{user.initials}</span>
+            </div>
+          </div>
+
+          <button className="icon-button logout-button" onClick={onLogout}>
+            <LogOut size={20} />
+          </button>
+        </div>
+
+        <Separator />
+
+        {currentPage === 'dashboard' && (
+          <div className="content-section">
+            <div className="greeting-section">
+              <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]} 👋</h1>
+              <p className="greeting-subtitle">Matrícula: {user.matricula} · {user.curso}</p>
+            </div>
+
+            <div className="stats-grid">
+              {stats.map((stat, index) => (
+                <StatCard
+                  key={index}
+                  icon={stat.icon}
+                  label={stat.label}
+                  value={stat.value}
+                  colorClass={stat.colorClass}
+                />
+              ))}
+            </div>
+
+            <div className="patients-card">
+              <div className="stat-icon stat-purple">
+                <Users size={24} />
+              </div>
+              <div className="stat-content">
+                <div className="stat-label">Meus pacientes</div>
+                <div className="stat-value">3</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'relatorios' && (
+          <div className="content-section">
+            <div className="page-header">
+              <h1 className="page-title">Relatórios CIF</h1>
+              <p className="page-subtitle">Criar e gerenciar relatórios de fisioterapia</p>
+            </div>
+            <div className="placeholder-message">
+              <p>Pagina de relatorios em desenvolvimento</p>
+            </div>
+          </div>
+        )}
+
+        {currentPage === 'pacientes' && (
+          <div className="content-section">
+            <Paciente />
+          </div>
+        )}
+
+        {currentPage === 'perfil' && (
+          <div className="content-section">
+            <div className="page-header">
+              <h1 className="page-title">Perfil</h1>
+              <p className="page-subtitle">Suas informações pessoais</p>
+            </div>
+            <div className="placeholder-message">
+              <p>Página de perfil em desenvolvimento</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Home;

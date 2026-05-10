@@ -1,0 +1,51 @@
+.data-table-wrapper {
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table thead {
+  background: #f8fafc;
+}
+
+.data-table th {
+  text-align: left;
+  font-size: 14px;
+  color: #4f6177;
+  font-weight: 700;
+  padding: 18px 24px;
+}
+
+.data-table td {
+  padding: 18px 24px;
+  border-top: 1px solid #edf2f7;
+  color: #0f172a;
+  font-size: 16px;
+}
+
+.data-table tbody tr:hover {
+  background: #fbfdff;
+}
+
+.data-table__empty {
+  text-align: center;
+  color: #64748b;
+  font-size: 15px;
+}
+
+@media (max-width: 960px) {
+  .data-table-wrapper {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    min-width: 800px;
+  }
+}

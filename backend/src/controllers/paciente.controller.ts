@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { cadastroPacienteSchema } from '../validators/paciente.validator'
+import { cadastroPacienteSchema, listarPacientesSchema } from '../validators/paciente.validator'
 import {
   buscarPacientePorId,
   cadastrarPaciente,
@@ -56,7 +56,8 @@ async function associarPaciProfessor(req: Request, res: Response, next: NextFunc
 
 async function getTodosPacientes(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const resultado = await listarPacientes();
+    const filtros = listarPacientesSchema.parse(req.query)
+    const resultado = await listarPacientes(filtros)
     res.status(200).json(resultado)
   } catch (err) {
     next(err)
@@ -65,7 +66,8 @@ async function getTodosPacientes(req: Request, res: Response, next: NextFunction
 
 async function getPacientesFisioterapeuta(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const resultado = await listarPacientesFisioterapeuta(req.user!.fisioterapeutaId, req.user!.role);
+    const filtros = listarPacientesSchema.parse(req.query)
+    const resultado = await listarPacientesFisioterapeuta(req.user!.fisioterapeutaId, req.user!.role, filtros)
     res.status(200).json(resultado)
   } catch (err) {
     next(err)

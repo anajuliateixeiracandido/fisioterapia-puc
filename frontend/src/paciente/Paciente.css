@@ -1,0 +1,160 @@
+.pacientes-page {
+  width: 100%;
+}
+
+.pacientes-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pacientes-cabecalho {
+  margin: 0;
+}
+
+.pacientes-btn-novo {
+  border: 0;
+  border-radius: 12px;
+  background: #1f469e;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 22px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(31, 70, 158, 0.24);
+}
+
+.pacientes-btn-novo:hover {
+  background: #1b3f8f;
+}
+
+.pacientes-busca-wrapper {
+  position: relative;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 18px;
+}
+
+.pacientes-busca-icone {
+  position: absolute;
+  left: 36px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c9bb0;
+}
+
+.pacientes-busca-input {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  background: #f4f6f9;
+  padding: 14px 18px 14px 48px;
+  font-size: 16px;
+  color: #5f7086;
+}
+
+.pacientes-busca-input:focus {
+  outline: 2px solid #cddbf4;
+}
+
+.pacientes-quantidade {
+  margin: 0 0 14px;
+  font-size: 15px;
+  color: #5f7086;
+}
+
+.pacientes-feedback {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: #4b5f7a;
+}
+
+.pacientes-feedback--erro {
+  color: #b91c1c;
+}
+
+.pacientes-cell-codigo {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1d4ed8;
+}
+
+.pacientes-cell-nome {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.pacientes-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #deecff;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.pacientes-nome-texto {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.pacientes-th-acoes {
+  text-align: right !important;
+}
+
+.pacientes-cell-acoes {
+  text-align: right;
+}
+
+.pacientes-btn-detalhes {
+  border: 1px solid #9fc2ff;
+  border-radius: 12px;
+  background: #f8fbff;
+  color: #2458cc;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.pacientes-btn-detalhes:hover {
+  background: #f1f7ff;
+}
+
+@media (max-width: 1024px) {
+  .pacientes-topo {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pacientes-btn-novo {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .pacientes-busca-input {
+    font-size: 16px;
+    padding: 12px 14px 12px 44px;
+  }
+
+  .pacientes-btn-novo {
+    width: 100%;
+    justify-content: center;
+  }
+}

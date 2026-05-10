@@ -1,10 +1,38 @@
 import prisma from '../lib/prisma'
+import { Prisma } from '@prisma/client'
 import { AppError } from '../errors/AppError'
-import { CadastroPacienteInput } from '../validators/paciente.validator'
+import { CadastroPacienteInput, ListarPacientesInput } from '../validators/paciente.validator'
 
 function parseDateBR(data: string): Date {
   const [dia, mes, ano] = data.split('/')
   return new Date(`${ano}-${mes}-${dia}`)
+}
+
+function buildBuscaWhere(busca?: string): Prisma.PacienteWhereInput {
+  const termoBusca = busca?.trim()
+
+  if (!termoBusca) {
+    return {}
+  }
+
+  return {
+    OR: [
+      { codigo: { contains: termoBusca, mode: 'insensitive' } },
+      { nomeCompleto: { contains: termoBusca, mode: 'insensitive' } },
+      { cpf: { contains: termoBusca, mode: 'insensitive' } },
+      { email: { contains: termoBusca, mode: 'insensitive' } },
+    ],
+  }
+}
+
+function buildPaginacao(filtros: ListarPacientesInput) {
+  const pagina = filtros.pagina ?? 1
+  const limite = filtros.limite ?? 20
+
+  return {
+    skip: (pagina - 1) * limite,
+    take: limite,
+  }
 }
 
 async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId: number) {
@@ -115,8 +143,13 @@ async function associarPacienteProfessor(pacienteId: number, professorId: number
   })
 }
 
-async function listarPacientes() {
+async function listarPacientes(filtros: ListarPacientesInput = {}) {
+  const where = buildBuscaWhere(filtros.busca)
+  const paginacao = buildPaginacao(filtros)
+
   return prisma.paciente.findMany({
+    where,
+    ...paginacao,
     select: {
       codigo: true,
       nomeCompleto: true,
@@ -158,8 +191,12 @@ async function listarPacientes() {
   })
 }
 
-async function listarPacientesFisioterapeuta(fisioterapeutaId: number, role: any) {
-  const where =
+async function listarPacientesFisioterapeuta(
+  fisioterapeutaId: number,
+  role: any,
+  filtros: ListarPacientesInput = {}
+) {
+  const whereBase =
     role === 'ALUNO'
       ? {
           alunos: {
@@ -174,8 +211,16 @@ async function listarPacientesFisioterapeuta(fisioterapeutaId: number, role: any
           },
         }
 
+  const where = {
+    ...whereBase,
+    ...buildBuscaWhere(filtros.busca),
+  }
+
+  const paginacao = buildPaginacao(filtros)
+
   return prisma.paciente.findMany({
     where,
+    ...paginacao,
     select: {
       codigo: true,
       nomeCompleto: true,

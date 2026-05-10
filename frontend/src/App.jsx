@@ -1,35 +1,51 @@
+// import { useState } from 'react'
+// import Login from './views/auth/Login'
+// import Home from './views/home/Home'
+
+// function App() {
+//   const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+//   const handleLogin = () => {
+//     setIsAuthenticated(true)
+//   }
+
+//   return isAuthenticated ? <Home /> : <Login onLogin={handleLogin} />
+// }
+
+// export default App
+
+
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Login from './views/auth/Login'
+import Home from './views/home/Home'
+import { getToken, TOKEN_STORAGE_KEY } from './utils/utilities'
+
+const getInitialAuthState = () => {
+  return Boolean(getToken())
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isAuthenticated, setIsAuthenticated] = useState(getInitialAuthState)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+  const handleLogin = (token) => {
+    const resolvedToken = token ?? getToken()
+
+    if (!resolvedToken) {
+      return false
+    }
+
+    window.localStorage.setItem(TOKEN_STORAGE_KEY, resolvedToken)
+    setIsAuthenticated(true)
+    return true
+  }
+
+  const handleLogout = () => {
+    window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+    setIsAuthenticated(false)
+  }
+
+  return isAuthenticated ? <Home onLogout={handleLogout} /> : <Login onLogin={handleLogin} />
 }
 
 export default App
+
