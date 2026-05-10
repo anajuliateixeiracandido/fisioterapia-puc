@@ -82,7 +82,15 @@ async function exibirTodosFisioterapeutas() {
   }
 }
 
+async associarPacienteFisioterapeuta(idFisioterapeuta: string, idPaciente: number) {
+  return prisma.fisioterapeuta.update({
+    where: { uid: idFisioterapeuta },
+    data: { pacienteId: idPaciente },
+  })
+}
+
 export { 
   cadastrarFisioterapeuta, 
-  exibirTodosFisioterapeutas 
+  exibirTodosFisioterapeutas,
+  associarPacienteFisioterapeuta
 }

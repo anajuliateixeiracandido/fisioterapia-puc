@@ -1,98 +1,214 @@
 generator client {
-provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-provider = "postgresql"
-url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
-ALUNO
-PROFESSOR
+  ALUNO
+  PROFESSOR
 }
 
 enum Sexo {
-M
-F
+  M
+  F
+}
+
+enum StatusRelatorio {
+  ENVIADO
+  APROVADO
+  NEGADO
+  CORRIGIDO
 }
 
 model Fisioterapeuta {
-id           Int       @id @default(autoincrement())
-uid          String    @unique @default(uuid())
-nomeCompleto String
-email        String    @unique
-senha        String
-role         Role
-createdAt    DateTime  @default(now())
-updatedAt    DateTime  @updatedAt
+  id           Int      @id @default(autoincrement())
+  uid          String   @unique @default(uuid())
+  nomeCompleto String
+  email        String   @unique
+  senha        String
+  role         Role
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-refreshTokenHash      String?    
-refreshTokenExpiresAt DateTime? 
+  refreshTokenHash      String?
+  refreshTokenExpiresAt DateTime?
 
-passwordResetToken          String?
-passwordResetTokenExpiresAt DateTime?
+  passwordResetToken          String?
+  passwordResetTokenExpiresAt DateTime?
 
-professor    Professor?
-aluno        Aluno?
+  professor  Professor?
+  aluno      Aluno?
+  relatorios Relatorio[]
 }
 
 model Professor {
-id               Int            @id @default(autoincrement())
-codigoPessoa     String?
-coordenador      Boolean   @default(false)
+  id           Int     @id @default(autoincrement())
+  codigoPessoa String?
+  coordenador  Boolean @default(false)
 
-fisioterapeutaId Int            @unique
-fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+  fisioterapeutaId Int            @unique
+  fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
 
-alunos           Aluno[]    @relation("ProfessorAlunos")
-pacientes        Paciente[] @relation("ProfessorPacientes")
+  alunos                    Aluno[]     @relation("ProfessorAlunos")
+  pacientes                 Paciente[]  @relation("ProfessorPacientes")
+  relatoriosSupervisionados Relatorio[] @relation("ProfessorResponsavel")
 }
 
 model Aluno {
-id               Int            @id @default(autoincrement())
-matricula    String?
+  id        Int     @id @default(autoincrement())
+  matricula String?
 
-fisioterapeutaId Int            @unique
-fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
+  fisioterapeutaId Int            @unique
+  fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id], onDelete: Cascade)
 
-professorId      Int?   
-professor        Professor?     @relation("ProfessorAlunos", fields: [professorId], references: [id])
+  professorId Int?
+  professor   Professor? @relation("ProfessorAlunos", fields: [professorId], references: [id])
 
-pacientes        Paciente[] @relation("AlunoPacientes")
+  pacientes Paciente[] @relation("AlunoPacientes")
 }
 
 model Paciente {
-id                  Int      @id @default(autoincrement())
-codigo              String   @unique @default(cuid())
-nomeCompleto        String   @db.VarChar(200)
-dataNascimento      DateTime
-sexo                Sexo
-cpf                 String?  @unique
-telefone            String?
-endereco            String?
-email               String?
-alergias            String?
-condicaoSaude       String?  @db.VarChar(400)
-demandaReabilitacao String?  @db.VarChar(400)
-atividadeLimitacao  String?  @db.VarChar(400)
-queixaPrincipal     String?
-observacoesIniciais String?
+  id                  Int      @id @default(autoincrement())
+  codigo              String   @unique @default(cuid())
+  nomeCompleto        String   @db.VarChar(200)
+  dataNascimento      DateTime
+  sexo                Sexo
+  cpf                 String?  @unique
+  telefone            String?
+  endereco            String?
+  email               String?
+  alergias            String?
+  condicaoSaude       String?  @db.VarChar(400)
+  demandaReabilitacao String?  @db.VarChar(400)
+  atividadeLimitacao  String?  @db.VarChar(400)
+  queixaPrincipal     String?
+  observacoesIniciais String?
 
+  professorId Int
+  professor   Professor @relation("ProfessorPacientes", fields: [professorId], references: [id])
 
-professorId         Int
-professor           Professor @relation("ProfessorPacientes", fields: [professorId], references: [id])
-
-alunos              Aluno[]  @relation("AlunoPacientes")
-contatosEmergencia  ContatoEmergencia[]
+  alunos             Aluno[]             @relation("AlunoPacientes")
+  contatosEmergencia ContatoEmergencia[]
+  relatorios         Relatorio[]
 }
 
 model ContatoEmergencia {
-id         Int      @id @default(autoincrement())
-nome       String
-telefone   String
-parentesco String
+  id         Int    @id @default(autoincrement())
+  nome       String
+  telefone   String
+  parentesco String
 
-pacienteId Int
-paciente   Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+  pacienteId Int
+  paciente   Paciente @relation(fields: [pacienteId], references: [id], onDelete: Cascade)
+}
+
+enum CategoriaCIF {
+  ESTRUTURA
+  FUNCAO
+  ACTIVIDADE_PARTICIPACAO
+  FACTOR_AMBIENTAL
+}
+
+enum TipoCIF {
+  CIF
+  CIF_CJ
+}
+
+enum TipoFactorAmbiental {
+  BARREIRA
+  FACILITADOR
+}
+
+model FormularioCIF {
+  id                     Int       @id @default(autoincrement())
+  tipoCIF                TipoCIF
+  dataPreenchimento      DateTime  @default(now())
+  ultimaAlteracao        DateTime? @updatedAt
+  condicaoSaude          String?
+  condicaoSaudeDescricao String
+  factoresPessoais       String?
+  planoTerapeutico       String?
+  observacoes            String?
+
+  itens     ItemCIF[]
+  relatorio Relatorio?
+
+  @@map("formulario_cif")
+}
+
+model ItemCIF {
+  id                Int                  @id @default(autoincrement())
+  formularioCIFId   Int
+  codigoCIF         String
+  descricao         String?
+  categoria         CategoriaCIF
+  nivel             Int?
+  qualificador1     Int?
+  tipoQualificador1 TipoFactorAmbiental?
+  qualificador2     Int?
+  qualificador3     Int?
+  qualificador4     Int?
+  observacao        String?
+
+  formularioCIF FormularioCIF @relation(fields: [formularioCIFId], references: [id], onDelete: Cascade)
+  cifReferencia CIFReferencia @relation(fields: [codigoCIF], references: [codigo])
+
+  @@index([formularioCIFId])
+  @@index([codigoCIF])
+  @@index([categoria])
+  @@map("item_cif")
+}
+
+model CIFReferencia {
+  id            Int          @id @default(autoincrement())
+  tipoCIF       TipoCIF
+  codigo        String       @unique
+  codigoPai     String?
+  descricao     String
+  categoria     CategoriaCIF
+  nivel         Int
+  capitulo      Int?
+  ordemExibicao Int?
+
+  itens ItemCIF[]
+
+  @@index([categoria])
+  @@index([tipoCIF])
+  @@map("cif_referencia")
+}
+
+model Relatorio {
+  id            Int             @id @default(autoincrement())
+  status        StatusRelatorio @default(ENVIADO)
+  dataCriacao   DateTime        @default(now())
+  dataAprovacao DateTime?
+
+  feedbacks     String[]   @default([])
+  datasFeedback DateTime[] @default([])
+
+  datasEdicao DateTime[] @default([])
+
+  fisioterapeutaId Int
+  fisioterapeuta   Fisioterapeuta @relation(fields: [fisioterapeutaId], references: [id])
+
+  pacienteId Int
+  paciente   Paciente @relation(fields: [pacienteId], references: [id])
+
+  professorResponsavelId Int?
+  professorResponsavel   Professor? @relation("ProfessorResponsavel", fields: [professorResponsavelId], references: [id])
+
+  formularioCIFId Int?           @unique
+  formularioCIF   FormularioCIF? @relation(fields: [formularioCIFId], references: [id])
+
+  @@index([fisioterapeutaId])
+  @@index([pacienteId])
+  @@index([professorResponsavelId])
+  @@index([status])
+  @@index([dataCriacao])
+  @@index([status, dataCriacao])
+  @@map("relatorio")
 }

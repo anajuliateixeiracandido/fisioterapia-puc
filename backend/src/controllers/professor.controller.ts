@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { listarProfessores } from '../services/professor.service'
+import { listarProfessores, associarAlunoProfessor, associarPacienteProfessor } from '../services/professor.service'
 
 async function getAllProfessores(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -10,6 +10,24 @@ async function getAllProfessores(req: Request, res: Response, next: NextFunction
   }
 }
 
-const getProfessores = getAllProfessores
+async function associarAluno(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { idProfessor, idAluno } = req.body
+    const resultado = await associarAlunoProfessor(idProfessor, idAluno)
+    res.status(201).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
 
-export { getAllProfessores, getProfessores }
+async function associarPaciente(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { idProfessor, idPaciente } = req.body
+    const resultado = await associarPacienteProfessor(idProfessor, idPaciente)
+    res.status(201).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export { getAllProfessores, associarAluno, associarPaciente }

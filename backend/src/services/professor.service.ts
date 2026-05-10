@@ -18,4 +18,34 @@ async function listarProfessores() {
   })
 }
 
-export { listarProfessores }
+async function associarAlunoProfessor(idProfessor: number, idAluno: number) {
+  return prisma.professor.update({
+    where: {
+      id: idProfessor,
+    },
+    data: {
+      alunos: {
+        connect: {
+          id: idAluno,
+        },
+      },
+    },
+  })
+}
+
+async function associarPacienteProfessor(idProfessor: number, idPaciente: number) {
+  return prisma.professor.update({
+    where: {
+      id: idProfessor,
+    },
+    data: {
+      pacientes: {
+        connect: {
+          id: idPaciente,
+        },
+      },
+    },
+  })
+}
+
+export { listarProfessores, associarAlunoProfessor, associarPacienteProfessor }
