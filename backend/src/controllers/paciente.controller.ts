@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { cadastroPacienteSchema } from '../validators/paciente.validator'
-import { cadastrarPaciente } from '../services/paciente.service'
+import { AppError } from '../errors/AppError'
+import {
+  cadastrarPaciente,
+  listarPacientes,
+  obterPacientePorId,
+} from '../services/paciente.service'
 
 async function cadastrar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -12,4 +17,29 @@ async function cadastrar(req: Request, res: Response, next: NextFunction): Promi
   }
 }
 
-export { cadastrar }
+async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const resultado = await listarPacientes(req.user!)
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function obterPorId(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
+    const resultado = await obterPacientePorId(id, req.user!)
+
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export { cadastrar, listar, obterPorId }

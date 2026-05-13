@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma'
 import { AppError } from '../errors/AppError'
 import { CadastroPacienteInput } from '../validators/paciente.validator'
+import { TokenPayload } from '../utils/jwt.utils'
 
 function parseDateBR(data: string): Date {
   const [dia, mes, ano] = data.split('/')
@@ -20,12 +21,7 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
 
   if (dados.matriculaAluno) {
     const aluno = await prisma.aluno.findFirst({
-      where: {
-        fisioterapeuta: {
-          matricula: dados.matriculaAluno,
-          ativo: true,
-        },
-      },
+      where: { matricula: dados.matriculaAluno },
     })
 
     if (!aluno) {
@@ -47,14 +43,10 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
       alergias: dados.alergias,
       professorId: professor.id,
       ...(alunoId && {
-        alunos: {
-          connect: { id: alunoId },
-        },
+        alunos: { connect: { id: alunoId } },
       }),
       contatosEmergencia: {
-        createMany: {
-          data: dados.contatosEmergencia,
-        },
+        createMany: { data: dados.contatosEmergencia },
       },
     },
     select: {
@@ -69,33 +61,69 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
       alergias: true,
       professor: {
         select: {
-          fisioterapeuta: {
-            select: {
-              nomeCompleto: true,
-              codigoPessoa: true,
-            },
-          },
+          codigoPessoa: true,
+          fisioterapeuta: { select: { nomeCompleto: true } },
         },
       },
       alunos: {
         select: {
-          fisioterapeuta: {
-            select: {
-              nomeCompleto: true,
-              matricula: true,
-            },
-          },
+          matricula: true,
+          fisioterapeuta: { select: { nomeCompleto: true } },
         },
       },
       contatosEmergencia: {
-        select: {
-          nome: true,
-          telefone: true,
-          parentesco: true,
-        },
+        select: { nome: true, telefone: true, parentesco: true },
       },
     },
   })
 }
 
-export { cadastrarPaciente }
+async function listarPacientes(usuario: TokenPayload) {
+  const where =
+    usuario.role === 'PROFESSOR'
+      ? { professor: { fisioterapeutaId: usuario.fisioterapeutaId } }
+      : { alunos: { some: { fisioterapeuta: { id: usuario.fisioterapeutaId } } } }
+
+  return prisma.paciente.findMany({
+    where,
+    select: {
+      id: true,
+      codigo: true,
+      nomeCompleto: true,
+      dataNascimento: true,
+      sexo: true,
+      cpf: true,
+      telefone: true,
+    },
+    orderBy: { nomeCompleto: 'asc' },
+  })
+}
+
+async function obterPacientePorId(id: number, _usuario: TokenPayload) {
+  const paciente = await prisma.paciente.findUnique({
+    where: { id },
+    include: {
+      professor: {
+        select: {
+          codigoPessoa: true,
+          fisioterapeuta: { select: { nomeCompleto: true } },
+        },
+      },
+      alunos: {
+        select: {
+          matricula: true,
+          fisioterapeuta: { select: { nomeCompleto: true } },
+        },
+      },
+      contatosEmergencia: true,
+    },
+  })
+
+  if (!paciente) {
+    throw new AppError(404, 'PACIENTE_NOT_FOUND', 'Paciente não encontrado')
+  }
+
+  return paciente
+}
+
+export { cadastrarPaciente, listarPacientes, obterPacientePorId }
