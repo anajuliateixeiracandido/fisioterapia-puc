@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useModal } from '../contexts/ModalContext'
+import { getAccessToken } from '../services/tokenStore'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
 
 export function useHomeViewModel() {
   const modal = useModal()
@@ -43,7 +44,7 @@ export function useHomeViewModel() {
 
   const handleEditarRelatorio = async (relatorioId, dados) => {
     try {
-      const token = localStorage.getItem('accessToken')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE}/relatorios/${relatorioId}`, {
         method: 'PATCH',
         headers: {
@@ -82,7 +83,7 @@ export function useHomeViewModel() {
 
   const handleDeletarRelatorio = async (relatorio) => {
     try {
-      const token = localStorage.getItem('accessToken')
+      const token = getAccessToken()
       const response = await fetch(`${API_BASE}/relatorios/${relatorio.id}`, {
         method: 'DELETE',
         headers: {

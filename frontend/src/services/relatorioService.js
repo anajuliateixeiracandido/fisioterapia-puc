@@ -1,8 +1,9 @@
 // Serviço centralizado para operações com relatórios
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+import { getAccessToken } from './tokenStore'
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
 
 function getHeaders() {
-  const token = localStorage.getItem('accessToken')
+  const token = getAccessToken()
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

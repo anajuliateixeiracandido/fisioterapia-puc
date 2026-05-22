@@ -1,324 +1,363 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, Bell, LogOut, ClipboardList, Clock, X, Check, Users, Pencil, Trash2, CheckCircle } from 'lucide-react';
-import SideBar from './BarraLateral';
-import Separator from '../geral/Separador';
+import { useState, useEffect } from 'react'
+import { ClipboardList, Clock, X, Check, Users, Pencil, Trash2, CheckCircle } from 'lucide-react'
+import Layout from '../../components/Layout'
 import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
 import { ReportForm } from '../relatorio/FormularioRelatorio'
 import { ModalAvaliacaoRelatorio } from '../relatorio/ModalAvaliacaoRelatorio'
 import { useModal } from '../../contexts/ModalContext'
+import { useAuth } from '../../contexts/AuthContext'
+import { getAccessToken } from '../../services/tokenStore'
 import { podeEditarRelatorio, podeDeletarRelatorio, podeAvaliarRelatorio } from '../../utils/permissoes'
 import { obterRelatorio } from '../../services/relatorioService'
-import './Home.css';
+import './Home.css'
+
+function calcularIniciais(nomeCompleto) {
+if (!nomeCompleto) return '?'
+const partes = nomeCompleto.trim().split(' ')
+if (partes.length === 1) return partes[0][0].toUpperCase()
+return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+}
 
 const StatCard = ({ icon, label, value, colorClass }) => {
-  const Icon = icon;
-  return (
-    <div className="stat-card">
-      <div className={`stat-icon ${colorClass}`}>
-        <Icon size={24} />
-      </div>
-      <div className="stat-content">
-        <div className="stat-label">{label}</div>
-        <div className="stat-value">{value}</div>
-      </div>
+const Icon = icon
+return (
+  <div className="stat-card">
+    <div className={`stat-icon ${colorClass}`}>
+      <Icon size={24} />
     </div>
-  );
-};
+    <div className="stat-content">
+      <div className="stat-label">{label}</div>
+      <div className="stat-value">{value}</div>
+    </div>
+  </div>
+)
+}
 
 const Home = () => {
-  const modal = useModal()
-  
-  // MOCK ALUNA - João Silva (ATIVO)
-  // const [user] = useState({
-  //   nome: 'João Silva',
-  //   role: 'ALUNO',
-  //   initials: 'JS',
-  //   matricula: 'ALU2024001',
-  //   curso: 'Fisioterapia',
-  //   fisioterapeutaId: 3 // ID da aluna no banco
-  // });
+const modal = useModal()
+const { user: dadosAuth } = useAuth()
 
-  // MOCK PROFESSOR - Carlos Eduardo (ATIVO)
-  const [user] = useState({
-    nome: 'Carlos Eduardo',
-    role: 'PROFESSOR',
-    initials: 'CE',
-    codigoPessoa: 'PROF001',
-    curso: 'Fisioterapia',
-    fisioterapeutaId: 2, // ID do professor no banco
-    coordenador: false, 
-  });
+const user = dadosAuth
+  ? {
+      nome: dadosAuth.nomeCompleto,
+      role: dadosAuth.role,
+      initials: calcularIniciais(dadosAuth.nomeCompleto),
+      coordenador: dadosAuth.coordenador,
+      codigoPessoa: dadosAuth.codigoPessoa,
+      matricula: dadosAuth.matricula,
+      curso: null,
+    }
+  : null
 
-   // MOCK COORDENADOR - Ana Paula (ATIVO)
-  //const [user] = useState({
-  //   nome: 'Ana Paula',
-  //   role: 'PROFESSOR',
-  //   initials: 'AP',
-  //   codigoPessoa: 'COORD001',
-  //   curso: 'Fisioterapia',
-  //   fisioterapeutaId: 1, // ID do professor no banco
-  //   coordenador: true,
-  // });
+// TODO: Replace local `currentPage` state with route-based navigation.
+const [currentPage, setCurrentPage] = useState('dashboard')
+const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
+const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
+const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
+const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
 
-  const [hasNotifications] = useState(true);
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
-  const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
-  const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
-  const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
+const [stats, setStats] = useState([
+  { icon: ClipboardList, label: 'Total de relatórios', value: '—', colorClass: 'stat-blue' },
+  { icon: Clock, label: 'Aguardando aprovação', value: '—', colorClass: 'stat-yellow' },
+  { icon: X, label: 'Negados', value: '—', colorClass: 'stat-red' },
+  { icon: Check, label: 'Aprovados', value: '—', colorClass: 'stat-green' },
+])
+const [totalPacientes, setTotalPacientes] = useState('—')
 
-  const [stats, setStats] = useState([
-    { icon: ClipboardList, label: 'Total de relatórios', value: '—', colorClass: 'stat-blue' },
-    { icon: Clock, label: 'Aguardando aprovação', value: '—', colorClass: 'stat-yellow' },
-    { icon: X, label: 'Negados', value: '—', colorClass: 'stat-red' },
-    { icon: Check, label: 'Aprovados', value: '—', colorClass: 'stat-green' },
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
+
+useEffect(() => {
+  const token = getAccessToken()
+  if (!token) return
+  const headers = { Authorization: `Bearer ${token}` }
+
+  Promise.all([
+    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos`, { headers }).then((r) => r.ok ? r.json() : null),
+    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=ENVIADO`, { headers }).then((r) => r.ok ? r.json() : null),
+    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=CORRIGIDO`, { headers }).then((r) => r.ok ? r.json() : null),
+    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=NEGADO`, { headers }).then((r) => r.ok ? r.json() : null),
+    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=APROVADO`, { headers }).then((r) => r.ok ? r.json() : null),
+    fetch(`${API_BASE}/pacientes?page=1&limit=1`, { headers }).then((r) => r.ok ? r.json() : null),
   ])
-  const [totalPacientes, setTotalPacientes] = useState('—')
-
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
-
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken')
-    if (!token) return
-    const headers = { Authorization: `Bearer ${token}` }
-
-    Promise.all([
-      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos`, { headers }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=ENVIADO`, { headers }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=CORRIGIDO`, { headers }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=NEGADO`, { headers }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=APROVADO`, { headers }).then(r => r.ok ? r.json() : null),
-      fetch(`${API_BASE}/pacientes?page=1&limit=1`, { headers }).then(r => r.ok ? r.json() : null),
-    ]).then(([todos, enviados, corrigidos, negados, aprovados, pacientesData]) => {
+    .then(([todos, enviados, corrigidos, negados, aprovados, pacientesData]) => {
       setStats([
         { icon: ClipboardList, label: 'Total de relatórios', value: todos?.pagination?.total ?? 0, colorClass: 'stat-blue' },
         { icon: Clock, label: 'Aguardando aprovação', value: (enviados?.pagination?.total ?? 0) + (corrigidos?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
         { icon: X, label: 'Negados', value: negados?.pagination?.total ?? 0, colorClass: 'stat-red' },
         { icon: Check, label: 'Aprovados', value: aprovados?.pagination?.total ?? 0, colorClass: 'stat-green' },
       ])
-      setTotalPacientes(pacientesData?.pagination?.total ?? pacientesData?.total ?? (Array.isArray(pacientesData) ? pacientesData.length : 0))
-    }).catch(() => {})
+      setTotalPacientes(
+        pacientesData?.pagination?.total ??
+        pacientesData?.total ??
+        (Array.isArray(pacientesData) ? pacientesData.length : 0)
+      )
+    })
+    .catch(() => {})
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+}, [])
 
-  const navigateTo = (page) => setCurrentPage(page);
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const closeSidebar = () => setIsSidebarOpen(false);
+if (!user) return null
 
-  return (
-    <div className="home-container">
-      <div className={`sidebar-wrapper ${isSidebarOpen ? 'open' : ''}`}>
-        <SideBar
-          user={user}
-          currentPage={currentPage}
-          onNavigate={navigateTo}
-          onClose={closeSidebar}
-        />
-      </div>
-
-      {isSidebarOpen && (
-        <div className="sidebar-overlay" onClick={closeSidebar} />
-      )}
-
-      <div className="main-content">
-        <div className="header">
-          <button className="menu-toggle" onClick={toggleSidebar}>
-            <Menu size={24} />
-          </button>
-          <div className="header-spacer" />
-
-          <button className="icon-button notification-button">
-            <Bell size={20} />
-            {hasNotifications && <span className="notification-badge"></span>}
-          </button>
-
-          <div className="header-profile">
-            <div className="profile-name-wrapper">
-              <div className="profile-name-small">{user.nome}</div>
-              <div className="profile-role-badge">{user.role}</div>
-            </div>
-            <div className="profile-avatar-small">
-              <span className="avatar-initials-small">{user.initials}</span>
-            </div>
-          </div>
-
-          <button className="icon-button logout-button">
-            <LogOut size={20} />
-          </button>
+return (
+  <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
+    {currentPage === 'dashboard' && (
+      <div className="content-section">
+        <div className="greeting-section">
+          <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]}</h1>
+          <p className="greeting-subtitle">
+            {user.role === 'PROFESSOR'
+              ? `Código: ${user.codigoPessoa ?? '—'}`
+              : `Matrícula: ${user.matricula ?? '—'}`}
+            {user.curso ? ` · ${user.curso}` : ''}
+          </p>
         </div>
 
-        <Separator />
-
-        {currentPage === 'dashboard' && (
-          <div className="content-section">
-            <div className="greeting-section">
-              <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]}</h1>
-              <p className="greeting-subtitle">
-                {user.role === 'PROFESSOR'
-                  ? `Código: ${user.codigoPessoa ?? '—'}`
-                  : `Matrícula: ${user.matricula ?? '—'}`}
-                {user.curso ? ` · ${user.curso}` : ''}
-              </p>
-            </div>
-
-            <div className="stats-grid">
-              {stats.map((stat, index) => (
-                <StatCard
-                  key={index}
-                  icon={stat.icon}
-                  label={stat.label}
-                  value={stat.value}
-                  colorClass={stat.colorClass}
-                />
-              ))}
-            </div>
-
-            <div className="patients-card">
-              <div className="stat-icon stat-purple">
-                <Users size={24} />
-              </div>
-              <div className="stat-content">
-                <div className="stat-label">Meus pacientes</div>
-                <div className="stat-value">{totalPacientes}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'relatorios' && (
-          <div className="content-section">
-            <ListaRelatorios
-              onVerRelatorio={(r) => {
-                setRelatorioSelecionado(r)
-                setCurrentPage('ver-relatorio')
-              }}
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <StatCard
+              key={index}
+              icon={stat.icon}
+              label={stat.label}
+              value={stat.value}
+              colorClass={stat.colorClass}
             />
-          </div>
-        )}
+          ))}
+        </div>
 
-        {currentPage === 'ver-relatorio' && relatorioSelecionado && (
-          <div className="content-section">
-            <div className="page-header">
-              <div>
+        <div className="patients-card">
+          <div className="stat-icon stat-purple">
+            <Users size={24} />
+          </div>
+          <div className="stat-content">
+            <div className="stat-label">Meus pacientes</div>
+            <div className="stat-value">{totalPacientes}</div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    {currentPage === 'relatorios' && (
+      <div className="content-section">
+        <ListaRelatorios
+          onVerRelatorio={(r) => {
+            setRelatorioSelecionado(r)
+            setCurrentPage('ver-relatorio')
+          }}
+        />
+      </div>
+    )}
+
+    {currentPage === 'ver-relatorio' && relatorioSelecionado && (
+      <div className="content-section">
+        <div className="page-header">
+          <div>
+            <button
+              type="button"
+              onClick={() => setCurrentPage('relatorios')}
+              className="back-link"
+            >
+              ← Voltar para lista de relatórios
+            </button>
+            <div className="button-group">
+              {podeEditarRelatorio(relatorioSelecionado, user) && (
                 <button
                   type="button"
-                  onClick={() => setCurrentPage('relatorios')}
-                  className="back-link"
+                  onClick={async () => {
+                    setCarregandoRelatorio(true)
+                    try {
+                      const dados = await obterRelatorio(relatorioSelecionado.id)
+                      setRelatorioSelecionado(dados)
+                      setCurrentPage('editar-relatorio')
+                    } catch {
+                      modal.showError('Erro ao carregar relatório para edição')
+                    } finally {
+                      setCarregandoRelatorio(false)
+                    }
+                  }}
+                  disabled={carregandoRelatorio}
+                  className="btn btn-primary"
                 >
-                  ← Voltar para lista de relatórios
+                  <Pencil size={16} />
+                  {carregandoRelatorio ? 'Carregando...' : 'Editar'}
                 </button>
-                <div className="button-group">
-                {podeEditarRelatorio(relatorioSelecionado, user) && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      setCarregandoRelatorio(true)
-                      try {
-                        const dados = await obterRelatorio(relatorioSelecionado.id)
-                        setRelatorioSelecionado(dados)
-                        setCurrentPage('editar-relatorio')
-                      } catch {
-                        modal.showError('Erro ao carregar relatório para edição')
-                      } finally {
-                        setCarregandoRelatorio(false)
-                      }
-                    }}
-                    disabled={carregandoRelatorio}
-                    className="btn btn-primary"
-                  >
-                    <Pencil size={16} />
-                    {carregandoRelatorio ? 'Carregando...' : 'Editar'}
-                  </button>
-                )}
+              )}
 
-                {podeDeletarRelatorio(relatorioSelecionado, user) && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const confirmed = await modal.showConfirm(
-                        'Tem certeza que deseja deletar este relatório? Esta ação não pode ser desfeita.',
-                        'Confirmar exclusão'
-                      )
-                      
-                      if (!confirmed) return
-                      
-                      try {
-                        const token = localStorage.getItem('accessToken')
-                        const response = await fetch(
-                          `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSelecionado.id}`,
-                          {
-                            method: 'DELETE',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                            },
-                          }
-                        )
+              {podeDeletarRelatorio(relatorioSelecionado, user) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const confirmed = await modal.showConfirm(
+                      'Tem certeza que deseja deletar este relatório? Esta ação não pode ser desfeita.',
+                      'Confirmar exclusão'
+                    )
+                    if (!confirmed) return
 
-                        if (!response.ok) {
-                          const error = await response.json()
-                          throw new Error(error.message || 'Erro ao deletar relatório')
+                    try {
+                      const token = getAccessToken()
+                      const response = await fetch(
+                        `${API_BASE}/relatorios/${relatorioSelecionado.id}`,
+                        {
+                          method: 'DELETE',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                          },
                         }
+                      )
 
-                        modal.showSuccess('Relatório deletado com sucesso!')
-                        setRelatorioSelecionado(null)
-                        setCurrentPage('relatorios')
-                      } catch (error) {
-                        modal.showError('Erro ao deletar relatório: ' + error.message)
+                      if (!response.ok) {
+                        const error = await response.json()
+                        throw new Error(error.message || 'Erro ao deletar relatório')
                       }
-                    }}
-                    className="btn btn-danger"
-                    title="Deletar relatório"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
 
-                {podeAvaliarRelatorio(relatorioSelecionado, user) && (
-                  <button
-                    type="button"
-                    onClick={() => setModalAvaliacaoAberto(true)}
-                    disabled={enviandoAvaliacao}
-                    className="btn btn-success"
-                  >
-                    <CheckCircle size={16} />
-                    {enviandoAvaliacao ? 'Enviando...' : 'Avaliar'}
-                  </button>
-                )}
-              </div>
+                      modal.showSuccess('Relatório deletado com sucesso!')
+                      setRelatorioSelecionado(null)
+                      setCurrentPage('relatorios')
+                    } catch (error) {
+                      modal.showError('Erro ao deletar relatório: ' + error.message)
+                    }
+                  }}
+                  className="btn btn-danger"
+                  title="Deletar relatório"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
+
+              {podeAvaliarRelatorio(relatorioSelecionado, user) && (
+                <button
+                  type="button"
+                  onClick={() => setModalAvaliacaoAberto(true)}
+                  disabled={enviandoAvaliacao}
+                  className="btn btn-success"
+                >
+                  <CheckCircle size={16} />
+                  {enviandoAvaliacao ? 'Enviando...' : 'Avaliar'}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <VisualizacaoRelatorio
+          relatorio={relatorioSelecionado}
+          user={user}
+          onVisualizarPaciente={() => {}}
+        />
+
+        <ModalAvaliacaoRelatorio
+          isOpen={modalAvaliacaoAberto}
+          relatorio={relatorioSelecionado}
+          isLoading={enviandoAvaliacao}
+          onClose={() => setModalAvaliacaoAberto(false)}
+          onSubmit={async (avaliacao) => {
+            setEnviandoAvaliacao(true)
+            try {
+              const token = getAccessToken()
+              const payload = {
+                status: avaliacao.status,
+                feedback: avaliacao.feedback,
+              }
+
+              if (avaliacao.status === 'APROVADO') {
+                payload.dataAprovacao = new Date().toISOString()
+              }
+
+              const response = await fetch(
+                `${API_BASE}/relatorios/${relatorioSelecionado.id}`,
+                {
+                  method: 'PATCH',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                  },
+                  body: JSON.stringify(payload),
+                }
+              )
+
+              if (!response.ok) {
+                const error = await response.json()
+                throw new Error(error.message || JSON.stringify(error.errors || error))
+              }
+
+              const resultado = await response.json()
+              setRelatorioSelecionado(resultado.data || resultado)
+              setModalAvaliacaoAberto(false)
+              modal.showSuccess(`Relatório ${avaliacao.status.toLowerCase()} com sucesso!`)
+
+              setTimeout(() => window.location.reload(), 1500)
+            } catch (error) {
+              modal.showError('Erro ao salvar avaliação: ' + error.message)
+            } finally {
+              setEnviandoAvaliacao(false)
+            }
+          }}
+        />
+      </div>
+    )}
+
+    {currentPage === 'editar-relatorio' && (
+      <div className="content-section">
+        {carregandoRelatorio ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Carregando relatório para edição...</p>
+          </div>
+        ) : relatorioSelecionado ? (
+          <>
+            <div className="page-header">
+              <button
+                type="button"
+                onClick={() => setCurrentPage('ver-relatorio')}
+                className="back-link"
+              >
+                ← Voltar para visualização
+              </button>
+              <div>
+                <h1 className="page-title">Editar Relatório</h1>
+                <p className="page-subtitle">
+                  REL-{new Date(relatorioSelecionado.dataCriacao).getFullYear()}-
+                  {String(relatorioSelecionado.id).padStart(3, '0')}
+                </p>
               </div>
             </div>
-
-            <VisualizacaoRelatorio 
-              relatorio={relatorioSelecionado} 
-              user={user}
-              onVisualizarPaciente={() => {
-                // TODO: Redirecionar para página de detalhes do paciente
-              }}
-            />
-
-            <ModalAvaliacaoRelatorio
-              isOpen={modalAvaliacaoAberto}
-              relatorio={relatorioSelecionado}
-              isLoading={enviandoAvaliacao}
-              onClose={() => setModalAvaliacaoAberto(false)}
-              onSubmit={async (avaliacao) => {
-                setEnviandoAvaliacao(true)
+            <ReportForm
+              relatorioInicial={relatorioSelecionado}
+              modoEdicao={true}
+              onSubmitReport={async (dados) => {
                 try {
-                  const token = localStorage.getItem('accessToken')
+                  const token = getAccessToken()
                   const payload = {
-                    status: avaliacao.status,
-                    feedback: avaliacao.feedback,
+                    formularioCIF: {
+                      tipoCIF: dados.tipoCIF || 'CIF',
+                      dataPreenchimento: dados.dataPreenchimento,
+                      ultimaAlteracao: new Date().toISOString(),
+                      condicaoSaude: dados.condicaoSaude || '',
+                      condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
+                      factoresPessoais: dados.factoresPessoais || '',
+                      planoTerapeutico: dados.planoTerapeutico || '',
+                      observacoes: dados.observacoes || '',
+                      itens: (Array.isArray(dados.itens) ? dados.itens : []).map((item) => {
+                        const itemData = {
+                          codigoCIF: item.codigoCIF || '',
+                          descricao: item.descricao || item.nome || '',
+                          categoria: item.categoria || 'FUNCAO',
+                        }
+                        if (item.nivel != null) itemData.nivel = item.nivel
+                        if (item.qualificador1 != null) itemData.qualificador1 = item.qualificador1
+                        if (item.tipoQualificador1) itemData.tipoQualificador1 = item.tipoQualificador1
+                        if (item.qualificador2 != null) itemData.qualificador2 = item.qualificador2
+                        if (item.qualificador3 != null) itemData.qualificador3 = item.qualificador3
+                        if (item.qualificador4 != null) itemData.qualificador4 = item.qualificador4
+                        if (item.observacao) itemData.observacao = item.observacao
+                        return itemData
+                      }),
+                    },
                   }
-                  
-                  if (avaliacao.status === 'APROVADO') {
-                    payload.dataAprovacao = new Date().toISOString()
-                  }
-                  
+
                   const response = await fetch(
-                    `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSelecionado.id}`,
+                    `${API_BASE}/relatorios/${relatorioSelecionado.id}`,
                     {
                       method: 'PATCH',
                       headers: {
@@ -328,179 +367,62 @@ const Home = () => {
                       body: JSON.stringify(payload),
                     }
                   )
-                  
+
                   if (!response.ok) {
                     const error = await response.json()
                     throw new Error(error.message || JSON.stringify(error.errors || error))
                   }
-                  
+
                   const resultado = await response.json()
-                  const relatorioAtualizado = resultado.data || resultado
-                  
-                  setRelatorioSelecionado(relatorioAtualizado)
-                  setModalAvaliacaoAberto(false)
-                  
-                  modal.showSuccess(`Relatório ${avaliacao.status.toLowerCase()} com sucesso!`)
-                  
-                  setTimeout(() => {
-                    window.location.reload()
-                  }, 1500)
-                  
+                  modal.showSuccess('Relatório atualizado com sucesso!')
+                  setRelatorioSelecionado(resultado.data || resultado)
+                  setCurrentPage('ver-relatorio')
                 } catch (error) {
-                  modal.showError('Erro ao salvar avaliação: ' + error.message)
-                } finally {
-                  setEnviandoAvaliacao(false)
+                  modal.showError('Erro ao salvar alterações: ' + error.message)
                 }
               }}
             />
-          </div>
-        )}
-
-        {currentPage === 'editar-relatorio' && (
-          <div className="content-section">
-            {carregandoRelatorio ? (
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
-                <p>Carregando relatório para edição...</p>
-              </div>
-            ) : relatorioSelecionado ? (
-              <>
-                <div className="page-header">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCurrentPage('ver-relatorio')
-                    }}
-                    className="back-link"
-                  >
-                    ← Voltar para visualização
-                  </button>
-                  <div>
-                    <h1 className="page-title">Editar Relatório</h1>
-                    <p className="page-subtitle">
-                      REL-{new Date(relatorioSelecionado.dataCriacao).getFullYear()}-{String(relatorioSelecionado.id).padStart(3, '0')}
-                    </p>
-                  </div>
-                </div>
-                <ReportForm 
-                  relatorioInicial={relatorioSelecionado}
-                  modoEdicao={true}
-                  onSubmitReport={async (dados) => {
-                    try {
-                      const token = localStorage.getItem('accessToken')
-                      
-                      const payload = {
-                        formularioCIF: {
-                          tipoCIF: dados.tipoCIF || 'CIF',
-                          dataPreenchimento: dados.dataPreenchimento,
-                          ultimaAlteracao: new Date().toISOString(),
-                          condicaoSaude: dados.condicaoSaude || '',
-                          condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
-                          factoresPessoais: dados.factoresPessoais || '',
-                          planoTerapeutico: dados.planoTerapeutico || '',
-                          observacoes: dados.observacoes || '',
-                          itens: (Array.isArray(dados.itens) ? dados.itens : []).map(item => {
-                            const itemData = {
-                              codigoCIF: item.codigoCIF || '',
-                              descricao: item.descricao || item.nome || '',
-                              categoria: item.categoria || 'FUNCAO',
-                            }
-                            if (item.nivel !== undefined && item.nivel !== null) itemData.nivel = item.nivel
-                            if (item.qualificador1 !== undefined && item.qualificador1 !== null) itemData.qualificador1 = item.qualificador1
-                            if (item.tipoQualificador1) itemData.tipoQualificador1 = item.tipoQualificador1
-                            if (item.qualificador2 !== undefined && item.qualificador2 !== null) itemData.qualificador2 = item.qualificador2
-                            if (item.qualificador3 !== undefined && item.qualificador3 !== null) itemData.qualificador3 = item.qualificador3
-                            if (item.qualificador4 !== undefined && item.qualificador4 !== null) itemData.qualificador4 = item.qualificador4
-                            if (item.observacao) itemData.observacao = item.observacao
-                            return itemData
-                          }),
-                        }
-                      }
-                      
-                      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/relatorios/${relatorioSelecionado.id}`, {
-                        method: 'PATCH',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                        },
-                        body: JSON.stringify(payload),
-                      })
-
-                      if (!response.ok) {
-                        const error = await response.json()
-                        throw new Error(error.message || JSON.stringify(error.errors || error))
-                      }
-
-                      const resultado = await response.json()
-                      modal.showSuccess('Relatório atualizado com sucesso!')
-                      
-                      setRelatorioSelecionado(resultado.data || resultado)
-                      setCurrentPage('ver-relatorio')
-                    } catch (error) {
-                      modal.showError('Erro ao salvar alterações: ' + error.message)
-                    }
-                  }}
-                />
-              </>
-            ) : (
-              <div className="empty-state">
-                <p>Nenhum relatório selecionado para edição</p>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage('relatorios')}
-                  className="btn btn-primary"
-                >
-                  Voltar para lista
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {currentPage === 'avaliar-relatorio' && relatorioSelecionado && (
-          <div className="content-section">
-            <div className="page-header">
-              <button
-                type="button"
-                onClick={() => setCurrentPage('relatorios')}
-                className="back-link"
-              >
-                ← Voltar
-              </button>
-              <h1 className="page-title">Avaliar Relatório</h1>
-            </div>
-            <div className="placeholder-message">
-              <p>Página de avaliação em desenvolvimento</p>
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'pacientes' && (
-          <div className="content-section">
-            <div className="page-header">
-              <h1 className="page-title">Pacientes</h1>
-              <p className="page-subtitle">Gerenciar pacientes</p>
-            </div>
-            <div className="placeholder-message">
-              <p>Página de pacientes em desenvolvimento</p>
-            </div>
-          </div>
-        )}
-
-        {currentPage === 'perfil' && (
-          <div className="content-section">
-            <div className="page-header">
-              <h1 className="page-title">Perfil</h1>
-              <p className="page-subtitle">Suas informações pessoais</p>
-            </div>
-            <div className="placeholder-message">
-              <p>Página de perfil em desenvolvimento</p>
-            </div>
+          </>
+        ) : (
+          <div className="empty-state">
+            <p>Nenhum relatório selecionado para edição</p>
+            <button
+              type="button"
+              onClick={() => setCurrentPage('relatorios')}
+              className="btn btn-primary"
+            >
+              Voltar para lista
+            </button>
           </div>
         )}
       </div>
-    </div>
-  );
-};
+    )}
 
-export default Home;
+    {currentPage === 'pacientes' && (
+      <div className="content-section">
+        <div className="page-header">
+          <h1 className="page-title">Pacientes</h1>
+          <p className="page-subtitle">Gerenciar pacientes</p>
+        </div>
+        <div className="placeholder-message">
+          <p>Página de pacientes em desenvolvimento</p>
+        </div>
+      </div>
+    )}
+
+    {currentPage === 'perfil' && (
+      <div className="content-section">
+        <div className="page-header">
+          <h1 className="page-title">Perfil</h1>
+          <p className="page-subtitle">Suas informações pessoais</p>
+        </div>
+        <div className="placeholder-message">
+          <p>Página de perfil em desenvolvimento</p>
+        </div>
+      </div>
+    )}
+  </Layout>
+)
+}
+
+export default Home 
