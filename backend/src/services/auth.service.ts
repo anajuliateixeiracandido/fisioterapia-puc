@@ -66,6 +66,7 @@ return {
   refreshToken,
   user: {
     uid: fisioterapeuta.uid,
+    fisioterapeutaId: fisioterapeuta.id,
     nomeCompleto: fisioterapeuta.nomeCompleto,
     email: fisioterapeuta.email,
     role: fisioterapeuta.role,

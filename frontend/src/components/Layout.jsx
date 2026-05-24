@@ -3,16 +3,10 @@ import { Menu, Bell, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useModal } from '../contexts/ModalContext'
+import { calcularIniciais } from '../utils/formatadores'
 import SideBar from '../views/home/BarraLateral'
 import Separator from '../views/geral/Separador'
 import '../views/home/Home.css'
-
-function calcularIniciais(nomeCompleto) {
-if (!nomeCompleto) return '?'
-const partes = nomeCompleto.trim().split(' ')
-if (partes.length === 1) return partes[0][0].toUpperCase()
-return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
-}
 
 function Layout({ children, currentPage = '', onNavigate = () => {} }) {
 const { user: dadosAuth, logout } = useAuth()

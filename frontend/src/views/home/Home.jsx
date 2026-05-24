@@ -10,14 +10,8 @@ import { useAuth } from '../../contexts/AuthContext'
 import { getAccessToken } from '../../services/tokenStore'
 import { podeEditarRelatorio, podeDeletarRelatorio, podeAvaliarRelatorio } from '../../utils/permissoes'
 import { obterRelatorio } from '../../services/relatorioService'
+import { calcularIniciais } from '../../utils/formatadores'
 import './Home.css'
-
-function calcularIniciais(nomeCompleto) {
-if (!nomeCompleto) return '?'
-const partes = nomeCompleto.trim().split(' ')
-if (partes.length === 1) return partes[0][0].toUpperCase()
-return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
-}
 
 const StatCard = ({ icon, label, value, colorClass }) => {
 const Icon = icon
@@ -46,11 +40,11 @@ const user = dadosAuth
       coordenador: dadosAuth.coordenador,
       codigoPessoa: dadosAuth.codigoPessoa,
       matricula: dadosAuth.matricula,
+      fisioterapeutaId: dadosAuth.fisioterapeutaId,
       curso: null,
     }
   : null
 
-// TODO: Replace local `currentPage` state with route-based navigation.
 const [currentPage, setCurrentPage] = useState('dashboard')
 const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
 const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
@@ -425,4 +419,4 @@ return (
 )
 }
 
-export default Home 
+export default Home

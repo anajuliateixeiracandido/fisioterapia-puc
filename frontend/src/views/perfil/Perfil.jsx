@@ -52,6 +52,9 @@ return (
         <div>
           <p className="perfil-avatar-nome">{perfil?.nomeCompleto}</p>
           <p className="perfil-avatar-role">{perfil?.role}</p>
+          {perfil?.professor?.coordenador && (
+            <span className="perfil-coordenador-badge">Coordenador</span>
+          )}
         </div>
       </div>
 
