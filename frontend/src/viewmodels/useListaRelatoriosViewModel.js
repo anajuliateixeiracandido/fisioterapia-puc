@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useModal } from '../contexts/ModalContext'
+import { getAccessToken } from '../services/tokenStore'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
 
 export function useListaRelatoriosViewModel() {
   const modal = useModal()
@@ -32,7 +33,7 @@ export function useListaRelatoriosViewModel() {
       if (dataInicio) params.append('dataInicio', dataInicio)
       if (dataFim) params.append('dataFim', dataFim)
 
-      const token = localStorage.getItem('accessToken')
+      const token = getAccessToken()
 
       const res = await fetch(`${API_BASE}/relatorios?${params}`, {
         headers: {
@@ -62,7 +63,7 @@ export function useListaRelatoriosViewModel() {
 
   const handleSalvarRelatorio = async (dadosFormulario) => {
     try {
-      const token = localStorage.getItem('accessToken')
+      const token = getAccessToken()
       
       const itens = Array.isArray(dadosFormulario.itens) ? dadosFormulario.itens : []
       

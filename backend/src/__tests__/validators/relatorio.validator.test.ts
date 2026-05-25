@@ -74,9 +74,7 @@ describe('editarRelatorioSchema', () => {
   })
 
   it('deve aceitar apenas feedback sem status', () => {
-    expect(() =>
-      editarRelatorioSchema.parse({ feedback: 'Comentário adicional' })
-    ).not.toThrow()
+    expect(() => editarRelatorioSchema.parse({ feedback: 'Comentário adicional' })).not.toThrow()
   })
 
   it('deve rejeitar status inválido', () => {
@@ -84,9 +82,7 @@ describe('editarRelatorioSchema', () => {
   })
 
   it('deve aceitar professorResponsavelId positivo', () => {
-    expect(() =>
-      editarRelatorioSchema.parse({ professorResponsavelId: 3 })
-    ).not.toThrow()
+    expect(() => editarRelatorioSchema.parse({ professorResponsavelId: 3 })).not.toThrow()
   })
 
   it('deve aceitar objeto vazio (sem campos)', () => {
@@ -94,15 +90,11 @@ describe('editarRelatorioSchema', () => {
   })
 
   it('deve rejeitar feedback com mais de 1000 caracteres', () => {
-    expect(() =>
-      editarRelatorioSchema.parse({ feedback: 'a'.repeat(1001) })
-    ).toThrow()
+    expect(() => editarRelatorioSchema.parse({ feedback: 'a'.repeat(1001) })).toThrow()
   })
 
   it('deve aceitar formularioCIF opcional', () => {
-    expect(() =>
-      editarRelatorioSchema.parse({ formularioCIF: formularioCIFValido })
-    ).not.toThrow()
+    expect(() => editarRelatorioSchema.parse({ formularioCIF: formularioCIFValido })).not.toThrow()
   })
 })
 
@@ -129,7 +121,14 @@ describe('listarRelatoriosSchema', () => {
   })
 
   it('deve aceitar todos os tipos de ordenação', () => {
-    const campos = ['dataCriacao', 'dataFeedback', 'dataEdicao', 'nomeAluno', 'nomeProfessor', 'nomePaciente']
+    const campos = [
+      'dataCriacao',
+      'dataFeedback',
+      'dataEdicao',
+      'nomeAluno',
+      'nomeProfessor',
+      'nomePaciente',
+    ]
     for (const ordenarPor of campos) {
       expect(() => listarRelatoriosSchema.parse({ ordenarPor })).not.toThrow()
     }
@@ -150,15 +149,11 @@ describe('listarRelatoriosSchema', () => {
   })
 
   it('deve aceitar dataInicio no formato YYYY-MM-DD', () => {
-    expect(() =>
-      listarRelatoriosSchema.parse({ dataInicio: '2026-01-01' })
-    ).not.toThrow()
+    expect(() => listarRelatoriosSchema.parse({ dataInicio: '2026-01-01' })).not.toThrow()
   })
 
   it('deve rejeitar dataInicio em formato inválido', () => {
-    expect(() =>
-      listarRelatoriosSchema.parse({ dataInicio: '01/01/2026' })
-    ).toThrow()
+    expect(() => listarRelatoriosSchema.parse({ dataInicio: '01/01/2026' })).toThrow()
   })
 
   it('deve aceitar todos os tipos de tipo', () => {

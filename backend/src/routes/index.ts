@@ -4,6 +4,8 @@ import pacienteRoutes from './paciente.routes'
 import authRoutes from './auth.routes'
 import relatorioRoutes from './relatorio.routes'
 import cifReferenciaRoutes from './cif-referencia.routes'
+import professorRoutes from './professor.routes'
+import perfilRoutes from './perfil.routes'
 
 const router = Router()
 
@@ -14,5 +16,7 @@ router.use('/fisioterapeuta', fisioterapeutaRoutes)
 router.use('/pacientes', pacienteRoutes)
 router.use('/relatorios', relatorioRoutes)
 router.use('/cif-referencias', cifReferenciaRoutes)
+router.use('/professores', professorRoutes)
+router.use('/me', perfilRoutes)
 
 export default router

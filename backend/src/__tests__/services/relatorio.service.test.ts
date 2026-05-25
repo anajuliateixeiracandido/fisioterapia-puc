@@ -55,7 +55,11 @@ const formularioCIFInput = {
   itens: [],
 }
 
-const usuarioProfessor: TokenPayload = { sub: 'uuid-professor', fisioterapeutaId: 1, role: 'PROFESSOR' }
+const usuarioProfessor: TokenPayload = {
+  sub: 'uuid-professor',
+  fisioterapeutaId: 1,
+  role: 'PROFESSOR',
+}
 const usuarioAluno: TokenPayload = { sub: 'uuid-aluno', fisioterapeutaId: 2, role: 'ALUNO' }
 
 const relatorioBase = {
@@ -93,12 +97,13 @@ describe('cadastrarRelatorio', () => {
     prismaMock.$transaction.mockImplementation(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (fn: any) => {
-      const tx = {
-        formularioCIF: { create: vi.fn().mockResolvedValue({ id: 5 }) },
-        relatorio: { create: vi.fn().mockResolvedValue(relatorioCreado) },
+        const tx = {
+          formularioCIF: { create: vi.fn().mockResolvedValue({ id: 5 }) },
+          relatorio: { create: vi.fn().mockResolvedValue(relatorioCreado) },
+        }
+        return fn(tx)
       }
-      return fn(tx)
-    })
+    )
   })
 
   it('deve criar relatório com status ENVIADO para ALUNO', async () => {
@@ -115,12 +120,13 @@ describe('cadastrarRelatorio', () => {
     prismaMock.$transaction.mockImplementation(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (fn: any) => {
-      const tx = {
-        formularioCIF: { create: vi.fn().mockResolvedValue({ id: 6 }) },
-        relatorio: { create: vi.fn().mockResolvedValue(relatorioCreado) },
+        const tx = {
+          formularioCIF: { create: vi.fn().mockResolvedValue({ id: 6 }) },
+          relatorio: { create: vi.fn().mockResolvedValue(relatorioCreado) },
+        }
+        return fn(tx)
       }
-      return fn(tx)
-    })
+    )
 
     const resultado = await cadastrarRelatorio(
       { pacienteId: 1, formularioCIF: formularioCIFInput },
@@ -138,26 +144,28 @@ describe('cadastrarRelatorio', () => {
     prismaMock.$transaction.mockImplementation(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (fn: any) => {
-      const tx = {
-        formularioCIF: {
-          create: vi.fn().mockImplementation(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            async ({ data }: any) => {
-            dataCapturada = data.dataPreenchimento
-            return { id: 7 }
-          }),
-        },
-        relatorio: {
-          create: vi.fn().mockResolvedValue({
-            id: 3,
-            status: 'APROVADO',
-            dataCriacao: new Date(),
-            formularioCIF: { id: 7, tipoCIF: 'CIF', itens: [], observacoes: null },
-          }),
-        },
+        const tx = {
+          formularioCIF: {
+            create: vi.fn().mockImplementation(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              async ({ data }: any) => {
+                dataCapturada = data.dataPreenchimento
+                return { id: 7 }
+              }
+            ),
+          },
+          relatorio: {
+            create: vi.fn().mockResolvedValue({
+              id: 3,
+              status: 'APROVADO',
+              dataCriacao: new Date(),
+              formularioCIF: { id: 7, tipoCIF: 'CIF', itens: [], observacoes: null },
+            }),
+          },
+        }
+        return fn(tx)
       }
-      return fn(tx)
-    })
+    )
 
     await cadastrarRelatorio(
       { pacienteId: 1, formularioCIF: { ...formularioCIFInput, dataPreenchimento: '10/01/2026' } },
@@ -239,9 +247,9 @@ describe('editarRelatorio', () => {
     })
     prismaMock.professor.findFirst.mockResolvedValue({ id: 10, coordenador: false })
 
-    await expect(
-      editarRelatorio(1, { status: 'NEGADO' }, usuarioProfessor)
-    ).rejects.toMatchObject({ code: 'FEEDBACK_OBRIGATORIO' })
+    await expect(editarRelatorio(1, { status: 'NEGADO' }, usuarioProfessor)).rejects.toMatchObject({
+      code: 'FEEDBACK_OBRIGATORIO',
+    })
   })
 
   it('deve aprovar relatório com status APROVADO e salvar dataAprovacao', async () => {
@@ -318,19 +326,16 @@ describe('editarRelatorio', () => {
     prismaMock.$transaction.mockImplementation(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (fn: any) => {
-      const tx = {
-        itemCIF: { deleteMany: vi.fn().mockResolvedValue({}) },
-        formularioCIF: { update: vi.fn().mockResolvedValue({}) },
-        relatorio: { update: vi.fn().mockResolvedValue(relatorioAtualizado) },
+        const tx = {
+          itemCIF: { deleteMany: vi.fn().mockResolvedValue({}) },
+          formularioCIF: { update: vi.fn().mockResolvedValue({}) },
+          relatorio: { update: vi.fn().mockResolvedValue(relatorioAtualizado) },
+        }
+        return fn(tx)
       }
-      return fn(tx)
-    })
-
-    const resultado = await editarRelatorio(
-      1,
-      { formularioCIF: formularioCIFInput },
-      usuarioAluno
     )
+
+    const resultado = await editarRelatorio(1, { formularioCIF: formularioCIFInput }, usuarioAluno)
 
     expect(resultado.status).toBe('CORRIGIDO')
   })

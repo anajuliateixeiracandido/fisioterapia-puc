@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
+import { getAccessToken } from '../services/tokenStore'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
 
 export function useVisualizacaoRelatorioViewModel(relatorioInicial, user) {
   const [relatorio, setRelatorio] = useState(relatorioInicial)
@@ -14,7 +15,7 @@ export function useVisualizacaoRelatorioViewModel(relatorioInicial, user) {
       setCarregando(true)
       setErro(null)
       try {
-        const token = localStorage.getItem('accessToken')
+        const token = getAccessToken()
         const response = await fetch(`${API_BASE}/relatorios/${relatorioInicial.id}`, {
           headers: {
             'Content-Type': 'application/json',

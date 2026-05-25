@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { fetchCIFReferences } from '../services/cifApi'
+import { getAccessToken } from '../services/tokenStore'
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
 
 const CATEGORIA_MAP = {
   b: 'FUNCAO',
@@ -93,7 +94,7 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
 
   // Buscar pacientes
   useEffect(() => {
-    const token = localStorage.getItem('accessToken')
+    const token = getAccessToken()
     const headers = {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

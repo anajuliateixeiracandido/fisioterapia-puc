@@ -4,17 +4,17 @@ API REST para o sistema de gestão fisioterapêutica da PUC. Construída com Nod
 
 ## Tecnologias
 
-| Pacote              | Uso                                     |
-|---------------------|-----------------------------------------|
-| Express 5           | Framework HTTP                          |
-| TypeScript + tsx    | Linguagem e execução em desenvolvimento |
-| Prisma              | ORM e migrações (PostgreSQL)            |
-| Zod                 | Validação de entrada                    |
-| JSON Web Token      | Access token e refresh token            |
-| bcryptjs            | Hash de senhas                          |
-| Resend              | Envio de e-mails transacionais          |
-| Helmet + CORS       | Segurança HTTP                          |
-| Vitest              | Testes unitários e de integração        |
+| Pacote           | Uso                                     |
+| ---------------- | --------------------------------------- |
+| Express 5        | Framework HTTP                          |
+| TypeScript + tsx | Linguagem e execução em desenvolvimento |
+| Prisma           | ORM e migrações (PostgreSQL)            |
+| Zod              | Validação de entrada                    |
+| JSON Web Token   | Access token e refresh token            |
+| bcryptjs         | Hash de senhas                          |
+| Resend           | Envio de e-mails transacionais          |
+| Helmet + CORS    | Segurança HTTP                          |
+| Vitest           | Testes unitários e de integração        |
 
 ## Estrutura de Pastas
 
@@ -82,48 +82,52 @@ npm start
 
 ## Scripts Disponíveis
 
-| Comando                  | Descrição                                  |
-|--------------------------|--------------------------------------------|
-| `npm run dev`            | Servidor com hot-reload via `tsx watch`    |
-| `npm run build`          | Compila TypeScript para `dist/`            |
-| `npm start`              | Executa o build compilado                  |
-| `npm test`               | Roda todos os testes com Vitest            |
-| `npm run test:watch`     | Testes em modo watch                       |
-| `npm run test:coverage`  | Relatório de cobertura de testes           |
-| `npm run studio`         | Abre o Prisma Studio (visualização do DB)  |
-| `npm run prisma:seed:cif`| Popula tabelas de referência CIF           |
-| `npm run lint`           | Linting com ESLint                         |
-| `npm run format`         | Formatação com Prettier                    |
+| Comando                   | Descrição                                 |
+| ------------------------- | ----------------------------------------- |
+| `npm run dev`             | Servidor com hot-reload via `tsx watch`   |
+| `npm run build`           | Compila TypeScript para `dist/`           |
+| `npm start`               | Executa o build compilado                 |
+| `npm test`                | Roda todos os testes com Vitest           |
+| `npm run test:watch`      | Testes em modo watch                      |
+| `npm run test:coverage`   | Relatório de cobertura de testes          |
+| `npm run studio`          | Abre o Prisma Studio (visualização do DB) |
+| `npm run prisma:seed:cif` | Popula tabelas de referência CIF          |
+| `npm run lint`            | Linting com ESLint                        |
+| `npm run format`          | Formatação com Prettier                   |
 
 ## Endpoints da API
 
 Base URL: `/api/v1`
 
-| Método | Rota                         | Descrição                              | Auth |
-|--------|------------------------------|----------------------------------------|------|
-| GET    | `/health`                    | Health check                           | Não  |
-| POST   | `/auth/login`                | Login (retorna access + refresh token) | Não  |
-| POST   | `/auth/refresh`              | Renova o access token                  | Não  |
-| POST   | `/auth/logout`               | Invalida o refresh token               | Sim  |
-| POST   | `/auth/forgot-password`      | Solicita e-mail de redefinição de senha| Não  |
-| POST   | `/auth/reset-password`       | Redefine a senha via token             | Não  |
-| GET    | `/fisioterapeuta`            | Lista fisioterapeutas                  | Sim  |
-| POST   | `/fisioterapeuta`            | Cria fisioterapeuta                    | Sim  |
-| GET    | `/pacientes`                 | Lista pacientes                        | Sim  |
-| POST   | `/pacientes`                 | Cadastra paciente                      | Sim  |
-| GET    | `/pacientes/:id`             | Detalha paciente                       | Sim  |
-| PUT    | `/pacientes/:id`             | Atualiza paciente                      | Sim  |
-| GET    | `/relatorios`                | Lista relatórios                       | Sim  |
-| POST   | `/relatorios`                | Cria relatório                         | Sim  |
-| GET    | `/relatorios/:id`            | Detalha relatório                      | Sim  |
-| PATCH  | `/relatorios/:id/status`     | Atualiza status do relatório           | Sim  |
-| GET    | `/cif-referencias`           | Lista itens de referência CIF          | Sim  |
+| Método | Rota                      | Descrição                               | Auth |
+| ------ | ------------------------- | --------------------------------------- | ---- |
+| GET    | `/health`                 | Health check                            | Não  |
+| POST   | `/auth/login`             | Login (retorna access + refresh token)  | Não  |
+| POST   | `/auth/refresh-token`     | Renova o access token                   | Não  |
+| POST   | `/auth/logout`            | Invalida o refresh token                | Sim  |
+| POST   | `/auth/forgot-password`   | Solicita e-mail de redefinição de senha | Não  |
+| POST   | `/auth/reset-password`    | Redefine a senha via token              | Não  |
+| POST   | `/fisioterapeuta`         | Cria professor ou aluno                 | Sim  |
+| GET    | `/professores`            | Lista professores                       | Sim  |
+| GET    | `/me`                     | Retorna perfil do usuário autenticado   | Sim  |
+| PATCH  | `/me`                     | Atualiza perfil do usuário autenticado  | Sim  |
+| GET    | `/pacientes`              | Lista pacientes                         | Sim  |
+| POST   | `/pacientes`              | Cadastra paciente                       | Sim  |
+| GET    | `/pacientes/:id`          | Detalha paciente                        | Sim  |
+| GET    | `/relatorios`             | Lista relatórios                        | Sim  |
+| POST   | `/relatorios`             | Cria relatório                          | Sim  |
+| GET    | `/relatorios/:id`         | Detalha relatório                       | Sim  |
+| PATCH  | `/relatorios/:id`         | Edita relatório ou avalia status        | Sim  |
+| DELETE | `/relatorios/:id`         | Deleta relatório                        | Sim  |
+| GET    | `/relatorios/:id/pdf`     | Gera PDF do relatório                   | Sim  |
+| GET    | `/cif-referencias`        | Lista referências CIF                   | Sim  |
+| GET    | `/cif-referencias/:codigo`| Detalha referência CIF por código       | Sim  |
 
 ## Papéis de Usuário
 
-| Papel       | Permissões                                                    |
-|-------------|---------------------------------------------------------------|
-| `ALUNO`     | Cria e edita seus próprios relatórios; acessa seus pacientes  |
+| Papel       | Permissões                                                   |
+| ----------- | ------------------------------------------------------------ |
+| `ALUNO`     | Cria e edita seus próprios relatórios; acessa seus pacientes |
 | `PROFESSOR` | Aprova/nega relatórios dos alunos; acesso amplo              |
 
 ## Modelos Principais

@@ -1,9 +1,9 @@
 import React from 'react';
-import Home from './views/home/Home';
+import Rotas from './routes';
 import './App.css';
 
 function App() {
-  return <Home />;
+  return <Rotas />;
 }
 
 export default App;

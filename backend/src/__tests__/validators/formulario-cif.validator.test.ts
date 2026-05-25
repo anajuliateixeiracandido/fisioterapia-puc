@@ -93,9 +93,7 @@ describe('itemCIFSchema', () => {
   })
 
   it('deve rejeitar qualificador negativo', () => {
-    expect(() =>
-      itemCIFSchema.parse({ ...itemValido, qualificador1: -1 })
-    ).toThrow()
+    expect(() => itemCIFSchema.parse({ ...itemValido, qualificador1: -1 })).toThrow()
   })
 
   it('deve rejeitar nivel negativo', () => {
@@ -132,9 +130,7 @@ describe('formularioCIFSchema', () => {
   })
 
   it('deve rejeitar com tipoCIF errado', () => {
-    expect(() =>
-      formularioCIFSchema.parse({ ...formularioValido, tipoCIF: 'CIF_CJ' })
-    ).toThrow()
+    expect(() => formularioCIFSchema.parse({ ...formularioValido, tipoCIF: 'CIF_CJ' })).toThrow()
   })
 
   it('deve rejeitar data de preenchimento inválida', () => {
