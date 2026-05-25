@@ -14,12 +14,13 @@ const modal = useModal()
 const navigate = useNavigate()
 const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 const [hasNotifications] = useState(true)
+const nomeUsuario = (dadosAuth?.nomeCompleto || dadosAuth?.nome || dadosAuth?.email || 'Usuário').trim() || 'Usuário'
 
 const user = dadosAuth
   ? {
-      nome: dadosAuth.nomeCompleto,
+      nome: nomeUsuario,
       role: dadosAuth.role,
-      initials: calcularIniciais(dadosAuth.nomeCompleto),
+      initials: calcularIniciais(nomeUsuario),
       coordenador: dadosAuth.coordenador,
     }
   : null

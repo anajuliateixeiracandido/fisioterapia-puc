@@ -1,10 +1,10 @@
 import { Router } from 'express'
-import { listar } from '../controllers/fisioterapeuta.controller'
+import { associarCoordenador } from '../controllers/coordenador.controller'
 import { authenticate } from '../middlewares/auth.middleware'
 import { authorize } from '../middlewares/role.middleware'
 
 const router = Router()
 
-router.get('/', authenticate, authorize('PROFESSOR'), listar)
+router.patch('/', authenticate, authorize('PROFESSOR'), associarCoordenador)
 
 export default router
