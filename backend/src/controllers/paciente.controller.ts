@@ -1,10 +1,12 @@
 import { Request, Response, NextFunction } from 'express'
-import { cadastroPacienteSchema } from '../validators/paciente.validator'
-import { AppError } from '../errors/AppError'
+import { cadastroPacienteSchema, listarPacientesSchema } from '../validators/paciente.validator'
 import {
+  buscarPacientePorId,
   cadastrarPaciente,
   listarPacientes,
-  obterPacientePorId,
+  listarPacientesFisioterapeuta,
+  associarPacienteAluno,
+  associarPacienteProfessor,
 } from '../services/paciente.service'
 
 async function cadastrar(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -17,29 +19,86 @@ async function cadastrar(req: Request, res: Response, next: NextFunction): Promi
   }
 }
 
-async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function associarPaciAluno(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const resultado = await listarPacientes(req.user!)
-    res.status(200).json(resultado)
-  } catch (err) {
-    next(err)
-  }
-}
+    const pacienteId = Number(req.params.pacienteId)
+    const alunoId = Number(req.params.alunoId)
 
-async function obterPorId(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const id = parseInt(req.params.id as string)
-
-    if (isNaN(id)) {
-      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    if (Number.isNaN(pacienteId) || Number.isNaN(alunoId)) {
+      res.status(400).json({ code: 'ID_INVALIDO' })
+      return
     }
 
-    const resultado = await obterPacientePorId(id, req.user!)
-
+    const resultado = await associarPacienteAluno(pacienteId, alunoId)
     res.status(200).json(resultado)
   } catch (err) {
     next(err)
   }
 }
 
-export { cadastrar, listar, obterPorId }
+async function associarPaciProfessor(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const pacienteId = Number(req.params.pacienteId);
+    const professorId = req.user!.fisioterapeutaId;
+
+    if (Number.isNaN(pacienteId)) {
+      res.status(400).json({ code: 'ID_INVALIDO' })
+      return
+    }
+
+    const resultado = await associarPacienteProfessor(pacienteId, professorId)
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+
+async function getTodosPacientes(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const filtros = listarPacientesSchema.parse(req.query)
+    const resultado = await listarPacientes(filtros)
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function getPacientesFisioterapeuta(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const filtros = listarPacientesSchema.parse(req.query)
+    const resultado = await listarPacientesFisioterapeuta(req.user!.fisioterapeutaId, req.user!.role, filtros)
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+async function getPacientesID(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const pacienteId = Number(req.params.id)
+
+    if (Number.isNaN(pacienteId)) {
+      res.status(400).json({ code: 'ID_INVALIDO' })
+      return
+    }
+
+    const resultado = await buscarPacientePorId(
+      pacienteId,
+      req.user!.fisioterapeutaId,
+      req.user!.role
+    )
+    res.status(200).json(resultado)
+  } catch (err) {
+    next(err)
+  }
+}
+
+export { 
+  cadastrar, 
+  getTodosPacientes, 
+  getPacientesFisioterapeuta,
+  getPacientesID, 
+  associarPaciProfessor,
+  associarPaciAluno 
+}

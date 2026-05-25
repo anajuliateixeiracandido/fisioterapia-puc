@@ -1,11 +1,38 @@
 import prisma from '../lib/prisma'
+import { Prisma } from '@prisma/client'
 import { AppError } from '../errors/AppError'
-import { CadastroPacienteInput } from '../validators/paciente.validator'
-import { TokenPayload } from '../utils/jwt.utils'
+import { CadastroPacienteInput, ListarPacientesInput } from '../validators/paciente.validator'
 
 function parseDateBR(data: string): Date {
   const [dia, mes, ano] = data.split('/')
   return new Date(`${ano}-${mes}-${dia}`)
+}
+
+function buildBuscaWhere(busca?: string): Prisma.PacienteWhereInput {
+  const termoBusca = busca?.trim()
+
+  if (!termoBusca) {
+    return {}
+  }
+
+  return {
+    OR: [
+      { codigo: { contains: termoBusca, mode: 'insensitive' } },
+      { nomeCompleto: { contains: termoBusca, mode: 'insensitive' } },
+      { cpf: { contains: termoBusca, mode: 'insensitive' } },
+      { email: { contains: termoBusca, mode: 'insensitive' } },
+    ],
+  }
+}
+
+function buildPaginacao(filtros: ListarPacientesInput) {
+  const pagina = filtros.pagina ?? 1
+  const limite = filtros.limite ?? 20
+
+  return {
+    skip: (pagina - 1) * limite,
+    take: limite,
+  }
 }
 
 async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId: number) {
@@ -21,7 +48,9 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
 
   if (dados.matriculaAluno) {
     const aluno = await prisma.aluno.findFirst({
-      where: { matricula: dados.matriculaAluno },
+      where: {
+        matricula: dados.matriculaAluno,
+      },
     })
 
     if (!aluno) {
@@ -43,10 +72,14 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
       alergias: dados.alergias,
       professorId: professor.id,
       ...(alunoId && {
-        alunos: { connect: { id: alunoId } },
+        alunos: {
+          connect: { id: alunoId },
+        },
       }),
       contatosEmergencia: {
-        createMany: { data: dados.contatosEmergencia },
+        createMany: {
+          data: dados.contatosEmergencia,
+        },
       },
     },
     select: {
@@ -62,68 +95,247 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
       professor: {
         select: {
           codigoPessoa: true,
-          fisioterapeuta: { select: { nomeCompleto: true } },
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
         },
       },
       alunos: {
         select: {
           matricula: true,
-          fisioterapeuta: { select: { nomeCompleto: true } },
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
         },
       },
       contatosEmergencia: {
-        select: { nome: true, telefone: true, parentesco: true },
+        select: {
+          nome: true,
+          telefone: true,
+          parentesco: true,
+        },
       },
     },
   })
 }
 
-async function listarPacientes(usuario: TokenPayload) {
-  const where =
-    usuario.role === 'PROFESSOR'
-      ? { professor: { fisioterapeutaId: usuario.fisioterapeutaId } }
-      : { alunos: { some: { fisioterapeuta: { id: usuario.fisioterapeutaId } } } }
+async function associarPacienteAluno(pacienteId: number, alunoId: number) {
+  return prisma.paciente.update({
+    where: { id: pacienteId },
+    data: { alunos: { connect: { id: alunoId } } },
+    select: {
+      codigo: true,
+    },
+  })
+}
+
+async function associarPacienteProfessor(pacienteId: number, professorId: number) {
+  return prisma.paciente.update({
+    where: { id: pacienteId },
+    data: { professorId },
+    select: {
+      codigo: true,
+    },
+  })
+}
+
+async function listarPacientes(filtros: ListarPacientesInput = {}) {
+  const where = buildBuscaWhere(filtros.busca)
+  const paginacao = buildPaginacao(filtros)
 
   return prisma.paciente.findMany({
     where,
+    ...paginacao,
     select: {
-      id: true,
       codigo: true,
       nomeCompleto: true,
       dataNascimento: true,
       sexo: true,
       cpf: true,
       telefone: true,
-    },
-    orderBy: { nomeCompleto: 'asc' },
-  })
-}
-
-async function obterPacientePorId(id: number, _usuario: TokenPayload) {
-  const paciente = await prisma.paciente.findUnique({
-    where: { id },
-    include: {
+      endereco: true,
+      email: true,
+      alergias: true,
       professor: {
         select: {
           codigoPessoa: true,
-          fisioterapeuta: { select: { nomeCompleto: true } },
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
         },
       },
       alunos: {
         select: {
           matricula: true,
-          fisioterapeuta: { select: { nomeCompleto: true } },
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
         },
       },
-      contatosEmergencia: true,
+      contatosEmergencia: {
+        select: {
+          nome: true,
+          telefone: true,
+          parentesco: true,
+        },
+      },
+    },
+  })
+}
+
+async function listarPacientesFisioterapeuta(
+  fisioterapeutaId: number,
+  role: any,
+  filtros: ListarPacientesInput = {}
+) {
+  const whereBase =
+    role === 'ALUNO'
+      ? {
+          alunos: {
+            some: {
+              fisioterapeutaId,
+            },
+          },
+        }
+      : {
+          professor: {
+            fisioterapeutaId,
+          },
+        }
+
+  const where = {
+    ...whereBase,
+    ...buildBuscaWhere(filtros.busca),
+  }
+
+  const paginacao = buildPaginacao(filtros)
+
+  return prisma.paciente.findMany({
+    where,
+    ...paginacao,
+    select: {
+      codigo: true,
+      nomeCompleto: true,
+      dataNascimento: true,
+      sexo: true,
+      cpf: true,
+      telefone: true,
+      endereco: true,
+      email: true,
+      alergias: true,
+      professor: {
+        select: {
+          codigoPessoa: true,
+          fisioterapeuta: {
+            select: { nomeCompleto: true },
+          },
+        },
+      },
+      alunos: {
+        select: {
+          matricula: true,
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
+        },
+      },
+      contatosEmergencia: {
+        select: {
+          nome: true,
+          telefone: true,
+          parentesco: true,
+        },
+      },
+    },
+  })
+}
+
+async function buscarPacientePorId(pacienteId: number, fisioterapeutaId: number, role: any) {
+  const where =
+    role === 'ALUNO'
+      ? {
+          id: pacienteId,
+          alunos: {
+            some: {
+              fisioterapeutaId,
+            },
+          },
+        }
+      : role === 'PROFESSOR'
+        ? {
+            id: pacienteId,
+            professor: {
+              fisioterapeutaId,
+            },
+          }
+        : {
+            id: pacienteId,
+          }
+
+  const paciente = await prisma.paciente.findFirst({
+    where,
+    select: {
+      codigo: true,
+      nomeCompleto: true,
+      dataNascimento: true,
+      sexo: true,
+      cpf: true,
+      telefone: true,
+      endereco: true,
+      email: true,
+      alergias: true,
+      professor: {
+        select: {
+          codigoPessoa: true,
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
+        },
+      },
+      alunos: {
+        select: {
+          matricula: true,
+          fisioterapeuta: {
+            select: {
+              nomeCompleto: true,
+            },
+          },
+        },
+      },
+      contatosEmergencia: {
+        select: {
+          nome: true,
+          telefone: true,
+          parentesco: true,
+        },
+      },
     },
   })
 
   if (!paciente) {
-    throw new AppError(404, 'PACIENTE_NOT_FOUND', 'Paciente não encontrado')
+    throw new AppError(404, 'PACIENTE_NOT_FOUND', 'Paciente nao encontrado')
   }
 
   return paciente
 }
 
-export { cadastrarPaciente, listarPacientes, obterPacientePorId }
+export {
+  cadastrarPaciente,
+  buscarPacientePorId,
+  listarPacientes,
+  listarPacientesFisioterapeuta,
+  associarPacienteAluno,
+  associarPacienteProfessor,
+}
