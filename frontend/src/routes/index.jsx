@@ -6,6 +6,7 @@ import RecuperarSenha from '../views/auth/RecuperarSenha'
 import RedefinirSenha from '../views/auth/RedefinirSenha'
 import CadastroProfessor from '../views/professor/CadastroProfessor'
 import CadastroAluno from '../views/aluno/CadastroAluno'
+import ListaAlunos from '../views/aluno/ListaAlunos'
 import Perfil from '../views/perfil/Perfil'
 
 function RotaProtegida({ children, apenasCoordenador, apenasRole }) {
@@ -41,6 +42,11 @@ return (
       <Route
         path="/professores/cadastro"
         element={<RotaProtegida apenasCoordenador><CadastroProfessor /></RotaProtegida>}
+      />
+
+      <Route
+        path="/alunos"
+        element={<RotaProtegida apenasRole="PROFESSOR"><ListaAlunos /></RotaProtegida>}
       />
 
       <Route

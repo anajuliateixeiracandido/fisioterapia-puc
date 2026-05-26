@@ -6,6 +6,7 @@ import relatorioRoutes from './relatorio.routes'
 import cifReferenciaRoutes from './cif-referencia.routes'
 import professorRoutes from './professor.routes'
 import perfilRoutes from './perfil.routes'
+import alunoRoutes from './aluno.routes'
 
 const router = Router()
 
@@ -17,6 +18,7 @@ router.use('/pacientes', pacienteRoutes)
 router.use('/relatorios', relatorioRoutes)
 router.use('/cif-referencias', cifReferenciaRoutes)
 router.use('/professores', professorRoutes)
+router.use('/alunos', alunoRoutes)
 router.use('/me', perfilRoutes)
 
 export default router
