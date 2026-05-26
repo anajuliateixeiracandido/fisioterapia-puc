@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useModal } from '../contexts/ModalContext'
-import { getAccessToken } from '../services/tokenStore'
-
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
+import api from '../services/api'
 
 export function useListaRelatoriosViewModel() {
   const modal = useModal()
@@ -21,33 +19,21 @@ export function useListaRelatoriosViewModel() {
     setCarregando(true)
     setErro(null)
     try {
-      const params = new URLSearchParams()
-      params.append('page', String(pagina))
-      params.append('limit', '15')
-      params.append('tipo', 'todos')
-
-      if (busca.trim()) {
-        params.append('nomePaciente', busca.trim())
+      const params = {
+        page: pagina,
+        limit: 15,
+        tipo: 'todos',
+        ...(busca.trim() ? { nomePaciente: busca.trim() } : {}),
+        ...(status ? { status } : {}),
+        ...(dataInicio ? { dataInicio } : {}),
+        ...(dataFim ? { dataFim } : {}),
       }
-      if (status) params.append('status', status)
-      if (dataInicio) params.append('dataInicio', dataInicio)
-      if (dataFim) params.append('dataFim', dataFim)
 
-      const token = getAccessToken()
-
-      const res = await fetch(`${API_BASE}/relatorios?${params}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      })
-      if (!res.ok) throw new Error(`Erro ${res.status}: ${res.statusText}`)
-
-      const json = await res.json()
+      const { data: json } = await api.get('/relatorios', { params })
       setRelatorios(json.data ?? [])
       setPagination(json.pagination ?? null)
     } catch (e) {
-      setErro(e.message)
+      setErro(e.response?.data?.message || e.message)
     } finally {
       setCarregando(false)
     }
@@ -63,8 +49,6 @@ export function useListaRelatoriosViewModel() {
 
   const handleSalvarRelatorio = async (dadosFormulario) => {
     try {
-      const token = getAccessToken()
-      
       const itens = Array.isArray(dadosFormulario.itens) ? dadosFormulario.itens : []
       
       const payload = {
@@ -95,30 +79,25 @@ export function useListaRelatoriosViewModel() {
         },
       }
       
-      const response = await fetch(`${API_BASE}/relatorios`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || JSON.stringify(errorData.errors || errorData))
-      }
+      await api.post('/relatorios', payload)
 
       modal.showSuccess('Relatório criado com sucesso!')
       setView('lista')
       fetchRelatorios()
     } catch (error) {
-      modal.showError('Erro ao criar relatório: ' + error.message)
+      modal.showError('Erro ao criar relatório: ' + (error.response?.data?.message || error.message))
     }
   }
 
   const handleMudarPagina = (novaPagina) => {
     setPagina(novaPagina)
+  }
+
+  const limparFiltros = () => {
+    setBusca('')
+    setStatus('')
+    setDataInicio('')
+    setDataFim('')
   }
 
   return {
@@ -142,6 +121,7 @@ export function useListaRelatoriosViewModel() {
     setDataFim,
 
     // Handlers
+    limparFiltros,
     handleSalvarRelatorio,
     handleMudarPagina,
     fetchRelatorios,
