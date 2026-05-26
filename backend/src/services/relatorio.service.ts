@@ -147,19 +147,17 @@ async function editarRelatorio(id: number, dados: EditarRelatorioInput, usuario:
 
   // CASO 0: Edição completa do formulário CIF
   if (dados.formularioCIF) {
-    // Verificar permissões
-    const isProfessor = usuario.role === 'PROFESSOR'
+    // Verificar permissões — apenas o autor pode editar o conteúdo do relatório
     const isAutor = relatorio.fisioterapeutaId === usuario.fisioterapeutaId
     const isAprovado = relatorio.status === 'APROVADO'
 
-    // Professor pode editar sempre, Aluno só se for autor e não estiver aprovado
-    if (!isProfessor && (!isAutor || isAprovado)) {
-      throw new AppError(403, 'FORBIDDEN', 'Você não tem permissão para editar este relatório')
+    if (!isAutor || isAprovado) {
+      throw new AppError(403, 'FORBIDDEN', 'Apenas o autor do relatório pode editá-lo')
     }
 
-    // Determinar novo status baseado no status atual
+    // Se o relatório estava NEGADO, a edição o move para CORRIGIDO
     let novoStatus = relatorio.status
-    if (relatorio.status === 'NEGADO' && !isProfessor) {
+    if (relatorio.status === 'NEGADO') {
       novoStatus = 'CORRIGIDO'
     }
 
@@ -429,19 +427,26 @@ async function listarRelatorios(filtros: ListarRelatoriosInput, usuario: TokenPa
     }
   } else if (tipo === 'todos') {
     if (usuario.role === 'ALUNO') {
+      // Aluno só vê seus próprios relatórios
       where.fisioterapeutaId = usuario.fisioterapeutaId
     } else if (usuario.role === 'PROFESSOR') {
-      const professor = await prisma.professor.findFirst({
-        where: { fisioterapeutaId: usuario.fisioterapeutaId },
-      })
-      if (professor) {
-        if (!professor.coordenador) {
+      if (!usuario.coordenador) {
+        // Professor não-coordenador: seus próprios + relatórios dos seus alunos
+        const professor = await prisma.professor.findFirst({
+          where: { fisioterapeutaId: usuario.fisioterapeutaId },
+          select: { id: true },
+        })
+        if (professor) {
           where.OR = [
             { fisioterapeutaId: usuario.fisioterapeutaId },
-            { professorResponsavelId: professor.id },
+            { fisioterapeuta: { aluno: { professorId: professor.id } } },
           ]
+        } else {
+          // Sem registro de professor — vê apenas os próprios
+          where.fisioterapeutaId = usuario.fisioterapeutaId
         }
       }
+      // Coordenador: sem filtro → vê todos
     }
   }
 

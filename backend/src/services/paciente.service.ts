@@ -78,14 +78,9 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, fisioterapeutaId:
   })
 }
 
-async function listarPacientes(usuario: TokenPayload) {
-  const where =
-    usuario.role === 'PROFESSOR'
-      ? { professor: { fisioterapeutaId: usuario.fisioterapeutaId } }
-      : { alunos: { some: { fisioterapeuta: { id: usuario.fisioterapeutaId } } } }
-
+async function listarPacientes(_usuario: TokenPayload) {
   return prisma.paciente.findMany({
-    where,
+    where: {},
     select: {
       id: true,
       codigo: true,

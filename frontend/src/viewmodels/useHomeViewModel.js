@@ -1,108 +1,85 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useModal } from '../contexts/ModalContext'
-import { getAccessToken } from '../services/tokenStore'
-
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
+import { useAuth } from '../contexts/AuthContext'
+import api from '../services/api'
+import { calcularIniciais } from '../utils/formatadores'
 
 export function useHomeViewModel() {
   const modal = useModal()
-  
-  // MOCK ALUNA - Maria Oliveira (ATIVO)
-  const [user] = useState({
-    nome: 'Maria Oliveira',
-    role: 'ALUNO',
-    initials: 'MO',
-    matricula: 'ALU2024001',
-    curso: 'Fisioterapia',
-    fisioterapeutaId: 2 // ID da aluna
-  })
+  const { user: dadosAuth } = useAuth()
 
-  // MOCK PROFESSOR - Prof. Dr. João Silva (COMENTADO)
-  // const [user] = useState({
-  //   nome: 'Prof. Dr. João Silva',
-  //   role: 'PROFESSOR',
-  //   initials: 'JS',
-  //   codigoPessoa: 'PROF001',
-  //   curso: 'Fisioterapia',
-  //   fisioterapeutaId: 1 // ID do professor
-  // })
+  const user = dadosAuth
+    ? {
+        nome: dadosAuth.nomeCompleto,
+        role: dadosAuth.role,
+        initials: calcularIniciais(dadosAuth.nomeCompleto),
+        coordenador: dadosAuth.coordenador,
+        codigoPessoa: dadosAuth.codigoPessoa,
+        matricula: dadosAuth.matricula,
+        fisioterapeutaId: dadosAuth.fisioterapeutaId,
+        curso: null,
+      }
+    : null
 
   const [hasNotifications] = useState(true)
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [relatorioSeleccionado, setRelatorioSeleccionado] = useState(null)
+  const [stats, setStats] = useState([
+    { label: 'Total de relatórios', value: '—' },
+    { label: 'Aguardando aprovação', value: '—' },
+    { label: 'Aprovados', value: '—' },
+  ])
+
+  useEffect(() => {
+    Promise.all([
+      api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos' } }),
+      api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'ENVIADO' } }),
+      api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'APROVADO' } }),
+    ])
+      .then(([todos, enviados, aprovados]) => {
+        setStats([
+          { label: 'Total de relatórios', value: todos.data?.pagination?.total ?? 0 },
+          { label: 'Aguardando aprovação', value: enviados.data?.pagination?.total ?? 0 },
+          { label: 'Aprovados', value: aprovados.data?.pagination?.total ?? 0 },
+        ])
+      })
+      .catch(() => {})
+  }, [])
 
   const navigateTo = (page) => setCurrentPage(page)
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen)
   const closeSidebar = () => setIsSidebarOpen(false)
 
-  const stats = [
-    { label: 'Total de relatórios', value: 3 },
-    { label: 'Aguardando aprovação', value: 1 },
-    { label: 'Aprovados', value: 2 },
-  ]
-
   const handleEditarRelatorio = async (relatorioId, dados) => {
     try {
-      const token = getAccessToken()
-      const response = await fetch(`${API_BASE}/relatorios/${relatorioId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      const { data: resultado } = await api.patch(`/relatorios/${relatorioId}`, {
+        formularioCIF: {
+          tipoCIF: dados.tipoCIF,
+          dataPreenchimento: dados.dataPreenchimento,
+          condicaoSaude: dados.condicaoSaude,
+          condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
+          factoresPessoais: dados.factoresPessoais,
+          planoTerapeutico: dados.planoTerapeutico,
+          itens: dados.itens,
         },
-        body: JSON.stringify({
-          formularioCIF: {
-            tipoCIF: dados.tipoCIF,
-            dataPreenchimento: dados.dataPreenchimento,
-            condicaoSaude: dados.condicaoSaude,
-            condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
-            factoresPessoais: dados.factoresPessoais,
-            planoTerapeutico: dados.planoTerapeutico,
-            itens: dados.itens,
-          },
-        }),
       })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Erro ao salvar alterações')
-      }
-
-      const resultado = await response.json()
       modal.showSuccess('Relatório atualizado com sucesso!')
-
-      // Atualizar o relatório selecionado com os novos dados
       setRelatorioSeleccionado(resultado.data || resultado)
       setCurrentPage('ver-relatorio')
     } catch (error) {
-      console.error('Erro ao editar relatório:', error)
-      modal.showError('Erro ao salvar alterações: ' + error.message)
+      modal.showError('Erro ao salvar alterações: ' + (error.response?.data?.message || error.message))
     }
   }
 
   const handleDeletarRelatorio = async (relatorio) => {
     try {
-      const token = getAccessToken()
-      const response = await fetch(`${API_BASE}/relatorios/${relatorio.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Erro ao deletar relatório')
-      }
-
+      await api.delete(`/relatorios/${relatorio.id}`)
       modal.showSuccess('Relatório deletado com sucesso!')
       setRelatorioSeleccionado(null)
       setCurrentPage('relatorios')
     } catch (error) {
-      console.error('Erro ao deletar relatório:', error)
-      modal.showError('Erro ao deletar relatório: ' + error.message)
+      modal.showError('Erro ao deletar relatório: ' + (error.response?.data?.message || error.message))
     }
   }
 
