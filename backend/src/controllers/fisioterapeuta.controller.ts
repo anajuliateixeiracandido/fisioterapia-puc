@@ -44,7 +44,10 @@ try {
 
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
 try {
-  const resultado = await listarProfessores()
+  const resultado = await listarProfessores({
+    page: req.query.page ? Number(req.query.page) : undefined,
+    limit: req.query.limit ? Number(req.query.limit) : undefined,
+  })
   res.status(200).json(resultado)
 } catch (err) {
   next(err)

@@ -29,11 +29,11 @@ useEffect(() => {
 const menuItems = [
   { icon: LayoutDashboard, text: 'Dashboard', page: 'dashboard' },
   { icon: FileText, text: 'Relatórios', page: 'relatorios' },
+  ...(user?.coordenador
+    ? [{ icon: UserPlus, text: 'Professores', route: '/professores' }]
+    : []),
   { icon: Users, text: 'Pacientes', page: 'pacientes' },
   { icon: User, text: 'Perfil', route: '/perfil' },
-  ...(user?.role === 'PROFESSOR'
-    ? [{ icon: GraduationCap, text: 'Cadastrar Aluno', route: '/alunos/cadastro' }]
-    : []),
   ...(user?.coordenador
     ? [{ icon: UserPlus, text: 'Cadastrar Professor', route: '/professores/cadastro' }]
     : []),
