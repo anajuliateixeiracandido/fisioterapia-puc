@@ -91,7 +91,13 @@ export function ModalAvaliacaoRelatorio({ isOpen, onClose, relatorio, onSubmit, 
                 {novoStatus === 'NEGADO' && <small style={{ color: '#dc2626' }}> (mínimo 10 caracteres)</small>}
               </label>
               <textarea
-                className={`form-textarea ${errors.feedback ? 'form-textarea--error' : ''}`}
+                className={`form-textarea ${
+                  errors.feedback
+                    ? 'form-textarea--error'
+                    : novoStatus === 'NEGADO' && feedback.trim().length < 10
+                    ? 'form-textarea--invalid'
+                    : ''
+                }`}
                 value={feedback}
                 onChange={(e) => {
                   setFeedback(e.target.value)
@@ -179,7 +185,7 @@ export function ModalAvaliacaoRelatorio({ isOpen, onClose, relatorio, onSubmit, 
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isLoading}
+              disabled={isLoading || (novoStatus === 'NEGADO' && feedback.trim().length < 10)}
             >
               <Send size={18} />
               {isLoading ? 'Enviando...' : 'Enviar Avaliação'}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ClipboardList, Clock, X, Check, Users, Pencil, Trash2, CheckCircle } from 'lucide-react'
+import { ClipboardList, Clock, X, Check, Users, Pencil, Trash2, ArrowLeft } from 'lucide-react'
 import Layout from '../../components/Layout'
 import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
@@ -7,7 +7,7 @@ import { ReportForm } from '../relatorio/FormularioRelatorio'
 import { ModalAvaliacaoRelatorio } from '../relatorio/ModalAvaliacaoRelatorio'
 import { useModal } from '../../contexts/ModalContext'
 import { useAuth } from '../../contexts/AuthContext'
-import { getAccessToken } from '../../services/tokenStore'
+import api from '../../services/api'
 import { podeEditarRelatorio, podeDeletarRelatorio, podeAvaliarRelatorio } from '../../utils/permissoes'
 import { obterRelatorio } from '../../services/relatorioService'
 import { calcularIniciais } from '../../utils/formatadores'
@@ -60,32 +60,26 @@ const [stats, setStats] = useState([
 ])
 const [totalPacientes, setTotalPacientes] = useState('—')
 
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
-
 useEffect(() => {
-  const token = getAccessToken()
-  if (!token) return
-  const headers = { Authorization: `Bearer ${token}` }
-
   Promise.all([
-    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos`, { headers }).then((r) => r.ok ? r.json() : null),
-    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=ENVIADO`, { headers }).then((r) => r.ok ? r.json() : null),
-    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=CORRIGIDO`, { headers }).then((r) => r.ok ? r.json() : null),
-    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=NEGADO`, { headers }).then((r) => r.ok ? r.json() : null),
-    fetch(`${API_BASE}/relatorios?page=1&limit=1&tipo=todos&status=APROVADO`, { headers }).then((r) => r.ok ? r.json() : null),
-    fetch(`${API_BASE}/pacientes?page=1&limit=1`, { headers }).then((r) => r.ok ? r.json() : null),
+    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos' } }),
+    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'ENVIADO' } }),
+    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'CORRIGIDO' } }),
+    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'NEGADO' } }),
+    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'APROVADO' } }),
+    api.get('/pacientes', { params: { page: 1, limit: 1 } }),
   ])
     .then(([todos, enviados, corrigidos, negados, aprovados, pacientesData]) => {
       setStats([
-        { icon: ClipboardList, label: 'Total de relatórios', value: todos?.pagination?.total ?? 0, colorClass: 'stat-blue' },
-        { icon: Clock, label: 'Aguardando aprovação', value: (enviados?.pagination?.total ?? 0) + (corrigidos?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
-        { icon: X, label: 'Negados', value: negados?.pagination?.total ?? 0, colorClass: 'stat-red' },
-        { icon: Check, label: 'Aprovados', value: aprovados?.pagination?.total ?? 0, colorClass: 'stat-green' },
+        { icon: ClipboardList, label: 'Total de relatórios', value: todos.data?.pagination?.total ?? 0, colorClass: 'stat-blue' },
+        { icon: Clock, label: 'Aguardando aprovação', value: (enviados.data?.pagination?.total ?? 0) + (corrigidos.data?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
+        { icon: X, label: 'Negados', value: negados.data?.pagination?.total ?? 0, colorClass: 'stat-red' },
+        { icon: Check, label: 'Aprovados', value: aprovados.data?.pagination?.total ?? 0, colorClass: 'stat-green' },
       ])
       setTotalPacientes(
-        pacientesData?.pagination?.total ??
-        pacientesData?.total ??
-        (Array.isArray(pacientesData) ? pacientesData.length : 0)
+        pacientesData.data?.pagination?.total ??
+        pacientesData.data?.total ??
+        (Array.isArray(pacientesData.data) ? pacientesData.data.length : 0)
       )
     })
     .catch(() => {})
@@ -145,15 +139,12 @@ return (
 
     {currentPage === 'ver-relatorio' && relatorioSelecionado && (
       <div className="content-section">
-        <div className="page-header">
-          <div>
-            <button
-              type="button"
-              onClick={() => setCurrentPage('relatorios')}
-              className="back-link"
-            >
-              ← Voltar para lista de relatórios
-            </button>
+        <VisualizacaoRelatorio
+          relatorio={relatorioSelecionado}
+          user={user}
+          onVoltar={() => setCurrentPage('relatorios')}
+          onVisualizarPaciente={() => {}}
+          acoes={
             <div className="button-group">
               {podeEditarRelatorio(relatorioSelecionado, user) && (
                 <button
@@ -171,10 +162,10 @@ return (
                     }
                   }}
                   disabled={carregandoRelatorio}
-                  className="btn btn-primary"
+                  className="btn-header-action"
+                  title="Editar relatório"
                 >
-                  <Pencil size={16} />
-                  {carregandoRelatorio ? 'Carregando...' : 'Editar'}
+                  <Pencil size={20} />
                 </button>
               )}
 
@@ -189,34 +180,18 @@ return (
                     if (!confirmed) return
 
                     try {
-                      const token = getAccessToken()
-                      const response = await fetch(
-                        `${API_BASE}/relatorios/${relatorioSelecionado.id}`,
-                        {
-                          method: 'DELETE',
-                          headers: {
-                            'Content-Type': 'application/json',
-                            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                          },
-                        }
-                      )
-
-                      if (!response.ok) {
-                        const error = await response.json()
-                        throw new Error(error.message || 'Erro ao deletar relatório')
-                      }
-
+                      await api.delete(`/relatorios/${relatorioSelecionado.id}`)
                       modal.showSuccess('Relatório deletado com sucesso!')
                       setRelatorioSelecionado(null)
                       setCurrentPage('relatorios')
                     } catch (error) {
-                      modal.showError('Erro ao deletar relatório: ' + error.message)
+                      modal.showError('Erro ao deletar relatório: ' + (error.response?.data?.message || error.message))
                     }
                   }}
-                  className="btn btn-danger"
+                  className="btn-header-action btn-header-action--danger"
                   title="Deletar relatório"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={20} />
                 </button>
               )}
 
@@ -225,20 +200,14 @@ return (
                   type="button"
                   onClick={() => setModalAvaliacaoAberto(true)}
                   disabled={enviandoAvaliacao}
-                  className="btn btn-success"
+                  className="btn-header-action btn-header-action--success"
+                  title="Avaliar relatório"
                 >
-                  <CheckCircle size={16} />
-                  {enviandoAvaliacao ? 'Enviando...' : 'Avaliar'}
+                  <ClipboardList size={20} />
                 </button>
               )}
             </div>
-          </div>
-        </div>
-
-        <VisualizacaoRelatorio
-          relatorio={relatorioSelecionado}
-          user={user}
-          onVisualizarPaciente={() => {}}
+          }
         />
 
         <ModalAvaliacaoRelatorio
@@ -249,7 +218,6 @@ return (
           onSubmit={async (avaliacao) => {
             setEnviandoAvaliacao(true)
             try {
-              const token = getAccessToken()
               const payload = {
                 status: avaliacao.status,
                 feedback: avaliacao.feedback,
@@ -259,31 +227,16 @@ return (
                 payload.dataAprovacao = new Date().toISOString()
               }
 
-              const response = await fetch(
-                `${API_BASE}/relatorios/${relatorioSelecionado.id}`,
-                {
-                  method: 'PATCH',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                  },
-                  body: JSON.stringify(payload),
-                }
+              const { data: resultado } = await api.patch(
+                `/relatorios/${relatorioSelecionado.id}`,
+                payload
               )
 
-              if (!response.ok) {
-                const error = await response.json()
-                throw new Error(error.message || JSON.stringify(error.errors || error))
-              }
-
-              const resultado = await response.json()
               setRelatorioSelecionado(resultado.data || resultado)
               setModalAvaliacaoAberto(false)
               modal.showSuccess(`Relatório ${avaliacao.status.toLowerCase()} com sucesso!`)
-
-              setTimeout(() => window.location.reload(), 1500)
             } catch (error) {
-              modal.showError('Erro ao salvar avaliação: ' + error.message)
+              modal.showError('Erro ao salvar avaliação: ' + (error.response?.data?.message || error.message))
             } finally {
               setEnviandoAvaliacao(false)
             }
@@ -307,7 +260,7 @@ return (
                 onClick={() => setCurrentPage('ver-relatorio')}
                 className="back-link"
               >
-                ← Voltar para visualização
+                <ArrowLeft size={18} />
               </button>
               <div>
                 <h1 className="page-title">Editar Relatório</h1>
@@ -322,7 +275,6 @@ return (
               modoEdicao={true}
               onSubmitReport={async (dados) => {
                 try {
-                  const token = getAccessToken()
                   const payload = {
                     formularioCIF: {
                       tipoCIF: dados.tipoCIF || 'CIF',
@@ -351,29 +303,16 @@ return (
                     },
                   }
 
-                  const response = await fetch(
-                    `${API_BASE}/relatorios/${relatorioSelecionado.id}`,
-                    {
-                      method: 'PATCH',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                      },
-                      body: JSON.stringify(payload),
-                    }
+                  const { data: resultado } = await api.patch(
+                    `/relatorios/${relatorioSelecionado.id}`,
+                    payload
                   )
 
-                  if (!response.ok) {
-                    const error = await response.json()
-                    throw new Error(error.message || JSON.stringify(error.errors || error))
-                  }
-
-                  const resultado = await response.json()
                   modal.showSuccess('Relatório atualizado com sucesso!')
                   setRelatorioSelecionado(resultado.data || resultado)
                   setCurrentPage('ver-relatorio')
                 } catch (error) {
-                  modal.showError('Erro ao salvar alterações: ' + error.message)
+                  modal.showError('Erro ao salvar alterações: ' + (error.response?.data?.message || error.message))
                 }
               }}
             />

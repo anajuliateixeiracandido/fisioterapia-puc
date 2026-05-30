@@ -147,6 +147,12 @@
   background: #fef2f2;
 }
 
+.form-textarea--invalid,
+.form-textarea--invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
 .form-error {
   display: flex;
   align-items: center;
