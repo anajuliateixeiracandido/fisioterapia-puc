@@ -1,5 +1,5 @@
 import React from 'react'
-import { User, Calendar, FileText, AlertCircle, CheckCircle, XCircle, Clock, Mail } from 'lucide-react'
+import { User, Calendar, FileText, AlertCircle, CheckCircle, XCircle, Clock, Mail, ArrowLeft } from 'lucide-react'
 import { CIFItemCard } from './CartaoItemCIF'
 import { STATUS_RELATORIO, CIF_TYPES } from '../../constants/relatorio.constants'
 import { formatarData, formatarDataHora, calcularIdade } from '../../utils/formatadores'
@@ -17,7 +17,7 @@ function StatusBadge({ status }) {
   )
 }
 
-export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVisualizarPaciente }) {
+export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVisualizarPaciente, acoes, onVoltar }) {
   const {
     relatorio,
     carregando,
@@ -69,10 +69,16 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
       {/* Header do Relatório */}
       <div className="visualizacao-header">
         <div className="header-info">
-          <div>
-            <h2 className="relatorio-codigo">{codigo}</h2>
-            <StatusBadge status={relatorio.status} />
-          </div>
+          {onVoltar && (
+            <button type="button" className="header-voltar" onClick={onVoltar}>
+              <ArrowLeft size={18} />
+            </button>
+          )}
+          {acoes && <div className="header-acoes">{acoes}</div>}
+        </div>
+        <div>
+          <h2 className="relatorio-codigo">{codigo}</h2>
+          <StatusBadge status={relatorio.status} />
         </div>
         <div className="header-meta">
           <div className="meta-item">
