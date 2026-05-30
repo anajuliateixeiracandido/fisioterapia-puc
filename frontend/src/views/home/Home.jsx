@@ -5,6 +5,7 @@ import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
 import { ReportForm } from '../relatorio/FormularioRelatorio'
 import { ModalAvaliacaoRelatorio } from '../relatorio/ModalAvaliacaoRelatorio'
+import { DetalhesPaciente, ListaPacientes } from '../paciente/Pacientes'
 import { useModal } from '../../contexts/ModalContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { getAccessToken } from '../../services/tokenStore'
@@ -47,6 +48,7 @@ const user = dadosAuth
 
 const [currentPage, setCurrentPage] = useState('dashboard')
 const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
+const [pacienteSelecionadoId, setPacienteSelecionadoId] = useState(null)
 const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
 const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
 const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
@@ -237,7 +239,11 @@ return (
         <VisualizacaoRelatorio
           relatorio={relatorioSelecionado}
           user={user}
-          onVisualizarPaciente={() => {}}
+          onVisualizarPaciente={(paciente) => {
+            if (!paciente?.id) return
+            setPacienteSelecionadoId(paciente.id)
+            setCurrentPage('detalhes-paciente')
+          }}
         />
 
         <ModalAvaliacaoRelatorio
@@ -394,13 +400,21 @@ return (
 
     {currentPage === 'pacientes' && (
       <div className="content-section">
-        <div className="page-header">
-          <h1 className="page-title">Pacientes</h1>
-          <p className="page-subtitle">Gerenciar pacientes</p>
-        </div>
-        <div className="placeholder-message">
-          <p>Página de pacientes em desenvolvimento</p>
-        </div>
+        <ListaPacientes
+          onVerDetalhes={(pacienteId) => {
+            setPacienteSelecionadoId(pacienteId)
+            setCurrentPage('detalhes-paciente')
+          }}
+        />
+      </div>
+    )}
+
+    {currentPage === 'detalhes-paciente' && pacienteSelecionadoId && (
+      <div className="content-section">
+        <DetalhesPaciente
+          pacienteId={pacienteSelecionadoId}
+          onVoltar={() => setCurrentPage('pacientes')}
+        />
       </div>
     )}
 

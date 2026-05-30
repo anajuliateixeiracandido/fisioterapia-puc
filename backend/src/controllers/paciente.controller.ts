@@ -12,7 +12,7 @@ import {
 async function cadastrar(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const dados = cadastroPacienteSchema.parse(req.body)
-    const resultado = await cadastrarPaciente(dados, req.user!.fisioterapeutaId)
+    const resultado = await cadastrarPaciente(dados, req.user!)
     res.status(201).json(resultado)
   } catch (err) {
     next(err)

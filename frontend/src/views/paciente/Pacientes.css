@@ -1,0 +1,503 @@
+.pacientes-page-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 1rem;
+margin-bottom: 2rem;
+}
+
+.pacientes-page-header h1,
+.paciente-details-header h1 {
+font-size: 1.625rem;
+font-weight: 700;
+color: #020617;
+margin: 0;
+}
+
+.pacientes-page-header p,
+.paciente-details-header p {
+font-size: 1rem;
+color: #64748b;
+margin: 0.35rem 0 0;
+}
+
+.paciente-btn {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 0.5rem;
+min-height: 2.75rem;
+padding: 0.65rem 1.25rem;
+border-radius: 0.5rem;
+font-size: 0.95rem;
+font-weight: 600;
+border: 1px solid transparent;
+cursor: pointer;
+transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.paciente-btn:disabled {
+opacity: 0.6;
+cursor: not-allowed;
+}
+
+.paciente-btn-primary {
+background-color: #1e3a8a;
+color: white;
+}
+
+.paciente-btn-primary:hover:not(:disabled) {
+background-color: #1d4ed8;
+}
+
+.paciente-btn-secondary {
+background-color: white;
+color: #020617;
+border-color: #d9dee8;
+}
+
+.paciente-btn-secondary:hover:not(:disabled) {
+background-color: #f8fafc;
+}
+
+.paciente-new-button {
+min-width: 11.5rem;
+}
+
+.pacientes-header-actions {
+display: flex;
+align-items: center;
+justify-content: flex-end;
+gap: 0.75rem;
+flex-wrap: wrap;
+}
+
+.pacientes-scope-select {
+min-height: 2.75rem;
+padding: 0.65rem 0.9rem;
+background-color: white;
+color: #020617;
+border: 1px solid #d9dee8;
+border-radius: 0.5rem;
+font-size: 0.95rem;
+font-weight: 600;
+cursor: pointer;
+outline: none;
+}
+
+.pacientes-scope-select:focus {
+border-color: #1d4ed8;
+}
+
+.pacientes-search-card {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+padding: 1.25rem;
+background-color: white;
+border: 1px solid #d9dee8;
+border-radius: 1rem;
+margin-bottom: 1.75rem;
+}
+
+.pacientes-search-card svg {
+color: #8a94a6;
+flex-shrink: 0;
+}
+
+.pacientes-search-card input {
+width: 100%;
+border: none;
+outline: none;
+background-color: #f2f4f8;
+color: #020617;
+border-radius: 0.625rem;
+padding: 0.85rem 1rem;
+font-size: 1rem;
+}
+
+.pacientes-count {
+color: #64748b;
+font-size: 1rem;
+margin: 0 0 1.5rem;
+}
+
+.pacientes-table-card,
+.paciente-details-card,
+.paciente-reports-card {
+background-color: white;
+border: 1px solid #d9dee8;
+border-radius: 1rem;
+box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08);
+overflow: hidden;
+}
+
+.pacientes-table {
+width: 100%;
+border-collapse: collapse;
+}
+
+.pacientes-table th,
+.pacientes-table td {
+padding: 1.15rem 1.5rem;
+border-bottom: 1px solid #edf0f4;
+text-align: left;
+vertical-align: middle;
+}
+
+.pacientes-table th {
+color: #5d6a7c;
+font-size: 1rem;
+font-weight: 700;
+background-color: #fbfcfe;
+}
+
+.pacientes-table th.paciente-actions-header {
+text-align: center;
+}
+
+.pacientes-table tr:last-child td {
+border-bottom: none;
+}
+
+.paciente-code {
+color: #0445ff;
+font-weight: 600;
+white-space: nowrap;
+}
+
+.paciente-name-cell {
+display: flex;
+align-items: center;
+gap: 0.75rem;
+min-width: 13rem;
+}
+
+.paciente-avatar,
+.paciente-details-avatar {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+border-radius: 50%;
+background-color: #dbeafe;
+color: #1d4ed8;
+flex-shrink: 0;
+}
+
+.paciente-avatar {
+width: 2.25rem;
+height: 2.25rem;
+}
+
+.paciente-actions {
+display: flex;
+justify-content: center;
+gap: 0.5rem;
+}
+
+.paciente-action {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+width: 2.5rem;
+height: 2.5rem;
+border-radius: 0.5rem;
+background-color: white;
+border: 1px solid #bfdbfe;
+cursor: pointer;
+transition: background-color 0.2s, border-color 0.2s;
+}
+
+.paciente-action-view {
+color: #0445ff;
+}
+
+.paciente-action:hover {
+background-color: #f8fafc;
+}
+
+.pacientes-empty {
+padding: 2rem;
+color: #64748b;
+text-align: center;
+}
+
+.pacientes-pagination {
+display: flex;
+align-items: center;
+justify-content: flex-end;
+gap: 1rem;
+margin-top: 1rem;
+color: #64748b;
+}
+
+.paciente-modal-overlay {
+position: fixed;
+inset: 0;
+z-index: 100;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 1rem;
+background-color: rgba(0, 0, 0, 0.5);
+}
+
+.paciente-modal {
+width: min(35rem, 100%);
+background-color: white;
+border-radius: 1rem;
+box-shadow: 0 20px 40px rgba(15, 23, 42, 0.24);
+overflow: hidden;
+}
+
+.paciente-modal-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 1.5rem 1.5rem 1.25rem;
+border-bottom: 1px solid #e5e7eb;
+}
+
+.paciente-modal-header h2 {
+font-size: 1.5rem;
+margin: 0;
+color: #020617;
+}
+
+.paciente-modal-close {
+width: 2rem;
+height: 2rem;
+border: none;
+background: none;
+color: #94a3b8;
+font-size: 1.5rem;
+cursor: pointer;
+}
+
+.paciente-modal-form {
+display: flex;
+flex-direction: column;
+gap: 1rem;
+padding: 1.5rem;
+}
+
+.paciente-field {
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+font-weight: 700;
+color: #020617;
+}
+
+.paciente-field input {
+border: none;
+outline: none;
+background-color: #f2f4f8;
+border-radius: 0.625rem;
+padding: 0.85rem 1rem;
+font-size: 1rem;
+color: #020617;
+}
+
+.paciente-field strong {
+color: #dc2626;
+font-weight: 700;
+}
+
+.paciente-field--error span,
+.paciente-field--error strong {
+color: #dc2626;
+}
+
+.paciente-field--error input {
+border: 1px solid #dc2626;
+background-color: #fef2f2;
+}
+
+.paciente-form-error {
+margin: 0;
+color: #dc2626;
+font-size: 0.9rem;
+}
+
+.paciente-modal-actions {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 1rem;
+margin-top: 1rem;
+}
+
+.paciente-details-header {
+display: flex;
+align-items: center;
+gap: 1.25rem;
+margin-bottom: 1.75rem;
+}
+
+.paciente-back-button {
+width: 2.5rem;
+height: 2.5rem;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+border: none;
+background: none;
+color: #64748b;
+font-size: 1.8rem;
+cursor: pointer;
+}
+
+.paciente-details-card {
+padding: 1.5rem;
+margin-bottom: 1.5rem;
+}
+
+.paciente-details-main {
+display: flex;
+align-items: center;
+gap: 1.25rem;
+margin-bottom: 1.5rem;
+}
+
+.paciente-details-avatar {
+width: 4.5rem;
+height: 4.5rem;
+}
+
+.paciente-details-main h2 {
+font-size: 1.5rem;
+margin: 0 0 0.5rem;
+color: #020617;
+}
+
+.paciente-details-main p {
+margin: 0;
+color: #64748b;
+}
+
+.paciente-details-main span {
+color: #0445ff;
+}
+
+.paciente-details-grid {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 1.25rem;
+}
+
+.paciente-detail-box {
+background-color: #f8fafc;
+border-radius: 0.75rem;
+padding: 1.15rem;
+}
+
+.paciente-detail-box span {
+display: block;
+color: #94a3b8;
+font-size: 0.875rem;
+font-weight: 600;
+text-transform: uppercase;
+margin-bottom: 0.55rem;
+}
+
+.paciente-detail-box strong {
+display: flex;
+align-items: center;
+gap: 0.45rem;
+color: #020617;
+font-size: 1rem;
+}
+
+.paciente-reports-card h2 {
+font-size: 1.5rem;
+padding: 1.5rem;
+margin: 0;
+border-bottom: 1px solid #edf0f4;
+color: #020617;
+}
+
+.paciente-report-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 1rem;
+padding: 1.35rem 1.5rem;
+border-bottom: 1px solid #edf0f4;
+}
+
+.paciente-report-row:last-child {
+border-bottom: none;
+}
+
+.paciente-report-row strong {
+color: #020617;
+}
+
+.paciente-report-row p {
+margin: 0.35rem 0 0;
+color: #64748b;
+}
+
+.paciente-report-empty {
+padding: 1.5rem;
+color: #64748b;
+}
+
+.paciente-status {
+display: inline-flex;
+align-items: center;
+border-radius: 999px;
+padding: 0.35rem 0.8rem;
+font-size: 0.875rem;
+font-weight: 700;
+background-color: #e2e8f0;
+color: #475569;
+}
+
+.paciente-status-aprovado {
+background-color: #dcfce7;
+color: #15803d;
+}
+
+.paciente-status-negado {
+background-color: #fee2e2;
+color: #b91c1c;
+}
+
+.paciente-status-enviado,
+.paciente-status-corrigido {
+background-color: #dbeafe;
+color: #1d4ed8;
+}
+
+@media (max-width: 900px) {
+.pacientes-table-card {
+  overflow-x: auto;
+}
+
+.pacientes-table {
+  min-width: 760px;
+}
+
+.paciente-details-grid {
+  grid-template-columns: 1fr;
+}
+}
+
+@media (max-width: 640px) {
+.pacientes-page-header {
+  flex-direction: column;
+}
+
+.paciente-new-button,
+.paciente-modal-actions,
+.pacientes-header-actions,
+.pacientes-scope-select {
+  width: 100%;
+}
+
+.pacientes-pagination {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+}
