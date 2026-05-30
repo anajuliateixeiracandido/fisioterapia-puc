@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { useModal } from '../contexts/ModalContext'
 import api from '../services/api'
 
+const LIMITE_PROFESSORES_TRANSFERENCIA = 10
+
 function lerUsuarioLocalStorage() {
   try {
     return JSON.parse(localStorage.getItem('user') || '{}')
@@ -28,7 +30,11 @@ function useTransferenciaCoordenadorViewModel() {
 
   const [professores, setProfessores] = useState([])
   const [novoCoordenadorId, setNovoCoordenadorId] = useState('')
+  const [pagina, setPagina] = useState(1)
+  const [totalPaginas, setTotalPaginas] = useState(1)
+  const [totalProfessores, setTotalProfessores] = useState(0)
   const [carregando, setCarregando] = useState(true)
+  const [carregandoMais, setCarregandoMais] = useState(false)
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState(null)
 
@@ -36,16 +42,45 @@ function useTransferenciaCoordenadorViewModel() {
     let ativo = true
 
     async function carregarProfessores() {
-      setCarregando(true)
+      if (pagina === 1) {
+        setCarregando(true)
+      } else {
+        setCarregandoMais(true)
+      }
       setErro(null)
 
       try {
-        const { data } = await api.get('/professores')
-        if (ativo) setProfessores(Array.isArray(data) ? data : [])
+        const { data } = await api.get('/coordenadores/transferencia/professores', {
+          params: {
+            page: pagina,
+            limit: LIMITE_PROFESSORES_TRANSFERENCIA,
+          },
+        })
+
+        if (ativo) {
+          const novosProfessores = Array.isArray(data.items) ? data.items : []
+          setProfessores((professoresAtuais) => {
+            if (pagina === 1) return novosProfessores
+
+            const idsAtuais = new Set(
+              professoresAtuais.map((professor) => professor.fisioterapeutaId)
+            )
+            const professoresSemDuplicidade = novosProfessores.filter(
+              (professor) => !idsAtuais.has(professor.fisioterapeutaId)
+            )
+
+            return [...professoresAtuais, ...professoresSemDuplicidade]
+          })
+          setTotalPaginas(data.pagination?.totalPages || 1)
+          setTotalProfessores(data.pagination?.total || 0)
+        }
       } catch {
         if (ativo) setErro('Erro ao carregar professores.')
       } finally {
-        if (ativo) setCarregando(false)
+        if (ativo) {
+          setCarregando(false)
+          setCarregandoMais(false)
+        }
       }
     }
 
@@ -54,7 +89,7 @@ function useTransferenciaCoordenadorViewModel() {
     return () => {
       ativo = false
     }
-  }, [])
+  }, [pagina])
 
   const novoCoordenador = useMemo(
     () => professores.find((professor) => String(professor.fisioterapeutaId) === novoCoordenadorId),
@@ -117,13 +152,26 @@ function useTransferenciaCoordenadorViewModel() {
     navigate('/')
   }
 
+  function carregarMaisProfessores() {
+    if (carregando || carregandoMais || pagina >= totalPaginas) return
+    setPagina((paginaAtual) => paginaAtual + 1)
+  }
+
+  const temMaisProfessores = pagina < totalPaginas
+
   return {
     professores,
     novoCoordenador,
     novoCoordenadorId,
     setNovoCoordenadorId,
     coordenadorId,
+    pagina,
+    totalPaginas,
+    totalProfessores,
+    temMaisProfessores,
+    carregarMaisProfessores,
     carregando,
+    carregandoMais,
     enviando,
     erro,
     formatarProfessor,
