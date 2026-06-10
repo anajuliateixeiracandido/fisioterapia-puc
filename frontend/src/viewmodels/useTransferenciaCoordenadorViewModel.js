@@ -6,14 +6,6 @@ import api from '../services/api'
 
 const LIMITE_PROFESSORES_TRANSFERENCIA = 10
 
-function lerUsuarioLocalStorage() {
-  try {
-    return JSON.parse(localStorage.getItem('user') || '{}')
-  } catch {
-    return {}
-  }
-}
-
 function formatarProfessor(professor) {
   const codigo = professor.codigoPessoa || 'Sem codigo'
   const nome = professor.fisioterapeuta?.nomeCompleto || 'Nome nao informado'
@@ -23,10 +15,7 @@ function formatarProfessor(professor) {
 function useTransferenciaCoordenadorViewModel() {
   const navigate = useNavigate()
   const modal = useModal()
-  const { user, atualizarUser } = useAuth()
-
-  const usuarioLocal = lerUsuarioLocalStorage()
-  const coordenadorId = user?.fisioterapeutaId ?? usuarioLocal.fisioterapeutaId
+  const { atualizarUser } = useAuth()
 
   const [professores, setProfessores] = useState([])
   const [novoCoordenadorId, setNovoCoordenadorId] = useState('')
@@ -100,11 +89,6 @@ function useTransferenciaCoordenadorViewModel() {
     e.preventDefault()
     setErro(null)
 
-    if (!coordenadorId) {
-      setErro('Nao foi possivel identificar o coordenador atual.')
-      return
-    }
-
     if (!novoCoordenador) {
       setErro('Selecione o novo coordenador.')
       return
@@ -121,7 +105,6 @@ function useTransferenciaCoordenadorViewModel() {
 
     try {
       await api.patch('/coordenadores', {
-        coordenadorId,
         novoCoordenadorId: novoCoordenador.fisioterapeutaId,
       })
 
@@ -164,7 +147,6 @@ function useTransferenciaCoordenadorViewModel() {
     novoCoordenador,
     novoCoordenadorId,
     setNovoCoordenadorId,
-    coordenadorId,
     pagina,
     totalPaginas,
     totalProfessores,

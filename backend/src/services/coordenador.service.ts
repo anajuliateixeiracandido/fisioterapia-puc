@@ -72,7 +72,18 @@ async function listarProfessoresParaTransferencia(
 }
 
 async function transferirCoordenador(coordenadorId: number, novoCoordenadorId: number) {
-  const coordenadorAtualId = Number(coordenadorId)
+  const coordenadorAtualId = await prisma.professor.findFirst({
+    where: { coordenador: true },
+  }).then((professor) => professor?.fisioterapeutaId)
+  
+  if(coordenadorAtualId === undefined) {
+    throw new AppError(404, 'COORDENADOR_ATUAL_NOT_FOUND', 'Coordenador atual não encontrado')
+  }
+
+  if (coordenadorAtualId !== coordenadorId) {
+    throw new AppError(403, 'FORBIDDEN', 'Coordenador autenticado não corresponde ao coordenador atual')
+  }
+
   const novoCoordenadorFisioterapeutaId = Number(novoCoordenadorId)
 
   if (Number.isNaN(coordenadorAtualId) || Number.isNaN(novoCoordenadorFisioterapeutaId)) {
@@ -84,19 +95,12 @@ async function transferirCoordenador(coordenadorId: number, novoCoordenadorId: n
   }
 
   return prisma.$transaction(async (tx) => {
-    const coordenadorAtual = await tx.professor.findUnique({
-      where: { fisioterapeutaId: coordenadorAtualId },
-    })
 
     const novoCoordenador = await tx.professor.findUnique({
       where: { fisioterapeutaId: novoCoordenadorFisioterapeutaId },
     })
 
-    if (!coordenadorAtual) {
-      throw new AppError(404, 'COORDENADOR_NOT_FOUND', 'Coordenador atual não encontrado')
-    }
-
-    if (!coordenadorAtual.coordenador) {
+    if (!coordenadorAtualId) {
       throw new AppError(403, 'COORDENADOR_ATUAL_INVALIDO', 'Professor atual nao e coordenador')
     }
 
@@ -105,7 +109,7 @@ async function transferirCoordenador(coordenadorId: number, novoCoordenadorId: n
     }
 
     await tx.professor.update({
-      where: { id: coordenadorAtual.id },
+      where: { id: coordenadorAtualId },
       data: { coordenador: false },
     })
 
