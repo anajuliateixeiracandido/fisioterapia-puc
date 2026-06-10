@@ -72,44 +72,47 @@ async function listarProfessoresParaTransferencia(
 }
 
 async function transferirCoordenador(coordenadorId: number, novoCoordenadorId: number) {
-  const coordenadorAtualId = await prisma.professor.findFirst({
-    where: { coordenador: true },
-  }).then((professor) => professor?.fisioterapeutaId)
-  
-  if(coordenadorAtualId === undefined) {
-    throw new AppError(404, 'COORDENADOR_ATUAL_NOT_FOUND', 'Coordenador atual não encontrado')
-  }
-
-  if (coordenadorAtualId !== coordenadorId) {
-    throw new AppError(403, 'FORBIDDEN', 'Coordenador autenticado não corresponde ao coordenador atual')
-  }
-
+  const coordenadorAtualNum = Number(coordenadorId)
   const novoCoordenadorFisioterapeutaId = Number(novoCoordenadorId)
 
-  if (Number.isNaN(coordenadorAtualId) || Number.isNaN(novoCoordenadorFisioterapeutaId)) {
+  if (Number.isNaN(coordenadorAtualNum) || Number.isNaN(novoCoordenadorFisioterapeutaId)) {
     throw new AppError(400, 'COORDENADOR_ID_INVALIDO', 'Identificadores de coordenador invalidos')
   }
 
-  if (coordenadorAtualId === novoCoordenadorFisioterapeutaId) {
+  if (coordenadorAtualNum === novoCoordenadorFisioterapeutaId) {
     throw new AppError(400, 'COORDENADOR_IGUAL', 'Novo coordenador deve ser diferente do atual')
   }
 
   return prisma.$transaction(async (tx) => {
+    const coordenadorAtual = await tx.professor.findUnique({
+      where: { fisioterapeutaId: coordenadorAtualNum },
+    })
+
+    // debug logs for test investigation
+    // eslint-disable-next-line no-console
+    console.debug('[transferirCoordenador] coordenadorAtual:', coordenadorAtual)
+
+    if (!coordenadorAtual) {
+      throw new AppError(404, 'COORDENADOR_NOT_FOUND', 'Coordenador atual não encontrado')
+    }
+
+    // eslint-disable-next-line no-console
+    console.debug('[transferirCoordenador] coordenadorAtual.coordenador:', coordenadorAtual.coordenador)
+
+    if (!coordenadorAtual.coordenador) {
+      throw new AppError(403, 'COORDENADOR_ATUAL_INVALIDO', 'Professor atual nao e coordenador')
+    }
 
     const novoCoordenador = await tx.professor.findUnique({
       where: { fisioterapeutaId: novoCoordenadorFisioterapeutaId },
     })
-
-    if (!coordenadorAtualId) {
-      throw new AppError(403, 'COORDENADOR_ATUAL_INVALIDO', 'Professor atual nao e coordenador')
-    }
 
     if (!novoCoordenador) {
       throw new AppError(404, 'NOVO_COORDENADOR_NOT_FOUND', 'Novo coordenador não encontrado')
     }
 
     await tx.professor.update({
-      where: { id: coordenadorAtualId },
+      where: { id: coordenadorAtual.id },
       data: { coordenador: false },
     })
 
