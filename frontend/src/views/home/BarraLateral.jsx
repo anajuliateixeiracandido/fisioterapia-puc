@@ -10,6 +10,7 @@ X,
 ChevronLeft,
 UserPlus,
 GraduationCap,
+ArrowRightLeft,
 } from 'lucide-react'
 import Separator from '../geral/Separador'
 import './BarraLateral.css'
@@ -35,7 +36,10 @@ const menuItems = [
     ? [{ icon: GraduationCap, text: 'Cadastrar Aluno', route: '/alunos/cadastro' }]
     : []),
   ...(user?.coordenador
-    ? [{ icon: UserPlus, text: 'Cadastrar Professor', route: '/professores/cadastro' }]
+    ? [
+        { icon: UserPlus, text: 'Cadastrar Professor', route: '/professores/cadastro' },
+        { icon: ArrowRightLeft, text: 'Transferencia Coordenador', route: '/coordenadores/transferencia' },
+      ]
     : []),
 ]
 

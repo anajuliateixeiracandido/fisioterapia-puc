@@ -31,12 +31,13 @@ return (
 const Home = () => {
 const modal = useModal()
 const { user: dadosAuth } = useAuth()
+const nomeUsuario = (dadosAuth?.nomeCompleto || dadosAuth?.nome || dadosAuth?.email || 'Usuário').trim() || 'Usuário'
 
 const user = dadosAuth
   ? {
-      nome: dadosAuth.nomeCompleto,
+      nome: nomeUsuario,
       role: dadosAuth.role,
-      initials: calcularIniciais(dadosAuth.nomeCompleto),
+      initials: calcularIniciais(nomeUsuario),
       coordenador: dadosAuth.coordenador,
       codigoPessoa: dadosAuth.codigoPessoa,
       matricula: dadosAuth.matricula,
@@ -92,7 +93,7 @@ return (
     {currentPage === 'dashboard' && (
       <div className="content-section">
         <div className="greeting-section">
-          <h1 className="greeting-title">Olá, {user.nome.split(' ')[0]}</h1>
+          <h1 className="greeting-title">Olá, {user.nome.trim().split(' ')[0]}</h1>
           <p className="greeting-subtitle">
             {user.role === 'PROFESSOR'
               ? `Código: ${user.codigoPessoa ?? '—'}`
