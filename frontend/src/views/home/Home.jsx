@@ -50,6 +50,7 @@ const user = dadosAuth
 const [currentPage, setCurrentPage] = useState('dashboard')
 const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
 const [pacienteSelecionadoId, setPacienteSelecionadoId] = useState(null)
+const [escopoPacientes, setEscopoPacientes] = useState('meus')
 const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
 const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
 const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
@@ -341,6 +342,8 @@ return (
     {currentPage === 'pacientes' && (
       <div className="content-section">
         <ListaPacientes
+          escopo={escopoPacientes}
+          onEscopoChange={setEscopoPacientes}
           onVerDetalhes={(pacienteId) => {
             setPacienteSelecionadoId(pacienteId)
             setCurrentPage('detalhes-paciente')

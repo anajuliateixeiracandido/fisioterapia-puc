@@ -283,7 +283,12 @@ async function listarPacientesFisioterapeuta(
   }
 }
 
-async function buscarPacientePorId(pacienteId: number, fisioterapeutaId: number, role: Role) {
+async function buscarPacientePorId(
+  pacienteId: number,
+  fisioterapeutaId: number,
+  role: Role,
+  coordenador = false
+) {
   const where =
     role === 'ALUNO'
       ? {
@@ -294,16 +299,9 @@ async function buscarPacientePorId(pacienteId: number, fisioterapeutaId: number,
             },
           },
         }
-      : role === 'PROFESSOR'
-        ? {
-            id: pacienteId,
-            professor: {
-              fisioterapeutaId,
-            },
-          }
-        : {
-            id: pacienteId,
-          }
+      : {
+          id: pacienteId,
+        }
 
   const paciente = await prisma.paciente.findFirst({
     where,

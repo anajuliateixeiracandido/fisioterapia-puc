@@ -88,16 +88,10 @@ async function transferirCoordenador(coordenadorId: number, novoCoordenadorId: n
       where: { fisioterapeutaId: coordenadorAtualNum },
     })
 
-    // debug logs for test investigation
-    // eslint-disable-next-line no-console
-    console.debug('[transferirCoordenador] coordenadorAtual:', coordenadorAtual)
 
     if (!coordenadorAtual) {
       throw new AppError(404, 'COORDENADOR_NOT_FOUND', 'Coordenador atual não encontrado')
     }
-
-    // eslint-disable-next-line no-console
-    console.debug('[transferirCoordenador] coordenadorAtual.coordenador:', coordenadorAtual.coordenador)
 
     if (!coordenadorAtual.coordenador) {
       throw new AppError(403, 'COORDENADOR_ATUAL_INVALIDO', 'Professor atual nao e coordenador')

@@ -212,6 +212,23 @@ describe('buscarPacientePorId', () => {
     expect(resultado.relatorios).toEqual([])
   })
 
+  it('deve permitir que professor acesse detalhes de paciente listado em todos os pacientes', async () => {
+    prismaMock.paciente.findFirst.mockResolvedValue(pacienteCriado)
+
+    await buscarPacientePorId(
+      1,
+      usuarioProfessor.fisioterapeutaId,
+      usuarioProfessor.role,
+      usuarioProfessor.coordenador
+    )
+
+    expect(prismaMock.paciente.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 1 },
+      })
+    )
+  })
+
   it('deve lancar PACIENTE_NOT_FOUND quando paciente nao existe', async () => {
     prismaMock.paciente.findFirst.mockResolvedValue(null)
 

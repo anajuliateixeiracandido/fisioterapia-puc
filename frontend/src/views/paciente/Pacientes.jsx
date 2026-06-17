@@ -33,6 +33,38 @@ function dataNascimentoValida(data) {
   )
 }
 
+function campoOpcional(valor) {
+  const texto = valor.trim()
+  return texto || undefined
+}
+
+function formatarCpf(valor) {
+  return valor
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+}
+
+function formatarTelefone(valor) {
+  const digitos = valor.replace(/\D/g, '').slice(0, 11)
+
+  if (digitos.length <= 2) {
+    return digitos.replace(/(\d{1,2})/, '($1')
+  }
+
+  if (digitos.length <= 10) {
+    return digitos
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4})(\d)/, '$1-$2')
+  }
+
+  return digitos
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d)/, '$1-$2')
+}
+
 function obterProfessor(paciente) {
   return paciente?.professor?.fisioterapeuta?.nomeCompleto || 'Não informado'
 }
@@ -85,6 +117,73 @@ function ModalNovoPaciente({ aberto, carregando, erro, form, onChange, onClose, 
           </label>
 
           <label className="paciente-field">
+            <span>Sexo</span>
+            <select
+              value={form.sexo}
+              onChange={(e) => onChange({ sexo: e.target.value })}
+              disabled={carregando}
+            >
+              <option value="M">Masculino</option>
+              <option value="F">Feminino</option>
+            </select>
+          </label>
+
+          <label className="paciente-field">
+            <span>CPF</span>
+            <input
+              type="text"
+              placeholder="000.000.000-00"
+              value={form.cpf}
+              onChange={(e) => onChange({ cpf: formatarCpf(e.target.value) })}
+              disabled={carregando}
+            />
+          </label>
+
+          <label className="paciente-field">
+            <span>Telefone</span>
+            <input
+              type="tel"
+              placeholder="(00) 00000-0000"
+              value={form.telefone}
+              onChange={(e) => onChange({ telefone: formatarTelefone(e.target.value) })}
+              disabled={carregando}
+            />
+          </label>
+
+          <label className="paciente-field">
+            <span>Endereço</span>
+            <input
+              type="text"
+              placeholder="Rua, número, bairro, cidade"
+              value={form.endereco}
+              onChange={(e) => onChange({ endereco: e.target.value })}
+              disabled={carregando}
+            />
+          </label>
+
+          <label className="paciente-field">
+            <span>E-mail</span>
+            <input
+              type="email"
+              placeholder="paciente@email.com"
+              value={form.email}
+              onChange={(e) => onChange({ email: e.target.value })}
+              disabled={carregando}
+            />
+          </label>
+
+          <label className="paciente-field">
+            <span>Alergias</span>
+            <textarea
+              rows={3}
+              placeholder="Informe alergias conhecidas"
+              value={form.alergias}
+              onChange={(e) => onChange({ alergias: e.target.value })}
+              disabled={carregando}
+            />
+          </label>
+
+          <label className="paciente-field">
             <span>Diagnóstico (CID-10)</span>
             <input
               type="text"
@@ -94,6 +193,40 @@ function ModalNovoPaciente({ aberto, carregando, erro, form, onChange, onClose, 
               disabled={carregando}
             />
           </label>
+
+          <fieldset className="paciente-fieldset">
+            <legend>Contato de emergência</legend>
+            <label className="paciente-field">
+              <span>Nome</span>
+              <input
+                type="text"
+                placeholder="Nome do contato"
+                value={form.contatoEmergenciaNome}
+                onChange={(e) => onChange({ contatoEmergenciaNome: e.target.value })}
+                disabled={carregando}
+              />
+            </label>
+            <label className="paciente-field">
+              <span>Telefone</span>
+              <input
+                type="tel"
+                placeholder="(00) 00000-0000"
+                value={form.contatoEmergenciaTelefone}
+                onChange={(e) => onChange({ contatoEmergenciaTelefone: formatarTelefone(e.target.value) })}
+                disabled={carregando}
+              />
+            </label>
+            <label className="paciente-field">
+              <span>Parentesco</span>
+              <input
+                type="text"
+                placeholder="Ex: mãe, pai, cônjuge"
+                value={form.contatoEmergenciaParentesco}
+                onChange={(e) => onChange({ contatoEmergenciaParentesco: e.target.value })}
+                disabled={carregando}
+              />
+            </label>
+          </fieldset>
 
           {erro && <p className="paciente-form-error">{erro}</p>}
 
@@ -111,12 +244,12 @@ function ModalNovoPaciente({ aberto, carregando, erro, form, onChange, onClose, 
   )
 }
 
-function ListaPacientes({ onVerDetalhes }) {
+function ListaPacientes({ onVerDetalhes, escopo: escopoControlado, onEscopoChange }) {
   const modal = useModal()
   const { user } = useAuth()
   const [pacientes, setPacientes] = useState([])
   const [busca, setBusca] = useState('')
-  const [escopo, setEscopo] = useState('meus')
+  const [escopoInterno, setEscopoInterno] = useState('meus')
   const [pagina, setPagina] = useState(1)
   const [totalPaginas, setTotalPaginas] = useState(1)
   const [total, setTotal] = useState(0)
@@ -127,10 +260,21 @@ function ListaPacientes({ onVerDetalhes }) {
   const [form, setForm] = useState({
     nomeCompleto: '',
     dataNascimento: '',
+    sexo: 'M',
+    cpf: '',
+    telefone: '',
+    endereco: '',
+    email: '',
+    alergias: '',
     condicaoSaude: '',
+    contatoEmergenciaNome: '',
+    contatoEmergenciaTelefone: '',
+    contatoEmergenciaParentesco: '',
   })
 
-  const podeCadastrar = user?.role === 'PROFESSOR'
+  const podeCadastrar = user?.role === 'PROFESSOR' || user?.role === 'ALUNO'
+  const podeVerTodos = user?.role === 'PROFESSOR'
+  const escopo = escopoControlado ?? escopoInterno
 
   const paramsBusca = useMemo(
     () => ({
@@ -170,7 +314,16 @@ function ListaPacientes({ onVerDetalhes }) {
     setForm({
       nomeCompleto: '',
       dataNascimento: '',
+      sexo: 'M',
+      cpf: '',
+      telefone: '',
+      endereco: '',
+      email: '',
+      alergias: '',
       condicaoSaude: '',
+      contatoEmergenciaNome: '',
+      contatoEmergenciaTelefone: '',
+      contatoEmergenciaParentesco: '',
     })
     setErroCadastro(null)
   }
@@ -189,18 +342,49 @@ function ListaPacientes({ onVerDetalhes }) {
       return
     }
 
+    const contatoEmergenciaPreenchido = [
+      form.contatoEmergenciaNome,
+      form.contatoEmergenciaTelefone,
+      form.contatoEmergenciaParentesco,
+    ].some((valor) => valor.trim())
+
+    if (
+      contatoEmergenciaPreenchido &&
+      (!form.contatoEmergenciaNome.trim() ||
+        !form.contatoEmergenciaTelefone.trim() ||
+        !form.contatoEmergenciaParentesco.trim())
+    ) {
+      setErroCadastro('Preencha todos os dados do contato de emergência.')
+      return
+    }
+
     setSalvando(true)
 
     try {
       await api.post('/pacientes', {
         nomeCompleto: form.nomeCompleto.trim(),
         dataNascimento: formatarDataParaApi(form.dataNascimento),
-        condicaoSaude: form.condicaoSaude.trim() || undefined,
+        sexo: form.sexo,
+        cpf: campoOpcional(form.cpf),
+        telefone: campoOpcional(form.telefone),
+        endereco: campoOpcional(form.endereco),
+        email: campoOpcional(form.email),
+        alergias: campoOpcional(form.alergias),
+        condicaoSaude: campoOpcional(form.condicaoSaude),
+        contatosEmergencia: contatoEmergenciaPreenchido
+          ? [
+              {
+                nome: form.contatoEmergenciaNome.trim(),
+                telefone: form.contatoEmergenciaTelefone.trim(),
+                parentesco: form.contatoEmergenciaParentesco.trim(),
+              },
+            ]
+          : [],
       })
 
       setModalAberto(false)
       limparForm()
-      setEscopo('meus')
+      definirEscopo('meus')
       setPagina(1)
       const { data } = await api.get('/pacientes', {
         params: { page: 1, limit: 10, busca: busca.trim() || undefined },
@@ -221,8 +405,17 @@ function ListaPacientes({ onVerDetalhes }) {
     setPagina(1)
   }
 
+  function definirEscopo(novoEscopo) {
+    if (onEscopoChange) {
+      onEscopoChange(novoEscopo)
+      return
+    }
+
+    setEscopoInterno(novoEscopo)
+  }
+
   function mudarEscopo(novoEscopo) {
-    setEscopo(novoEscopo)
+    definirEscopo(novoEscopo)
     setPagina(1)
   }
 
@@ -234,7 +427,7 @@ function ListaPacientes({ onVerDetalhes }) {
           <p>Seus pacientes cadastrados</p>
         </div>
         <div className="pacientes-header-actions">
-          {podeCadastrar && (
+          {podeVerTodos && (
             <select
               className="pacientes-scope-select"
               value={escopo}

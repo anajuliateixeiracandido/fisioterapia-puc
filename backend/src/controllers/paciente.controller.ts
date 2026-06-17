@@ -86,7 +86,8 @@ async function getPacientesID(req: Request, res: Response, next: NextFunction): 
     const resultado = await buscarPacientePorId(
       pacienteId,
       req.user!.fisioterapeutaId,
-      req.user!.role
+      req.user!.role,
+      req.user!.coordenador
     )
     res.status(200).json(resultado)
   } catch (err) {
