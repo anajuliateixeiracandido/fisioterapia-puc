@@ -4,7 +4,8 @@ import { signAccessToken, verifyAccessToken } from '../../utils/jwt.utils'
 const payloadValido = {
   sub: 'uuid-teste',
   fisioterapeutaId: 1,
-  role: 'PROFESSOR',
+  role: 'PROFESSOR' as const,
+  coordenador: false,
 }
 
 describe('signAccessToken', () => {

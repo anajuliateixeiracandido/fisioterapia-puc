@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const { prismaMock } = vi.hoisted(() => {
   const txMock = {
     professor: {
+      findFirst: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn(),
       count: vi.fn(),
@@ -27,7 +28,7 @@ import {
 } from '../../services/coordenador.service'
 
 beforeEach(() => {
-  vi.clearAllMocks()
+  vi.resetAllMocks()
   prismaMock.$transaction.mockImplementation((callback) => callback(prismaMock.txMock))
 })
 
