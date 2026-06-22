@@ -47,7 +47,11 @@ function handleItemClick(item) {
   if (item.route) {
     navigate(item.route)
   } else {
-    onNavigate(item.page)
+    if (location.pathname === '/') {
+      onNavigate(item.page)
+    } else {
+      navigate('/', { state: { currentPage: item.page } })
+    }
   }
 }
 

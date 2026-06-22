@@ -48,6 +48,9 @@ return (
       <Route
         path="/alunos"
         element={<RotaProtegida apenasRole="PROFESSOR"><ListaAlunos /></RotaProtegida>}
+      />
+
+      <Route
         path="/coordenadores/transferencia"
         element={<RotaProtegida apenasCoordenador><TransferenciaCoordenador /></RotaProtegida>}
       />
