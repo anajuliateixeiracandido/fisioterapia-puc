@@ -287,7 +287,7 @@ async function buscarPacientePorId(
   pacienteId: number,
   fisioterapeutaId: number,
   role: Role,
-  coordenador = false
+  _coordenador = false
 ) {
   const where =
     role === 'ALUNO'
