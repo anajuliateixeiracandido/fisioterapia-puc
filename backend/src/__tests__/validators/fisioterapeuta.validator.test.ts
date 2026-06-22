@@ -58,7 +58,9 @@ describe('professorCadastroSchema', () => {
 
 describe('alunoCadastroSchema', () => {
   it('deve aceitar dados validos sem professor', () => {
-    expect(() => alunoCadastroSchema.parse(dadosAlunoValido)).not.toThrow()
+    expect(() =>
+      alunoCadastroSchema.parse({ ...dadosAlunoValido, codigoPessoaProfessor: '1448023' })
+    ).not.toThrow()
   })
 
   it('deve aceitar dados validos com codigoPessoaProfessor', () => {

@@ -32,7 +32,7 @@
     align-items: center;
     gap: 8px;
     padding: 11px 20px;
-    background: #1e3a5f;
+    background: #3b82f6;
     color: #fff;
     border: none;
     border-radius: 12px;
@@ -45,18 +45,43 @@
 }
 
 .btn-novo-relatorio:hover {
-    background: #162d49;
+    background: #1d4ed8;
     transform: translateY(-1px);
 }
 
 .btn-novo-relatorio--outline {
     background: transparent;
-    border: 2px solid #1e3a5f;
-    color: #1e3a5f;
+    border: 2px solid #1d4ed8;
+    color: #1d4ed8;
 }
 
 .btn-novo-relatorio--outline:hover {
     background: #f0f4f8;
+}
+
+.btn-limpar-filtros {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-family: inherit;
+    cursor: pointer;
+    transition: color 0.15s;
+}
+
+.btn-limpar-filtros:hover {
+    color: #dc2626;
+}
+
+.btn-limpar-filtros--inativo {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.btn-limpar-filtros--inativo:hover {
+    color: #9ca3af;
 }
 
 /* ── Filtros ─────────────────────────────────────────────── */
@@ -483,21 +508,19 @@
 .btn-voltar {
 display: inline-flex;
 align-items: center;
-gap: 6px;
-padding: 8px 14px;
-background: #f3f4f6;
+padding: 4px;
+background: none;
 color: #374151;
-border: 1.5px solid #e5e7eb;
-border-radius: 10px;
-font-size: 0.9rem;
-font-weight: 500;
+border: none;
+border-radius: 6px;
 font-family: inherit;
 cursor: pointer;
-transition: background 0.15s ease;
+margin-left: -2rem;
+transition: color 0.15s ease;
 }
 
 .btn-voltar:hover {
-background: #e5e7eb;
+color: #2563eb;
 }
 
 /* ── Mobile ──────────────────────────────────────────────── */

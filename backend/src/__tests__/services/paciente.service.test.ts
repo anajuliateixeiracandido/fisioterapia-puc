@@ -11,7 +11,8 @@ const { prismaMock } = vi.hoisted(() => {
     paciente: {
       create: vi.fn(),
       findMany: vi.fn(),
-      findUnique: vi.fn(),
+      count: vi.fn(),
+      findFirst: vi.fn(),
     },
   }
   return { prismaMock }
@@ -20,9 +21,9 @@ const { prismaMock } = vi.hoisted(() => {
 vi.mock('../../lib/prisma', () => ({ default: prismaMock }))
 
 import {
+  buscarPacientePorId,
   cadastrarPaciente,
-  listarPacientes,
-  obterPacientePorId,
+  listarPacientesFisioterapeuta,
 } from '../../services/paciente.service'
 import { TokenPayload } from '../../utils/jwt.utils'
 
@@ -32,45 +33,89 @@ beforeEach(() => {
 
 const dadosPaciente = {
   nomeCompleto: 'Paciente Teste',
-  dataNascimento: '2000-01-15T00:00:00.000Z',
+  dataNascimento: '15/01/2000',
   sexo: 'M' as const,
   cpf: '12345678901',
   contatosEmergencia: [{ nome: 'Contato', telefone: '31999999999', parentesco: 'Pai' }],
 }
 
 const pacienteCriado = {
+  id: 1,
   codigo: 'codigo-teste',
   nomeCompleto: dadosPaciente.nomeCompleto,
-  dataNascimento: new Date(dadosPaciente.dataNascimento),
+  dataNascimento: new Date('2000-01-15T00:00:00.000Z'),
   sexo: 'M',
   cpf: dadosPaciente.cpf,
   telefone: null,
   endereco: null,
   email: null,
   alergias: null,
-  // novo shape após refactor: codigoPessoa em professor, matricula em aluno
+  condicaoSaude: null,
   professor: { codigoPessoa: '1448023', fisioterapeuta: { nomeCompleto: 'Professor Teste' } },
   alunos: [],
   contatosEmergencia: dadosPaciente.contatosEmergencia,
 }
 
+const usuarioProfessor: TokenPayload = {
+  sub: 'uuid-professor',
+  fisioterapeutaId: 1,
+  role: 'PROFESSOR',
+  coordenador: false,
+}
+
+const usuarioAluno: TokenPayload = {
+  sub: 'uuid-aluno',
+  fisioterapeutaId: 2,
+  role: 'ALUNO',
+  coordenador: false,
+}
+
 describe('cadastrarPaciente', () => {
-  it('deve lançar FORBIDDEN se fisioterapeuta não for professor', async () => {
+  it('deve lancar FORBIDDEN se professor nao existir', async () => {
     prismaMock.professor.findUnique.mockResolvedValue(null)
 
-    await expect(cadastrarPaciente(dadosPaciente, 1)).rejects.toMatchObject({
+    await expect(cadastrarPaciente(dadosPaciente, usuarioProfessor)).rejects.toMatchObject({
       code: 'FORBIDDEN',
     })
   })
 
-  it('deve cadastrar paciente sem aluno vinculado', async () => {
+  it('deve cadastrar paciente associando apenas ao professor quando usuario e PROFESSOR', async () => {
     prismaMock.professor.findUnique.mockResolvedValue({ id: 1 })
     prismaMock.paciente.create.mockResolvedValue(pacienteCriado)
 
-    const resultado = await cadastrarPaciente(dadosPaciente, 1)
+    const resultado = await cadastrarPaciente(dadosPaciente, usuarioProfessor)
 
     expect(resultado).toHaveProperty('codigo')
     expect(prismaMock.aluno.findFirst).not.toHaveBeenCalled()
+    expect(prismaMock.paciente.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          professorId: 1,
+        }),
+      })
+    )
+  })
+
+  it('deve cadastrar paciente associando aluno e professor do aluno quando usuario e ALUNO', async () => {
+    prismaMock.aluno.findFirst.mockResolvedValue({ id: 2, professorId: 1 })
+    prismaMock.paciente.create.mockResolvedValue({
+      ...pacienteCriado,
+      alunos: [{ matricula: '123456', fisioterapeuta: { nomeCompleto: 'Aluno Teste' } }],
+    })
+
+    const resultado = await cadastrarPaciente(dadosPaciente, usuarioAluno)
+
+    expect(resultado).toHaveProperty('codigo')
+    expect(prismaMock.paciente.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          professorId: 1,
+          alunos: {
+            connect: { id: 2 },
+          },
+        }),
+      })
+    )
   })
 
   it('deve cadastrar paciente com aluno vinculado', async () => {
@@ -78,135 +123,116 @@ describe('cadastrarPaciente', () => {
     prismaMock.aluno.findFirst.mockResolvedValue({ id: 2 })
     prismaMock.paciente.create.mockResolvedValue({
       ...pacienteCriado,
-      alunos: [{ fisioterapeuta: { nomeCompleto: 'Aluno Teste', matricula: '123456' } }],
+      alunos: [{ matricula: '123456', fisioterapeuta: { nomeCompleto: 'Aluno Teste' } }],
     })
 
-    const resultado = await cadastrarPaciente({ ...dadosPaciente, matriculaAluno: '123456' }, 1)
+    const resultado = await cadastrarPaciente(
+      { ...dadosPaciente, matriculaAluno: '123456' },
+      usuarioProfessor
+    )
 
     expect(resultado).toHaveProperty('codigo')
     expect(prismaMock.aluno.findFirst).toHaveBeenCalledOnce()
   })
 
-  it('deve lançar ALUNO_NOT_FOUND para matrícula inexistente', async () => {
+  it('deve lancar ALUNO_NOT_FOUND para matricula inexistente', async () => {
     prismaMock.professor.findUnique.mockResolvedValue({ id: 1 })
     prismaMock.aluno.findFirst.mockResolvedValue(null)
 
     await expect(
-      cadastrarPaciente({ ...dadosPaciente, matriculaAluno: '999999' }, 1)
+      cadastrarPaciente({ ...dadosPaciente, matriculaAluno: '999999' }, usuarioProfessor)
     ).rejects.toMatchObject({ code: 'ALUNO_NOT_FOUND' })
   })
+})
 
-  it('deve buscar aluno diretamente por matricula sem filtro ativo', async () => {
-    prismaMock.professor.findUnique.mockResolvedValue({ id: 1 })
-    prismaMock.aluno.findFirst.mockResolvedValue({ id: 3 })
-    prismaMock.paciente.create.mockResolvedValue({
-      ...pacienteCriado,
-      alunos: [{ matricula: '654321', fisioterapeuta: { nomeCompleto: 'Aluno Teste' } }],
+describe('listarPacientesFisioterapeuta', () => {
+  const listaPacientes = [pacienteCriado]
+
+  it('deve filtrar por professor quando usuario e PROFESSOR', async () => {
+    prismaMock.paciente.findMany.mockResolvedValue(listaPacientes)
+    prismaMock.paciente.count.mockResolvedValue(1)
+
+    const resultado = await listarPacientesFisioterapeuta(1, 'PROFESSOR', {
+      page: 1,
+      limit: 10,
     })
 
-    await cadastrarPaciente({ ...dadosPaciente, matriculaAluno: '654321' }, 1)
-
-    expect(prismaMock.aluno.findFirst).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { matricula: '654321' } })
-    )
-  })
-})
-
-// ─── listarPacientes ──────────────────────────────────────────────────────────
-
-describe('listarPacientes', () => {
-  const usuarioProfessor: TokenPayload = {
-    sub: 'uuid-professor',
-    fisioterapeutaId: 1,
-    role: 'PROFESSOR',
-  }
-  const usuarioAluno: TokenPayload = { sub: 'uuid-aluno', fisioterapeutaId: 2, role: 'ALUNO' }
-
-  const listaPacientes = [
-    {
-      id: 1,
-      codigo: 'P001',
-      nomeCompleto: 'Paciente A',
-      dataNascimento: new Date(),
-      sexo: 'M',
-      cpf: '111',
-      telefone: null,
-    },
-  ]
-
-  it('deve filtrar por professorId quando usuário é PROFESSOR', async () => {
-    prismaMock.paciente.findMany.mockResolvedValue(listaPacientes)
-
-    const resultado = await listarPacientes(usuarioProfessor)
-
     expect(prismaMock.paciente.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { professor: { fisioterapeutaId: 1 } },
+        where: { AND: [{ professor: { fisioterapeutaId: 1 } }, {}] },
+        skip: 0,
+        take: 10,
+        orderBy: { nomeCompleto: 'asc' },
       })
     )
-    expect(resultado).toHaveLength(1)
+    expect(resultado.data).toHaveLength(1)
+    expect(resultado.pagination.total).toBe(1)
   })
 
-  it('deve filtrar por aluno quando usuário é ALUNO', async () => {
+  it('deve filtrar por aluno quando usuario e ALUNO', async () => {
     prismaMock.paciente.findMany.mockResolvedValue(listaPacientes)
+    prismaMock.paciente.count.mockResolvedValue(1)
 
-    await listarPacientes(usuarioAluno)
+    await listarPacientesFisioterapeuta(2, 'ALUNO', {})
 
     expect(prismaMock.paciente.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { alunos: { some: { fisioterapeuta: { id: 2 } } } },
+        where: { AND: [{ alunos: { some: { fisioterapeutaId: 2 } } }, {}] },
       })
     )
   })
 
-  it('deve ordenar por nomeCompleto ascendente', async () => {
+  it('deve buscar por codigo, nome, professor responsavel e data de nascimento', async () => {
     prismaMock.paciente.findMany.mockResolvedValue([])
+    prismaMock.paciente.count.mockResolvedValue(0)
 
-    await listarPacientes(usuarioProfessor)
+    await listarPacientesFisioterapeuta(1, 'PROFESSOR', { busca: '15/01/2000' })
 
     expect(prismaMock.paciente.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ orderBy: { nomeCompleto: 'asc' } })
+      expect.objectContaining({
+        where: expect.objectContaining({
+          AND: expect.arrayContaining([
+            { professor: { fisioterapeutaId: 1 } },
+            expect.objectContaining({ OR: expect.any(Array) }),
+          ]),
+        }),
+      })
     )
   })
 })
 
-// ─── obterPacientePorId ───────────────────────────────────────────────────────
-
-describe('obterPacientePorId', () => {
-  const pacienteCompleto = {
-    id: 1,
-    codigo: 'P001',
-    nomeCompleto: 'Paciente A',
-    dataNascimento: new Date(),
-    sexo: 'M',
-    cpf: '111',
-    professor: { codigoPessoa: '12345', fisioterapeuta: { nomeCompleto: 'Prof' } },
-    alunos: [],
-    contatosEmergencia: [],
-  }
-
+describe('buscarPacientePorId', () => {
   it('deve retornar paciente quando encontrado', async () => {
-    prismaMock.paciente.findUnique.mockResolvedValue(pacienteCompleto)
+    prismaMock.paciente.findFirst.mockResolvedValue(pacienteCriado)
 
-    const resultado = await obterPacientePorId(1, {
-      sub: 'uuid',
-      fisioterapeutaId: 1,
-      role: 'PROFESSOR',
-    } as TokenPayload)
+    const resultado = await buscarPacientePorId(1, 1, 'PROFESSOR')
+
     expect(resultado.id).toBe(1)
-    expect(resultado.nomeCompleto).toBe('Paciente A')
+    expect(resultado.nomeCompleto).toBe('Paciente Teste')
+    expect(resultado.relatorios).toEqual([])
   })
 
-  it('deve lançar PACIENTE_NOT_FOUND quando paciente não existe', async () => {
-    prismaMock.paciente.findUnique.mockResolvedValue(null)
+  it('deve permitir que professor acesse detalhes de paciente listado em todos os pacientes', async () => {
+    prismaMock.paciente.findFirst.mockResolvedValue(pacienteCriado)
 
-    await expect(
-      obterPacientePorId(999, {
-        sub: 'uuid',
-        fisioterapeutaId: 1,
-        role: 'PROFESSOR',
-      } as TokenPayload)
-    ).rejects.toMatchObject({
+    await buscarPacientePorId(
+      1,
+      usuarioProfessor.fisioterapeutaId,
+      usuarioProfessor.role,
+      usuarioProfessor.coordenador
+    )
+
+    expect(prismaMock.paciente.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 1 },
+      })
+    )
+  })
+
+  it('deve lancar PACIENTE_NOT_FOUND quando paciente nao existe', async () => {
+    prismaMock.paciente.findFirst.mockResolvedValue(null)
+
+    await expect(buscarPacientePorId(999, 1, 'PROFESSOR')).rejects.toMatchObject({
       code: 'PACIENTE_NOT_FOUND',
     })
   })

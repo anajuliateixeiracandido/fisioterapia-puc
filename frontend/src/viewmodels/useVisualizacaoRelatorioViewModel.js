@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getAccessToken } from '../services/tokenStore'
-
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
+import api from '../services/api'
 
 export function useVisualizacaoRelatorioViewModel(relatorioInicial, user) {
   const [relatorio, setRelatorio] = useState(relatorioInicial)
@@ -15,30 +13,18 @@ export function useVisualizacaoRelatorioViewModel(relatorioInicial, user) {
       setCarregando(true)
       setErro(null)
       try {
-        const token = getAccessToken()
-        const response = await fetch(`${API_BASE}/relatorios/${relatorioInicial.id}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        })
-
-        if (!response.ok) {
-          throw new Error('Erro ao carregar relatório')
-        }
-
-        const data = await response.json()
+        const { data } = await api.get(`/relatorios/${relatorioInicial.id}`)
         setRelatorio(data.data || data)
       } catch (err) {
         console.error('Erro ao buscar relatório:', err)
-        setErro(err.message)
+        setErro(err.response?.data?.message || err.message)
       } finally {
         setCarregando(false)
       }
     }
 
     buscarRelatorio()
-  }, [relatorioInicial?.id])
+  }, [relatorioInicial?.id, relatorioInicial?.status])
 
   // Verificar permissões
   const calcularPermissoes = () => {
