@@ -12,9 +12,9 @@ function obterEmailAluno(aluno) {
 return aluno.fisioterapeuta?.email ?? '-'
 }
 
-function obterTotalRelatorios(aluno) {
-return aluno.fisioterapeuta?._count?.relatorios ?? 0
-}
+// function obterTotalRelatorios(aluno) {
+// return aluno.fisioterapeuta?._count?.relatorios ?? 0
+// }
 
 function Paginacao({ pagination, onMudarPagina }) {
 if (!pagination || pagination.totalPages <= 1) return null
@@ -169,12 +169,12 @@ return (
                   <th>Aluno</th>
                   <th>Matricula</th>
                   <th>E-mail</th>
-                  <th>Relatorios ativos</th>
+                  {/* <th>Relatorios ativos</th> */}
                 </tr>
               </thead>
               <tbody>
                 {alunos.map((aluno) => {
-                  const totalRelatorios = obterTotalRelatorios(aluno)
+                  // const totalRelatorios = obterTotalRelatorios(aluno)
                   return (
                     <tr key={aluno.id}>
                       <td>
@@ -192,11 +192,11 @@ return (
                           {obterEmailAluno(aluno)}
                         </span>
                       </td>
-                      <td>
+                      {/* <td>
                         <span className="alunos-badge">
                           {totalRelatorios} relatorio(s)
                         </span>
-                      </td>
+                      </td> */}
                     </tr>
                   )
                 })}

@@ -435,6 +435,36 @@ align-items: center;
 gap: 0.45rem;
 color: #020617;
 font-size: 1rem;
+overflow-wrap: anywhere;
+white-space: pre-wrap;
+}
+
+.paciente-detail-box-wide {
+grid-column: span 3;
+}
+
+.paciente-full-details-card,
+.paciente-emergency-card {
+margin-bottom: 1.5rem;
+}
+
+.paciente-full-details-grid {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 1.25rem;
+padding: 1.5rem;
+}
+
+.paciente-emergency-row {
+display: grid;
+grid-template-columns: repeat(3, minmax(0, 1fr));
+gap: 1.25rem;
+padding: 1.5rem;
+border-bottom: 1px solid #edf0f4;
+}
+
+.paciente-emergency-row:last-child {
+border-bottom: none;
 }
 
 .paciente-reports-card h2 {
@@ -509,6 +539,17 @@ color: #1d4ed8;
 }
 
 .paciente-details-grid {
+  grid-template-columns: 1fr;
+}
+
+.paciente-detail-box-wide,
+.paciente-full-details-grid,
+.paciente-emergency-row {
+  grid-column: auto;
+}
+
+.paciente-full-details-grid,
+.paciente-emergency-row {
   grid-template-columns: 1fr;
 }
 
