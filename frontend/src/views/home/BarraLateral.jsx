@@ -30,11 +30,11 @@ useEffect(() => {
 const menuItems = [
   { icon: LayoutDashboard, text: 'Dashboard', page: 'dashboard' },
   { icon: FileText, text: 'Relatórios', page: 'relatorios' },
+  ...(user?.role === 'PROFESSOR'
+    ? [{ icon: GraduationCap, text: 'Alunos', route: '/alunos' }]
+    : []),
   { icon: Users, text: 'Pacientes', page: 'pacientes' },
   { icon: User, text: 'Perfil', route: '/perfil' },
-  ...(user?.role === 'PROFESSOR'
-    ? [{ icon: GraduationCap, text: 'Cadastrar Aluno', route: '/alunos/cadastro' }]
-    : []),
   ...(user?.coordenador
     ? [
         { icon: UserPlus, text: 'Cadastrar Professor', route: '/professores/cadastro' },
@@ -47,7 +47,11 @@ function handleItemClick(item) {
   if (item.route) {
     navigate(item.route)
   } else {
-    onNavigate(item.page)
+    if (location.pathname === '/') {
+      onNavigate(item.page)
+    } else {
+      navigate('/', { state: { currentPage: item.page } })
+    }
   }
 }
 

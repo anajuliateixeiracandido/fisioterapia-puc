@@ -1,4 +1,4 @@
-import { Eye, EyeOff, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 import Layout from '../../components/Layout'
 import useCadastroAlunoViewModel from '../../viewmodels/useCadastroAlunoViewModel'
 import './CadastroAluno.css'
@@ -17,35 +17,9 @@ const {
   mostrarConfirmarSenha, setMostrarConfirmarSenha,
   carregando,
   erro,
-  sucesso,
   handleSubmit,
-  cadastrarNovo,
   voltar,
 } = useCadastroAlunoViewModel()
-
-if (sucesso) {
-  return (
-    <Layout>
-      <div className="content-section">
-        <div className="cadastro-sucesso">
-          <CheckCircle size={48} color="#22c55e" />
-          <h1 className="cadastro-sucesso-titulo">Aluno cadastrado</h1>
-          <p className="cadastro-sucesso-descricao">
-            O aluno foi cadastrado com sucesso no sistema.
-          </p>
-          <div className="cadastro-sucesso-acoes">
-            <button type="button" className="btn-cadastro-primary" onClick={cadastrarNovo}>
-              Cadastrar outro aluno
-            </button>
-            <button type="button" className="btn-cadastro-secondary" onClick={voltar}>
-              Voltar para o início
-            </button>
-          </div>
-        </div>
-      </div>
-    </Layout>
-  )
-}
 
 return (
   <Layout>

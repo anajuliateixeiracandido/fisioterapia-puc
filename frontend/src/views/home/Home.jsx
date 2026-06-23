@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { ClipboardList, Clock, X, Check, Users, Pencil, Trash2, ArrowLeft } from 'lucide-react'
 import Layout from '../../components/Layout'
 import { ListaRelatorios } from '../relatorio/ListaRelatorios'
@@ -31,6 +32,7 @@ return (
 
 const Home = () => {
 const modal = useModal()
+const location = useLocation()
 const { user: dadosAuth } = useAuth()
 const nomeUsuario = (dadosAuth?.nomeCompleto || dadosAuth?.nome || dadosAuth?.email || 'Usuário').trim() || 'Usuário'
 
@@ -47,7 +49,10 @@ const user = dadosAuth
     }
   : null
 
-const [currentPage, setCurrentPage] = useState('dashboard')
+const paginaInicial = ['dashboard', 'relatorios', 'pacientes'].includes(location.state?.currentPage)
+  ? location.state.currentPage
+  : 'dashboard'
+const [currentPage, setCurrentPage] = useState(paginaInicial)
 const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
 const [pacienteSelecionadoId, setPacienteSelecionadoId] = useState(null)
 const [escopoPacientes, setEscopoPacientes] = useState('meus')
@@ -62,6 +67,12 @@ const [stats, setStats] = useState([
   { icon: Check, label: 'Aprovados', value: '—', colorClass: 'stat-green' },
 ])
 const [totalPacientes, setTotalPacientes] = useState('—')
+
+useEffect(() => {
+  if (['dashboard', 'relatorios', 'pacientes'].includes(location.state?.currentPage)) {
+    setCurrentPage(location.state.currentPage)
+  }
+}, [location.state])
 
 useEffect(() => {
   Promise.all([
@@ -86,7 +97,6 @@ useEffect(() => {
       )
     })
     .catch(() => {})
-  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [])
 
 if (!user) return null

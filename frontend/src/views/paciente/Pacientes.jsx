@@ -69,6 +69,28 @@ function obterProfessor(paciente) {
   return paciente?.professor?.fisioterapeuta?.nomeCompleto || 'Não informado'
 }
 
+function formatarSexo(sexo) {
+  if (sexo === 'M') return 'Masculino'
+  if (sexo === 'F') return 'Feminino'
+  return 'Nao informado'
+}
+
+function exibirValor(valor) {
+  if (valor === null || valor === undefined) return 'Nao informado'
+
+  const texto = String(valor).trim()
+  return texto || 'Nao informado'
+}
+
+function DetalhePacienteCampo({ titulo, children, destaque = false }) {
+  return (
+    <div className={`paciente-detail-box ${destaque ? 'paciente-detail-box-wide' : ''}`}>
+      <span>{titulo}</span>
+      <strong>{children}</strong>
+    </div>
+  )
+}
+
 function ModalNovoPaciente({ aberto, carregando, erro, form, onChange, onClose, onSubmit }) {
   if (!aberto) return null
 
@@ -590,6 +612,7 @@ function DetalhesPaciente({ pacienteId, onVoltar }) {
   }
 
   const relatorios = Array.isArray(paciente.relatorios) ? paciente.relatorios : []
+  const contatosEmergencia = Array.isArray(paciente.contatosEmergencia) ? paciente.contatosEmergencia : []
 
   return (
     <>
@@ -616,45 +639,47 @@ function DetalhesPaciente({ pacienteId, onVoltar }) {
           </div>
         </div>
 
-        <div className="paciente-details-grid">
-          <div className="paciente-detail-box">
-            <span>Data de nascimento</span>
-            <strong>
+      </section>
+
+      <section className="paciente-reports-card paciente-full-details-card">
+        <h2>Dados cadastrados</h2>
+        <div className="paciente-full-details-grid">
+          <DetalhePacienteCampo titulo="Nome completo" destaque>
+            {exibirValor(paciente.nomeCompleto)}
+          </DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Data de nascimento">
+            <>
               <Calendar size={16} />
               {formatarData(paciente.dataNascimento)}
-            </strong>
-          </div>
-          <div className="paciente-detail-box">
-            <span>Professor responsável</span>
-            <strong>{obterProfessor(paciente)}</strong>
-          </div>
-          <div className="paciente-detail-box">
-            <span>Diagnóstico (CID-10)</span>
-            <strong>{paciente.condicaoSaude || 'Não informado'}</strong>
-          </div>
+            </>
+          </DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Sexo">{formatarSexo(paciente.sexo)}</DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="CPF">{exibirValor(paciente.cpf)}</DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Telefone">{exibirValor(paciente.telefone)}</DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="E-mail">{exibirValor(paciente.email)}</DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Professor responsavel">{obterProfessor(paciente)}</DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Endereco" destaque>
+            {exibirValor(paciente.endereco)}
+          </DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Diagnostico (CID-10)" destaque>
+            {exibirValor(paciente.condicaoSaude)}
+          </DetalhePacienteCampo>
+          <DetalhePacienteCampo titulo="Alergias" destaque>
+            {exibirValor(paciente.alergias)}
+          </DetalhePacienteCampo>
         </div>
       </section>
 
-      <section className="paciente-reports-card">
-        <h2>Relatórios ({relatorios.length})</h2>
-        {relatorios.length === 0 ? (
-          <div className="paciente-report-empty">Nenhum relatório encontrado.</div>
+      <section className="paciente-reports-card paciente-emergency-card">
+        <h2>Contato de emergencia</h2>
+        {contatosEmergencia.length === 0 ? (
+          <div className="paciente-report-empty">Nenhum contato de emergencia informado.</div>
         ) : (
-          relatorios.map((relatorio) => (
-            <div className="paciente-report-row" key={relatorio.id}>
-              <div>
-                <strong>
-                  REL-{new Date(relatorio.dataCriacao).getFullYear()}-
-                  {String(relatorio.id).padStart(3, '0')}
-                </strong>
-                <p>
-                  {relatorio.fisioterapeuta?.nomeCompleto || 'Autor não informado'} -{' '}
-                  {formatarData(relatorio.dataCriacao)}
-                </p>
-              </div>
-              <span className={`paciente-status paciente-status-${relatorio.status?.toLowerCase()}`}>
-                {relatorio.status}
-              </span>
+          contatosEmergencia.map((contato, index) => (
+            <div className="paciente-emergency-row" key={`${contato.nome}-${contato.telefone}-${index}`}>
+              <DetalhePacienteCampo titulo="Nome">{exibirValor(contato.nome)}</DetalhePacienteCampo>
+              <DetalhePacienteCampo titulo="Telefone">{exibirValor(contato.telefone)}</DetalhePacienteCampo>
+              <DetalhePacienteCampo titulo="Parentesco">{exibirValor(contato.parentesco)}</DetalhePacienteCampo>
             </div>
           ))
         )}

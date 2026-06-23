@@ -5,6 +5,7 @@ import coordenadorRoutes from './coordenador.routes'
 import fisioterapeutaRoutes from './fisioterapeuta.routes'
 import pacienteRoutes from './paciente.routes'
 import perfilRoutes from './perfil.routes'
+import alunoRoutes from './aluno.routes'
 import professorRoutes from './professor.routes'
 import relatorioRoutes from './relatorio.routes'
 
@@ -14,6 +15,8 @@ router.get('/health', (_req: Request, res: Response) => res.json({ ok: true }))
 
 router.use('/auth', authRoutes)
 router.use('/cif-referencias', cifReferenciaRoutes)
+router.use('/professores', professorRoutes)
+router.use('/alunos', alunoRoutes)
 router.use('/coordenadores', coordenadorRoutes)
 router.use('/fisioterapeuta', fisioterapeutaRoutes)
 router.use('/me', perfilRoutes)

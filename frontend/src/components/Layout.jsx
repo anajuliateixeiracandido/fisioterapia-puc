@@ -57,11 +57,14 @@ return (
           <Menu size={24} />
         </button>
         <div className="header-spacer" />
-
-        <button className="icon-button notification-button">
-          <Bell size={20} />
-          {hasNotifications && <span className="notification-badge"></span>}
-        </button>
+        {
+          /*
+                <button className="icon-button notification-button">
+                  <Bell size={20} />
+                  {hasNotifications && <span className="notification-badge"></span>}
+                </button>
+        */
+        }
 
         <div
           className="header-profile"
