@@ -1,20 +1,17 @@
 // Funções de verificação de permissões para relatórios
 export function podeEditarRelatorio(relatorio, user) {
-  const isProfessor = user?.role === 'PROFESSOR'
-  const isAluno = user?.role === 'ALUNO'
   const isAutor = relatorio?.fisioterapeuta?.id === user?.fisioterapeutaId
   const isAprovado = relatorio?.status === 'APROVADO'
 
-  return (isProfessor || (isAluno && isAutor)) && !isAprovado
+  // Apenas o autor do relatório pode editá-lo, e somente se não estiver aprovado
+  return isAutor && !isAprovado
 }
 
 export function podeDeletarRelatorio(relatorio, user) {
-  const isProfessor = user?.role === 'PROFESSOR'
-  const isAluno = user?.role === 'ALUNO'
   const isAutor = relatorio?.fisioterapeuta?.id === user?.fisioterapeutaId
-  const isAprovado = relatorio?.status === 'APROVADO'
 
-  return (isProfessor || (isAluno && isAutor)) && !isAprovado
+  // Apenas o autor pode deletar o seu próprio relatório
+  return isAutor
 }
 
 export function podeAvaliarRelatorio(relatorio, user) {

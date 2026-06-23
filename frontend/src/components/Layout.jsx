@@ -14,12 +14,13 @@ const modal = useModal()
 const navigate = useNavigate()
 const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 const [hasNotifications] = useState(true)
+const nomeUsuario = (dadosAuth?.nomeCompleto || dadosAuth?.nome || dadosAuth?.email || 'Usuário').trim() || 'Usuário'
 
 const user = dadosAuth
   ? {
-      nome: dadosAuth.nomeCompleto,
+      nome: nomeUsuario,
       role: dadosAuth.role,
-      initials: calcularIniciais(dadosAuth.nomeCompleto),
+      initials: calcularIniciais(nomeUsuario),
       coordenador: dadosAuth.coordenador,
     }
   : null
@@ -56,11 +57,14 @@ return (
           <Menu size={24} />
         </button>
         <div className="header-spacer" />
-
-        <button className="icon-button notification-button">
-          <Bell size={20} />
-          {hasNotifications && <span className="notification-badge"></span>}
-        </button>
+        {
+          /*
+                <button className="icon-button notification-button">
+                  <Bell size={20} />
+                  {hasNotifications && <span className="notification-badge"></span>}
+                </button>
+        */
+        }
 
         <div
           className="header-profile"

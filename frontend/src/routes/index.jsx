@@ -7,7 +7,9 @@ import RedefinirSenha from '../views/auth/RedefinirSenha'
 import CadastroProfessor from '../views/professor/CadastroProfessor'
 import ListaProfessores from '../views/professor/ListaProfessores'
 import CadastroAluno from '../views/aluno/CadastroAluno'
+import ListaAlunos from '../views/aluno/ListaAlunos'
 import Perfil from '../views/perfil/Perfil'
+import TransferenciaCoordenador from '../views/coordenador/TransferenciaCoordenador'
 
 function RotaProtegida({ children, apenasCoordenador, apenasRole }) {
 const { user, carregando } = useAuth()
@@ -47,6 +49,16 @@ return (
       <Route
         path="/professores/cadastro"
         element={<RotaProtegida apenasCoordenador><CadastroProfessor /></RotaProtegida>}
+      />
+
+      <Route
+        path="/alunos"
+        element={<RotaProtegida apenasRole="PROFESSOR"><ListaAlunos /></RotaProtegida>}
+      />
+
+      <Route
+        path="/coordenadores/transferencia"
+        element={<RotaProtegida apenasCoordenador><TransferenciaCoordenador /></RotaProtegida>}
       />
 
       <Route

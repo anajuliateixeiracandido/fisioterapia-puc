@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { fetchCIFReferences } from '../services/cifApi'
-import { getAccessToken } from '../services/tokenStore'
-
-const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/v1`
+import api from '../services/api'
 
 const CATEGORIA_MAP = {
   b: 'FUNCAO',
@@ -94,15 +92,8 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
 
   // Buscar pacientes
   useEffect(() => {
-    const token = getAccessToken()
-    const headers = {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    }
-
-    fetch(`${API_BASE}/pacientes`, { headers })
-      .then(r => r.ok ? r.json() : { data: [] })
-      .then(d => setPacientes(Array.isArray(d) ? d : d.data ?? []))
+    api.get('/pacientes')
+      .then(({ data: d }) => setPacientes(Array.isArray(d) ? d : d.data ?? []))
       .catch(() => setPacientes([]))
   }, [])
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plus, Search, FileText, Calendar, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Plus, Search, FileText, Calendar, ChevronLeft, ChevronRight, ArrowLeft, X } from 'lucide-react'
 import { ReportForm } from './FormularioRelatorio'
 import { STATUS_RELATORIO, STATUS_OPTIONS } from '../../constants/relatorio.constants'
 import { formatarCodigo, formatarData } from '../../utils/formatadores'
@@ -31,7 +31,7 @@ function RelatorioRow({ relatorio, onVer }) {
             <td><span className="nome-secundario">{relatorio.fisioterapeuta?.nomeCompleto ?? '—'}</span></td>
             <td><span className="nome-secundario">{mostraProfessor}</span></td>
             <td><StatusBadge status={relatorio.status} /></td>
-            <td className="data-cell">{formatarData(relatorio.dataAprovacao ?? relatorio.dataCriacao)}</td>
+            <td className="data-cell">{formatarData(relatorio.datasEdicao?.at(-1) ?? relatorio.dataCriacao)}</td>
         </tr>
     )
 }
@@ -100,6 +100,7 @@ export function ListaRelatorios({ onVerRelatorio }) {
         setStatus,
         setDataInicio,
         setDataFim,
+        limparFiltros,
         handleSalvarRelatorio,
         handleMudarPagina,
         fetchRelatorios,
@@ -116,7 +117,6 @@ export function ListaRelatorios({ onVerRelatorio }) {
                             onClick={() => setView('lista')}
                         >
                             <ArrowLeft size={18} />
-                            Voltar
                         </button>
                         <div>
                             <h1 className="lista-relatorios__title">Novo Relatório</h1>
@@ -137,7 +137,6 @@ export function ListaRelatorios({ onVerRelatorio }) {
             <div className="lista-relatorios__header">
                 <div>
                     <h1 className="lista-relatorios__title">Relatórios</h1>
-                    <p className="lista-relatorios__subtitle">Seus relatórios clínicos</p>
                 </div>
                 <button
                     type="button"
@@ -177,6 +176,7 @@ export function ListaRelatorios({ onVerRelatorio }) {
                         type="date"
                         value={dataInicio}
                         onChange={(e) => setDataInicio(e.target.value)}
+                        max={dataFim || undefined}
                         className="filtro-data__input"
                         title="Data de criação - início"
                     />
@@ -189,10 +189,30 @@ export function ListaRelatorios({ onVerRelatorio }) {
                         type="date"
                         value={dataFim}
                         onChange={(e) => setDataFim(e.target.value)}
+                        min={dataInicio || undefined}
                         className="filtro-data__input"
                         title="Data de criação - fim"
                     />
                 </div>
+
+                {(busca || status || dataInicio || dataFim) ? (
+                    <button
+                        type="button"
+                        className="btn-limpar-filtros"
+                        onClick={limparFiltros}
+                        title="Limpar filtros"
+                    >
+                        <X size={20} />
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        className="btn-limpar-filtros btn-limpar-filtros--inativo"
+                        disabled
+                    >
+                        <X size={20} />
+                    </button>
+                )}
             </div>
 
 

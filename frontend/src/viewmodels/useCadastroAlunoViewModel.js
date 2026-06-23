@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
+import { useModal } from '../contexts/ModalContext'
 
 function useCadastroAlunoViewModel() {
 const navigate = useNavigate()
+const modal = useModal()
 
 const [nomeCompleto, setNomeCompleto] = useState('')
 const [email, setEmail] = useState('')
@@ -17,7 +19,6 @@ const [mostrarSenha, setMostrarSenha] = useState(false)
 const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false)
 const [carregando, setCarregando] = useState(false)
 const [erro, setErro] = useState(null)
-const [sucesso, setSucesso] = useState(false)
 
 useEffect(() => {
   api
@@ -57,7 +58,8 @@ async function handleSubmit(e) {
       matricula,
       codigoPessoaProfessor: professorSelecionado,
     })
-    setSucesso(true)
+    modal.showSuccess('Aluno cadastrado com sucesso!')
+    navigate('/alunos')
   } catch (err) {
     const code = err.response?.data?.code
     if (code === 'ALREADY_EXISTS') {
@@ -74,19 +76,8 @@ async function handleSubmit(e) {
   }
 }
 
-function cadastrarNovo() {
-  setNomeCompleto('')
-  setEmail('')
-  setSenha('')
-  setConfirmarSenha('')
-  setMatricula('')
-  setProfessorSelecionado('')
-  setSucesso(false)
-  setErro(null)
-}
-
 function voltar() {
-  navigate('/')
+  navigate('/alunos')
 }
 
 return {
@@ -102,9 +93,7 @@ return {
   mostrarConfirmarSenha, setMostrarConfirmarSenha,
   carregando,
   erro,
-  sucesso,
   handleSubmit,
-  cadastrarNovo,
   voltar,
 }
 }
