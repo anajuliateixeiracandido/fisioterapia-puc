@@ -62,7 +62,76 @@ const SideBar = ({ user, currentPage, onNavigate, onClose, isCollapsed = false, 
 
   return (
     <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
-      {/* resto do componente igual */}
+      <div className="sidebar-header">
+        <div className="sidebar-logo">
+          <div className="logo-icon">
+            <img src="/logo-puc.png" alt="Logo PUC Minas" width="40" height="40" />
+          </div>
+          {!isCollapsed && (
+            <div className="logo-text">
+              <div className="logo-title">Fisio PediÃ¡trica</div>
+              <div className="logo-subtitle">PUC Minas</div>
+            </div>
+          )}
+        </div>
+        {isMobile && (
+          <button className="close-button" onClick={onClose}>
+            <X size={20} />
+          </button>
+        )}
+        {!isMobile && onToggleCollapse && (
+          <button
+            className="collapse-button"
+            onClick={onToggleCollapse}
+            title={isCollapsed ? 'Expandir' : 'Recolher'}
+          >
+            <ChevronLeft size={20} className={isCollapsed ? 'rotate' : ''} />
+          </button>
+        )}
+      </div>
+
+      <Separator paddingHorizontal={0} />
+
+      <div className="sidebar-profile">
+        <div className="profile-avatar">
+          <span className="avatar-initials">{user?.initials || '?'}</span>
+        </div>
+        {!isCollapsed && (
+          <div className="profile-info">
+            <div className="profile-name">{user?.nome || ''}</div>
+            <div className="profile-role">{user?.role || ''}</div>
+          </div>
+        )}
+      </div>
+
+      <Separator paddingHorizontal={0} />
+
+      <nav className="sidebar-menu">
+        {menuItems.map((item, index) => {
+          const IconComponent = item.icon
+          const active = isActive(item)
+          return (
+            <div
+              key={index}
+              className={`menu-item ${active ? 'active' : ''}`}
+              onClick={() => handleItemClick(item)}
+              title={isCollapsed ? item.text : ''}
+            >
+              <IconComponent size={20} className="menu-icon" />
+              {!isCollapsed && (
+                <>
+                  <span className="menu-text">{item.text}</span>
+                  <ChevronRight size={16} className="menu-arrow" />
+                </>
+              )}
+            </div>
+          )
+        })}
+      </nav>
+
+      <div className="sidebar-spacer" />
+      <Separator paddingHorizontal={0} />
+      <div className="sidebar-version">VersÃ£o 1.0</div>
     </div>
   )
 }
