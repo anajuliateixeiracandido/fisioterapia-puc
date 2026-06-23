@@ -59,8 +59,14 @@ const usuarioProfessor: TokenPayload = {
   sub: 'uuid-professor',
   fisioterapeutaId: 1,
   role: 'PROFESSOR',
+  coordenador: false,
 }
-const usuarioAluno: TokenPayload = { sub: 'uuid-aluno', fisioterapeutaId: 2, role: 'ALUNO' }
+const usuarioAluno: TokenPayload = {
+  sub: 'uuid-aluno',
+  fisioterapeutaId: 2,
+  role: 'ALUNO',
+  coordenador: false,
+}
 
 const relatorioBase = {
   id: 1,

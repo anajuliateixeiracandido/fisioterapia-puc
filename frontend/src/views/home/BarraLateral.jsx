@@ -34,9 +34,6 @@ const menuItems = [
     : []),
   { icon: Users, text: 'Pacientes', page: 'pacientes' },
   { icon: User, text: 'Perfil', route: '/perfil' },
-  ...(user?.coordenador
-    ? [{ icon: UserPlus, text: 'Cadastrar Professor', route: '/professores/cadastro' }]
-    : []),
 ]
 
 function handleItemClick(item) {

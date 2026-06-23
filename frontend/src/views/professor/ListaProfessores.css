@@ -25,6 +25,27 @@ font-size: 0.875rem;
 color: #6b7280;
 }
 
+.professores-add-button {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+min-height: 42px;
+padding: 10px 16px;
+border: none;
+border-radius: 8px;
+background: #1e3a8a;
+color: #fff;
+font-size: 0.95rem;
+font-weight: 700;
+cursor: pointer;
+transition: background-color 0.2s;
+}
+
+.professores-add-button:hover {
+background: #1d4ed8;
+}
+
 .professores-counter {
 margin: 8px 0 4px;
 font-size: 0.95rem;
@@ -191,4 +212,10 @@ cursor: pointer;
 .professores-paginacao__btn:disabled {
 opacity: 0.5;
 cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+.professores-add-button {
+  width: 100%;
+}
 }

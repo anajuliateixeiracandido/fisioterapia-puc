@@ -16,7 +16,6 @@ if (dados.role === 'PROFESSOR') {
       professor: {
         create: {
           codigoPessoa: dados.codigoPessoa ?? null,
-          coordenador: dados.coordenador ?? false,
         },
       },
     },

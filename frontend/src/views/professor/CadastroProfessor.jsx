@@ -10,7 +10,6 @@ const {
   senha, setSenha,
   confirmarSenha, setConfirmarSenha,
   codigoPessoa, setCodigoPessoa,
-  coordenador, setCoordenador,
   mostrarSenha, setMostrarSenha,
   mostrarConfirmarSenha, setMostrarConfirmarSenha,
   carregando,
@@ -36,7 +35,7 @@ if (sucesso) {
               Cadastrar outro professor
             </button>
             <button type="button" className="btn-cadastro-secondary" onClick={voltar}>
-              Voltar para o início
+              Voltar para professores
             </button>
           </div>
         </div>
@@ -180,21 +179,6 @@ return (
             1 caractere especial
           </li>
         </ul>
-
-        <div
-          className={`coordenador-card ${coordenador ? 'coordenador-card--ativo' : ''}`}
-          onClick={() => !carregando && setCoordenador(!coordenador)}
-        >
-          <div className="coordenador-card-texto">
-            <span className="coordenador-card-titulo">O professor é coordenador?</span>
-            <span className="coordenador-card-descricao">
-              Coordenadores têm acesso ampliado ao sistema
-            </span>
-          </div>
-          <div className={`coordenador-toggle ${coordenador ? 'coordenador-toggle--ativo' : ''}`}>
-            <div className="coordenador-toggle-bolinha" />
-          </div>
-        </div>
 
         {erro && <p className="form-error">{erro}</p>}
 

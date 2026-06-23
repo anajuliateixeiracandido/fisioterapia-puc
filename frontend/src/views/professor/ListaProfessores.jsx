@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight, Mail, UserPlus, Users } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Mail, Plus, UserPlus, Users } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import Layout from '../../components/Layout'
 import useListaProfessoresViewModel from '../../viewmodels/useListaProfessoresViewModel'
 import './ListaProfessores.css'
@@ -34,6 +35,7 @@ return (
 }
 
 function ListaProfessores() {
+const navigate = useNavigate()
 const { professores, pagination, carregando, erro, mudarPagina } = useListaProfessoresViewModel()
 
 return (
@@ -45,6 +47,14 @@ return (
             <h1 className="professores-title">Professores</h1>
             <p className="professores-subtitle">Todos os professores cadastrados</p>
           </div>
+          <button
+            type="button"
+            className="professores-add-button"
+            onClick={() => navigate('/professores/cadastro')}
+          >
+            <Plus size={18} />
+            Adicionar professor
+          </button>
         </div>
 
         {!carregando && !erro && (
@@ -79,6 +89,7 @@ return (
               <thead>
                 <tr>
                   <th>Professor</th>
+                  <th>Codigo pessoa</th>
                   <th>E-mail</th>
                   <th>Departamento</th>
                   <th>Total de alunos</th>
@@ -97,6 +108,7 @@ return (
                         </span>
                       </div>
                     </td>
+                    <td className="professores-muted">{professor.codigoPessoa ?? '-'}</td>
                     <td>
                       <span className="professores-email">
                         <Mail size={16} />

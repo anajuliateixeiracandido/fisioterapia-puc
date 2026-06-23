@@ -16,8 +16,7 @@ senha: senhaForteSchema,
 codigoPessoa: z
   .string()
   .regex(/^\d{5,10}$/, 'Código pessoa deve ter entre 5 e 10 dígitos numéricos'),
-coordenador: z.boolean().optional().default(false),
-})
+}).strict()
 
 const alunoCadastroSchema = z.object({
 role: z.literal('ALUNO'),

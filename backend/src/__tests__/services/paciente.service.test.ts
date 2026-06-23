@@ -119,8 +119,14 @@ describe('listarPacientes', () => {
     sub: 'uuid-professor',
     fisioterapeutaId: 1,
     role: 'PROFESSOR',
+    coordenador: false,
   }
-  const usuarioAluno: TokenPayload = { sub: 'uuid-aluno', fisioterapeutaId: 2, role: 'ALUNO' }
+  const usuarioAluno: TokenPayload = {
+    sub: 'uuid-aluno',
+    fisioterapeutaId: 2,
+    role: 'ALUNO',
+    coordenador: false,
+  }
 
   const listaPacientes = [
     {
@@ -192,6 +198,7 @@ describe('obterPacientePorId', () => {
       sub: 'uuid',
       fisioterapeutaId: 1,
       role: 'PROFESSOR',
+      coordenador: false,
     } as TokenPayload)
     expect(resultado.id).toBe(1)
     expect(resultado.nomeCompleto).toBe('Paciente A')
@@ -205,6 +212,7 @@ describe('obterPacientePorId', () => {
         sub: 'uuid',
         fisioterapeutaId: 1,
         role: 'PROFESSOR',
+        coordenador: false,
       } as TokenPayload)
     ).rejects.toMatchObject({
       code: 'PACIENTE_NOT_FOUND',
