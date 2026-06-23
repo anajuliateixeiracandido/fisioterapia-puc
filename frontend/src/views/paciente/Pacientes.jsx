@@ -684,31 +684,6 @@ function DetalhesPaciente({ pacienteId, onVoltar }) {
           ))
         )}
       </section>
-
-      <section className="paciente-reports-card">
-        <h2>Relatórios ({relatorios.length})</h2>
-        {relatorios.length === 0 ? (
-          <div className="paciente-report-empty">Nenhum relatório encontrado.</div>
-        ) : (
-          relatorios.map((relatorio) => (
-            <div className="paciente-report-row" key={relatorio.id}>
-              <div>
-                <strong>
-                  REL-{new Date(relatorio.dataCriacao).getFullYear()}-
-                  {String(relatorio.id).padStart(3, '0')}
-                </strong>
-                <p>
-                  {relatorio.fisioterapeuta?.nomeCompleto || 'Autor não informado'} -{' '}
-                  {formatarData(relatorio.dataCriacao)}
-                </p>
-              </div>
-              <span className={`paciente-status paciente-status-${relatorio.status?.toLowerCase()}`}>
-                {relatorio.status}
-              </span>
-            </div>
-          ))
-        )}
-      </section>
     </>
   )
 }
