@@ -16,7 +16,6 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
         professor: {
           create: {
             codigoPessoa: dados.codigoPessoa ?? null,
-            coordenador: dados.coordenador ?? false,
           },
         },
       },
@@ -73,8 +72,24 @@ async function cadastrarFisioterapeuta(dados: CadastroInput) {
   })
 }
 
-async function listarProfessores() {
-  return prisma.professor.findMany({
+type ListarProfessoresParams = {
+  page?: number
+  limit?: number
+}
+
+function normalizarPaginacao(page?: number, limit?: number) {
+  const paginaAtual = Number.isFinite(page) && Number(page) > 0 ? Number(page) : 1
+  const limite = Number.isFinite(limit) && Number(limit) > 0 ? Math.min(Number(limit), 100) : 10
+
+  return {
+    page: paginaAtual,
+    limit: limite,
+    skip: (paginaAtual - 1) * limite,
+  }
+}
+
+function professorSelect() {
+  return {
     select: {
       id: true,
       fisioterapeutaId: true,
@@ -86,13 +101,60 @@ async function listarProfessores() {
           email: true,
         },
       },
+      alunos: {
+        select: {
+          id: true,
+        },
+      },
     },
     orderBy: {
       fisioterapeuta: {
         nomeCompleto: 'asc',
       },
     },
-  })
+  } as const
+}
+
+function mapearProfessor(professor: any) {
+  return {
+    id: professor.id,
+    fisioterapeutaId: professor.fisioterapeutaId,
+    codigoPessoa: professor.codigoPessoa,
+    coordenador: professor.coordenador,
+    departamento: 'Fisioterapia',
+    totalAlunos: professor.alunos?.length ?? 0,
+    fisioterapeuta: professor.fisioterapeuta,
+  }
+}
+
+async function listarProfessores(params: ListarProfessoresParams = {}) {
+  const usarPaginacao = params.page !== undefined || params.limit !== undefined
+
+  if (!usarPaginacao) {
+    const professores = await prisma.professor.findMany(professorSelect())
+    return professores.map(mapearProfessor)
+  }
+
+  const { page, limit, skip } = normalizarPaginacao(params.page, params.limit)
+
+  const [professores, total] = await Promise.all([
+    prisma.professor.findMany({
+      ...professorSelect(),
+      skip,
+      take: limit,
+    }),
+    prisma.professor.count(),
+  ])
+
+  return {
+    data: professores.map(mapearProfessor),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  }
 }
 
 async function obterPerfil(fisioterapeutaId: number) {

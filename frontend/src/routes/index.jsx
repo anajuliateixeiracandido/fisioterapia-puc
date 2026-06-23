@@ -5,6 +5,7 @@ import Login from '../views/auth/login'
 import RecuperarSenha from '../views/auth/RecuperarSenha'
 import RedefinirSenha from '../views/auth/RedefinirSenha'
 import CadastroProfessor from '../views/professor/CadastroProfessor'
+import ListaProfessores from '../views/professor/ListaProfessores'
 import CadastroAluno from '../views/aluno/CadastroAluno'
 import ListaAlunos from '../views/aluno/ListaAlunos'
 import Perfil from '../views/perfil/Perfil'
@@ -39,6 +40,11 @@ return (
       <Route path="/reset-password" element={<RotaPublica><RedefinirSenha /></RotaPublica>} />
 
       <Route path="/" element={<RotaProtegida><Home /></RotaProtegida>} />
+
+      <Route
+        path="/professores"
+        element={<RotaProtegida apenasCoordenador><ListaProfessores /></RotaProtegida>}
+      />
 
       <Route
         path="/professores/cadastro"

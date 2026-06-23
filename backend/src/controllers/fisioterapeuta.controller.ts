@@ -43,12 +43,15 @@ async function cadastrar(req: Request, res: Response, next: NextFunction): Promi
 }
 
 async function listar(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    const resultado = await listarProfessores()
-    res.status(200).json(resultado)
-  } catch (err) {
-    next(err)
-  }
+try {
+  const resultado = await listarProfessores({
+    page: req.query.page ? Number(req.query.page) : undefined,
+    limit: req.query.limit ? Number(req.query.limit) : undefined,
+  })
+  res.status(200).json(resultado)
+} catch (err) {
+  next(err)
+}
 }
 
 async function obter(req: Request, res: Response, next: NextFunction): Promise<void> {

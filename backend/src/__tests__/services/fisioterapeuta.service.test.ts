@@ -18,6 +18,7 @@ const dadosAlunoValido = {
   email: 'aluno@sga.pucminas.br',
   senha: 'Senha@123',
   matricula: '123456',
+  codigoPessoaProfessor: '1448023',
 }
 
 describe('professorCadastroSchema', () => {
@@ -54,13 +55,18 @@ describe('professorCadastroSchema', () => {
       professorCadastroSchema.parse({ ...dadosProfessorValido, codigoPessoa: 'abc1234' })
     ).toThrow()
   })
+
+  it('deve rejeitar coordenador no cadastro de professor', () => {
+    expect(() =>
+      professorCadastroSchema.parse({ ...dadosProfessorValido, coordenador: true })
+    ).toThrow()
+  })
 })
 
 describe('alunoCadastroSchema', () => {
   it('deve aceitar dados válidos sem professor', () => {
-    expect(() =>
-      alunoCadastroSchema.parse({ ...dadosAlunoValido, codigoPessoaProfessor: '1448023' })
-    ).not.toThrow()
+    const { codigoPessoaProfessor: _codigoPessoaProfessor, ...dadosSemProfessor } = dadosAlunoValido
+    expect(() => alunoCadastroSchema.parse(dadosSemProfessor)).toThrow()
   })
 
   it('deve aceitar dados válidos com codigoPessoaProfessor', () => {

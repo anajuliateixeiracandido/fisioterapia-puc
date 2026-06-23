@@ -10,7 +10,6 @@ const [email, setEmail] = useState('')
 const [senha, setSenha] = useState('')
 const [confirmarSenha, setConfirmarSenha] = useState('')
 const [codigoPessoa, setCodigoPessoa] = useState('')
-const [coordenador, setCoordenador] = useState(false)
 const [mostrarSenha, setMostrarSenha] = useState(false)
 const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false)
 const [carregando, setCarregando] = useState(false)
@@ -35,7 +34,6 @@ async function handleSubmit(e) {
       email,
       senha,
       codigoPessoa,
-      coordenador,
     })
     setSucesso(true)
   } catch (err) {
@@ -58,13 +56,12 @@ function cadastrarNovo() {
   setSenha('')
   setConfirmarSenha('')
   setCodigoPessoa('')
-  setCoordenador(false)
   setSucesso(false)
   setErro(null)
 }
 
 function voltar() {
-  navigate('/')
+  navigate('/professores')
 }
 
 return {
@@ -73,7 +70,6 @@ return {
   senha, setSenha,
   confirmarSenha, setConfirmarSenha,
   codigoPessoa, setCodigoPessoa,
-  coordenador, setCoordenador,
   mostrarSenha, setMostrarSenha,
   mostrarConfirmarSenha, setMostrarConfirmarSenha,
   carregando,

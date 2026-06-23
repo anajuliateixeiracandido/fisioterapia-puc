@@ -1,0 +1,221 @@
+.professores-page {
+display: flex;
+flex-direction: column;
+gap: 20px;
+}
+
+.professores-header {
+display: flex;
+align-items: flex-start;
+justify-content: space-between;
+gap: 16px;
+flex-wrap: wrap;
+}
+
+.professores-title {
+margin: 0;
+font-size: 1.625rem;
+font-weight: 700;
+color: #111827;
+}
+
+.professores-subtitle {
+margin: 4px 0 0;
+font-size: 0.875rem;
+color: #6b7280;
+}
+
+.professores-add-button {
+display: inline-flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+min-height: 42px;
+padding: 10px 16px;
+border: none;
+border-radius: 8px;
+background: #1e3a8a;
+color: #fff;
+font-size: 0.95rem;
+font-weight: 700;
+cursor: pointer;
+transition: background-color 0.2s;
+}
+
+.professores-add-button:hover {
+background: #1d4ed8;
+}
+
+.professores-counter {
+margin: 8px 0 4px;
+font-size: 0.95rem;
+color: #475569;
+}
+
+.professores-table-wrapper {
+background: #fff;
+border: 1px solid #e5e7eb;
+border-radius: 14px;
+overflow: hidden;
+box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+overflow-x: auto;
+}
+
+.professores-table {
+width: 100%;
+border-collapse: collapse;
+font-size: 0.95rem;
+}
+
+.professores-table thead tr {
+background: #f9fafb;
+border-bottom: 1px solid #e5e7eb;
+}
+
+.professores-table th {
+padding: 16px 24px;
+text-align: left;
+font-size: 0.95rem;
+font-weight: 700;
+color: #64748b;
+white-space: nowrap;
+}
+
+.professores-table td {
+padding: 18px 24px;
+border-bottom: 1px solid #f1f5f9;
+color: #0f172a;
+white-space: nowrap;
+}
+
+.professores-table tbody tr:last-child td {
+border-bottom: none;
+}
+
+.professores-name-cell {
+display: flex;
+align-items: center;
+gap: 14px;
+}
+
+.professores-avatar {
+width: 40px;
+height: 40px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+border-radius: 50%;
+background: #dbeafe;
+color: #1d4ed8;
+flex-shrink: 0;
+}
+
+.professores-name {
+font-weight: 700;
+color: #0f172a;
+}
+
+.professores-email {
+display: inline-flex;
+align-items: center;
+gap: 8px;
+color: #334155;
+}
+
+.professores-email svg {
+color: #94a3b8;
+}
+
+.professores-muted {
+color: #334155;
+}
+
+.professores-badge {
+display: inline-flex;
+align-items: center;
+gap: 6px;
+padding: 5px 10px;
+border-radius: 999px;
+background: #dcfce7;
+color: #15803d;
+font-size: 0.8125rem;
+font-weight: 700;
+}
+
+.professores-state {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 12px;
+padding: 56px 24px;
+background: #fff;
+border: 1px solid #e5e7eb;
+border-radius: 14px;
+color: #94a3b8;
+text-align: center;
+}
+
+.professores-state--error {
+color: #dc2626;
+background: #fef2f2;
+border-color: #fecaca;
+}
+
+.professores-spinner {
+width: 32px;
+height: 32px;
+border: 3px solid #e5e7eb;
+border-top-color: #2563eb;
+border-radius: 50%;
+animation: professores-spin 0.7s linear infinite;
+}
+
+@keyframes professores-spin {
+to {
+  transform: rotate(360deg);
+}
+}
+
+.professores-paginacao {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 12px;
+flex-wrap: wrap;
+}
+
+.professores-paginacao__info {
+font-size: 0.875rem;
+color: #64748b;
+}
+
+.professores-paginacao__botoes {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.professores-paginacao__btn {
+width: 36px;
+height: 36px;
+display: inline-flex;
+align-items: center;
+justify-content: center;
+border: 1px solid #e5e7eb;
+border-radius: 8px;
+background: #fff;
+color: #334155;
+cursor: pointer;
+}
+
+.professores-paginacao__btn:disabled {
+opacity: 0.5;
+cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+.professores-add-button {
+  width: 100%;
+}
+}
