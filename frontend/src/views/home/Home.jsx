@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ClipboardList, Clock, X, Check, Users, Pencil, Trash2, ArrowLeft } from 'lucide-react'
+import { ClipboardList, Clock, Check, Users, Pencil, Trash2, ArrowLeft } from 'lucide-react'
 import Layout from '../../components/Layout'
 import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
@@ -63,7 +63,6 @@ const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
 const [stats, setStats] = useState([
   { icon: ClipboardList, label: 'Total de relatórios', value: '—', colorClass: 'stat-blue' },
   { icon: Clock, label: 'Aguardando aprovação', value: '—', colorClass: 'stat-yellow' },
-  { icon: X, label: 'Negados', value: '—', colorClass: 'stat-red' },
   { icon: Check, label: 'Aprovados', value: '—', colorClass: 'stat-green' },
 ])
 const [totalPacientes, setTotalPacientes] = useState('—')
@@ -79,15 +78,13 @@ useEffect(() => {
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos' } }),
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'ENVIADO' } }),
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'CORRIGIDO' } }),
-    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'NEGADO' } }),
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'APROVADO' } }),
     api.get('/pacientes', { params: { page: 1, limit: 1 } }),
   ])
-    .then(([todos, enviados, corrigidos, negados, aprovados, pacientesData]) => {
+    .then(([todos, enviados, corrigidos, aprovados, pacientesData]) => {
       setStats([
         { icon: ClipboardList, label: 'Total de relatórios', value: todos.data?.pagination?.total ?? 0, colorClass: 'stat-blue' },
         { icon: Clock, label: 'Aguardando aprovação', value: (enviados.data?.pagination?.total ?? 0) + (corrigidos.data?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
-        { icon: X, label: 'Negados', value: negados.data?.pagination?.total ?? 0, colorClass: 'stat-red' },
         { icon: Check, label: 'Aprovados', value: aprovados.data?.pagination?.total ?? 0, colorClass: 'stat-green' },
       ])
       setTotalPacientes(
@@ -116,6 +113,12 @@ return (
         </div>
 
         <div className="stats-grid">
+          <StatCard
+            icon={Users}
+            label="Meus pacientes"
+            value={totalPacientes}
+            colorClass="stat-purple"
+          />
           {stats.map((stat, index) => (
             <StatCard
               key={index}
@@ -125,16 +128,6 @@ return (
               colorClass={stat.colorClass}
             />
           ))}
-        </div>
-
-        <div className="patients-card">
-          <div className="stat-icon stat-purple">
-            <Users size={24} />
-          </div>
-          <div className="stat-content">
-            <div className="stat-label">Meus pacientes</div>
-            <div className="stat-value">{totalPacientes}</div>
-          </div>
         </div>
       </div>
     )}
