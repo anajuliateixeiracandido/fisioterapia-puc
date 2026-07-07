@@ -611,7 +611,6 @@ function DetalhesPaciente({ pacienteId, onVoltar }) {
     )
   }
 
-  const relatorios = Array.isArray(paciente.relatorios) ? paciente.relatorios : []
   const contatosEmergencia = Array.isArray(paciente.contatosEmergencia) ? paciente.contatosEmergencia : []
 
   return (
