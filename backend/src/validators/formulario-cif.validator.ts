@@ -63,6 +63,9 @@ const formularioCIFBaseSchema = z.object({
   condicaoSaudeDescricao: z.string(),
   factoresPessoais: z.string().optional(),
   planoTerapeutico: z.string().optional(),
+  diagnosticoFisioterapeutico: z.string().optional(),
+  objetivoCurtoPrazo: z.string().optional(),
+  objetivoLongoPrazo: z.string().optional(),
   observacoes: z.string().optional(),
   itens: z.array(itemCIFSchema).default([]),
 })

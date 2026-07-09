@@ -195,12 +195,6 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
                 <span className="info-value">{paciente.queixaPrincipal}</span>
               </div>
             )}
-            {paciente.observacoesIniciais && (
-              <div className="info-item full-width">
-                <span className="info-label">Observações Iniciais</span>
-                <span className="info-value">{paciente.observacoesIniciais}</span>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -254,6 +248,35 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
           <div className="cif-field">
             <div className="field-label">Plano Terapêutico</div>
             <div className="field-value">{formularioCIF.planoTerapeutico}</div>
+          </div>
+        )}
+
+        {(formularioCIF.diagnosticoFisioterapeutico ||
+          formularioCIF.objetivoCurtoPrazo ||
+          formularioCIF.objetivoLongoPrazo) && (
+          <div className="cif-field-group">
+            {formularioCIF.diagnosticoFisioterapeutico && (
+              <div className="cif-field">
+                <div className="field-label">Diagnóstico Fisioterapêutico</div>
+                <div className="field-value">{formularioCIF.diagnosticoFisioterapeutico}</div>
+              </div>
+            )}
+
+            {(formularioCIF.objetivoCurtoPrazo || formularioCIF.objetivoLongoPrazo) && (
+              <div className="cif-field">
+                <div className="field-label">Plano de Tratamento para a Atividade Examinada</div>
+                {formularioCIF.objetivoCurtoPrazo && (
+                  <div className="field-subvalue">
+                    <strong>Objetivo de curto prazo:</strong> {formularioCIF.objetivoCurtoPrazo}
+                  </div>
+                )}
+                {formularioCIF.objetivoLongoPrazo && (
+                  <div className="field-subvalue">
+                    <strong>Objetivo de longo prazo:</strong> {formularioCIF.objetivoLongoPrazo}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -53,7 +53,7 @@ return (
           <input
             type="email"
             className="form-input"
-            placeholder="seu.email@sga.pucminas.br"
+            placeholder="seu.email@pucminas.edu.br"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={carregando}

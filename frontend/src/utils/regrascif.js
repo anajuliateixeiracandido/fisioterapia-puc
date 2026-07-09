@@ -12,6 +12,36 @@ export const QUALIFICADOR_0_A_4_8_9 = [
   { valor: 9, rotulo: '9 - Não aplicável' },
 ]
 
+export const QUALIFICADOR_DEFICIENCIA_0_A_4_8_9 = [
+  { valor: 0, rotulo: '0 - Nenhuma deficiência' },
+  { valor: 1, rotulo: '1 - Deficiência ligeira' },
+  { valor: 2, rotulo: '2 - Deficiência moderada' },
+  { valor: 3, rotulo: '3 - Deficiência grave' },
+  { valor: 4, rotulo: '4 - Deficiência completa' },
+  { valor: 8, rotulo: '8 - Não especificada' },
+  { valor: 9, rotulo: '9 - Não aplicável' },
+]
+
+export const QUALIFICADOR_OBSTACULO_0_A_4_8_9 = [
+  { valor: 0, rotulo: '0 - Nenhum obstáculo' },
+  { valor: 1, rotulo: '1 - Obstáculo leve' },
+  { valor: 2, rotulo: '2 - Obstáculo moderado' },
+  { valor: 3, rotulo: '3 - Obstáculo grave' },
+  { valor: 4, rotulo: '4 - Obstáculo completo' },
+  { valor: 8, rotulo: '8 - Obstáculo não especificado' },
+  { valor: 9, rotulo: '9 - Não aplicável' },
+]
+
+export const QUALIFICADOR_FACILITADOR_0_A_4_8_9 = [
+  { valor: 0, rotulo: '0 - Nenhum facilitador' },
+  { valor: 1, rotulo: '1 - Facilitador leve' },
+  { valor: 2, rotulo: '2 - Facilitador moderado' },
+  { valor: 3, rotulo: '3 - Facilitador grave' },
+  { valor: 4, rotulo: '4 - Facilitador completo' },
+  { valor: 8, rotulo: '8 - Facilitador não especificado' },
+  { valor: 9, rotulo: '9 - Não aplicável' },
+]
+
 export const OPCOES_NATUREZA_ESTRUTURA = [
   { valor: 0, rotulo: '0 - Nenhuma mudança na estrutura' },
   { valor: 1, rotulo: '1 - Ausência total' },
@@ -71,10 +101,55 @@ export function obterRotuloQualificador1(item) {
   if (prefixo === 'e') {
     return item.tipoQualificador1 === 'FACILITADOR'
       ? 'Grau do facilitador'
-      : 'Grau da barreira'
+      : item.tipoQualificador1 === 'BARREIRA'
+        ? 'Grau do obstáculo'
+        : 'Grau (selecione o tipo)'
   }
 
   return 'Qualificador 1'
+}
+
+/**
+ * Retorna as opções válidas de qualificador 1 por tipo de item
+ * @param {object} item - Item CIF
+ * @returns {Array<{valor:number,rotulo:string}>}
+ */
+export function obterOpcoesQualificador1(item) {
+  const prefixo = obterPrefixoCIF(item.codigoCIF)
+
+  if (prefixo === 'b' || prefixo === 's') {
+    return QUALIFICADOR_DEFICIENCIA_0_A_4_8_9
+  }
+
+  if (prefixo === 'd') {
+    return QUALIFICADOR_0_A_4_8_9
+  }
+
+  if (prefixo === 'e') {
+    if (item.tipoQualificador1 === 'FACILITADOR') {
+      return QUALIFICADOR_FACILITADOR_0_A_4_8_9
+    }
+    if (item.tipoQualificador1 === 'BARREIRA') {
+      return QUALIFICADOR_OBSTACULO_0_A_4_8_9
+    }
+    return []
+  }
+
+  return QUALIFICADOR_0_A_4_8_9
+}
+
+/**
+ * Retorna um mapa valor -> descrição para exibição do qualificador 1
+ * @param {object} item - Item CIF
+ * @returns {Record<number,string>}
+ */
+export function obterMapaRotulosQualificador1(item) {
+  return Object.fromEntries(
+    obterOpcoesQualificador1(item).map((op) => [
+      op.valor,
+      op.rotulo.replace(/^\d+\s*-\s*/, ''),
+    ])
+  )
 }
 
 /**
@@ -223,6 +298,8 @@ export function validarItemCIF(item) {
     },
     s: () => {
       if (typeof item.qualificador1 !== 'number') erros.push('Itens de estrutura do corpo exigem qualificador1.')
+      if (typeof item.qualificador2 !== 'number') erros.push('Itens de estrutura do corpo exigem qualificador2.')
+      if (typeof item.qualificador3 !== 'number') erros.push('Itens de estrutura do corpo exigem qualificador3.')
     },
     d: () => {
       if (typeof item.qualificador1 !== 'number') erros.push('Itens de atividade/participação exigem desempenho.')
@@ -268,6 +345,11 @@ export const getDifferenceSuggestion = sugerirFatorAmbiental
 export const validateItem = validarItemCIF
 export const getReferenceByCode = buscarReferenciaPorCodigo
 export const QUALIFIER_0_TO_4_8_9 = QUALIFICADOR_0_A_4_8_9
+export const DEFICIENCY_QUALIFIER_0_TO_4_8_9 = QUALIFICADOR_DEFICIENCIA_0_A_4_8_9
+export const OBSTACLE_QUALIFIER_0_TO_4_8_9 = QUALIFICADOR_OBSTACULO_0_A_4_8_9
+export const FACILITATOR_QUALIFIER_0_TO_4_8_9 = QUALIFICADOR_FACILITADOR_0_A_4_8_9
 export const STRUCTURE_NATURE_OPTIONS = OPCOES_NATUREZA_ESTRUTURA
 export const STRUCTURE_LOCATION_OPTIONS = OPCOES_LOCALIZACAO_ESTRUTURA
+export const getQualifier1Options = obterOpcoesQualificador1
+export const getQualifier1LabelMap = obterMapaRotulosQualificador1
 

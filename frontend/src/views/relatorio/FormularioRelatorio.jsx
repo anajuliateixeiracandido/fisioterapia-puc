@@ -39,6 +39,9 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
       condicaoSaudeDescricao: form.condicaoSaudeDescricao,
       factoresPessoais: form.factoresPessoais,
       planoTerapeutico: form.planoTerapeutico,
+      diagnosticoFisioterapeutico: form.diagnosticoFisioterapeutico,
+      objetivoCurtoPrazo: form.objetivoCurtoPrazo,
+      objetivoLongoPrazo: form.objetivoLongoPrazo,
       observacoes: form.observacoes,
       itens: Array.isArray(form.itens) ? form.itens : [],
     }
@@ -146,6 +149,49 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
               </div>
             )
           })}
+        </div>
+
+        <div className="form-section tratamento-section">
+          <div className="section-title">
+            <div className="section-icon"><FileText size={18} /></div>
+            Plano de Tratamento
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">
+              Diagnóstico fisioterapêutico
+            </label>
+            <textarea
+              className="form-textarea"
+              placeholder="Descreva o diagnóstico fisioterapêutico..."
+              value={form.diagnosticoFisioterapeutico ?? ''}
+              onChange={(e) => updateForm({ diagnosticoFisioterapeutico: e.target.value })}
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">
+              Plano de tratamento para a atividade examinada - Objetivo de curto prazo
+            </label>
+            <textarea
+              className="form-textarea"
+              placeholder="Descreva o objetivo de curto prazo..."
+              value={form.objetivoCurtoPrazo ?? ''}
+              onChange={(e) => updateForm({ objetivoCurtoPrazo: e.target.value })}
+            />
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">
+              Plano de tratamento para a atividade examinada - Objetivo de longo prazo
+            </label>
+            <textarea
+              className="form-textarea"
+              placeholder="Descreva o objetivo de longo prazo..."
+              value={form.objetivoLongoPrazo ?? ''}
+              onChange={(e) => updateForm({ objetivoLongoPrazo: e.target.value })}
+            />
+          </div>
         </div>
 
         <div className="form-actions">

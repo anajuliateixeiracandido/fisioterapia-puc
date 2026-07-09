@@ -5,6 +5,7 @@ import {
   deletarRelatorio,
   listarRelatorios,
   obterRelatorioPorId,
+  gerarRelatorioDocx,
 } from '../services/relatorio.service'
 import {
   cadastroRelatorioSchema,
@@ -92,8 +93,20 @@ async function obterPorId(req: Request, res: Response, next: NextFunction): Prom
 
 async function gerarPDF(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    // TODO: Implementar lógica de geração de PDF
-    res.status(200).json({ message: 'PDF gerado' })
+    const id = parseInt(req.params.id as string)
+
+    if (isNaN(id)) {
+      throw new AppError(400, 'INVALID_ID', 'ID inválido')
+    }
+
+    const arquivo = await gerarRelatorioDocx(id, req.user!)
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    )
+    res.setHeader('Content-Disposition', `attachment; filename="${arquivo.fileName}"`)
+    res.status(200).send(arquivo.buffer)
   } catch (err) {
     next(err)
   }

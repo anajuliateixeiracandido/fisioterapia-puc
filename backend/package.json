@@ -31,10 +31,13 @@
     "@prisma/client": "^6.19.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
+    "docxtemplater": "^3.69.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "jszip": "^3.10.1",
+    "pizzip": "^3.2.0",
     "resend": "^6.9.3",
     "zod": "^4.3.6"
   },
