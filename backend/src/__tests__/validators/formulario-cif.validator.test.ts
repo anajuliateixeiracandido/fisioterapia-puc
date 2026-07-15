@@ -122,7 +122,7 @@ describe('formularioCIFSchema', () => {
         ultimaAlteracao: '2026-02-01',
         condicaoSaude: 'CID X00',
         factoresPessoais: 'Factores pessoais',
-        planoTerapeutico: 'Plano terapêutico',
+        planoTerapeutico: 'Condutas',
         observacoes: 'Observações gerais',
         itens: [{ codigoCIF: 'b110', categoria: 'FUNCAO' }],
       })
