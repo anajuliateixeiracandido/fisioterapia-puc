@@ -615,26 +615,16 @@ export function preencherParagrafoComRotulo(
 export function ativarAutoResizeTextboxes(xml: string): string {
   let resultado = xml
 
+  // Mantém o XML do template original sem inserir tags de autofit em bodyPr.
+  // Word tende a rejeitar esse ajuste quando aplicado sobre textboxes do documento
+  // gerado a partir do template do projeto, então a correção segura é preservar
+  // o comportamento padrão do documento e não reescrever os atributos de autofit.
   resultado = resultado.replace(/<a:noAutofit\/>/g, '')
   resultado = resultado.replace(/<a:normAutofit[^/]*\/>/g, '')
   resultado = resultado.replace(/<a:spAutoFit\/>/g, '')
 
-  resultado = resultado.replace(
-    /<wps:bodyPr([^>]*?)\/>/g,
-    '<wps:bodyPr$1><a:spAutoFit/></wps:bodyPr>'
-  )
-  resultado = resultado.replace(
-    /(<wps:bodyPr\b[^>]*>)/g,
-    '$1<a:spAutoFit/>'
-  )
-  resultado = resultado.replace(
-    /<a:bodyPr([^>]*?)\/>/g,
-    '<a:bodyPr$1><a:spAutoFit/></a:bodyPr>'
-  )
-  resultado = resultado.replace(
-    /(<a:bodyPr\b[^>]*>)/g,
-    '$1<a:spAutoFit/>'
-  )
+  resultado = resultado.replace(/<wps:bodyPr\b([^>]*)>\s*<a:noAutofit\/?>\s*<\/wps:bodyPr>/g, '<wps:bodyPr$1></wps:bodyPr>')
+  resultado = resultado.replace(/<a:bodyPr\b([^>]*)>\s*<a:noAutofit\/?>\s*<\/a:bodyPr>/g, '<a:bodyPr$1></a:bodyPr>')
 
   return resultado
 }

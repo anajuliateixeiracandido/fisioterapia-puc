@@ -10,6 +10,8 @@
     "studio": "prisma studio",
     "create:paciente": "node scripts/create-paciente.js",
     "create:cif": "node scripts/create-cif-referencia.js",
+    "create:fisioterapeutas": "node scripts/create-fisioterapeutas.js",
+    "create:relatorios": "node scripts/create-relatorios.js",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
