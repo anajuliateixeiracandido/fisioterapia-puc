@@ -69,7 +69,7 @@ const SideBar = ({ user, currentPage, onNavigate, onClose, isCollapsed = false, 
           </div>
           {!isCollapsed && (
             <div className="logo-text">
-              <div className="logo-title">Fisio PediÃ¡trica</div>
+              <div className="logo-title">Fisio Pediátrica</div>
               <div className="logo-subtitle">PUC Minas</div>
             </div>
           )}
@@ -131,7 +131,7 @@ const SideBar = ({ user, currentPage, onNavigate, onClose, isCollapsed = false, 
 
       <div className="sidebar-spacer" />
       <Separator paddingHorizontal={0} />
-      <div className="sidebar-version">VersÃ£o 1.0</div>
+      <div className="sidebar-version">Versão 1.0</div>
     </div>
   )
 }
