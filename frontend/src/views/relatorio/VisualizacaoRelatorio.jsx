@@ -102,7 +102,7 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
         </h3>
         <div className="responsaveis-grid">
           <div className="responsavel-card">
-            <div className="responsavel-label">Fisioterapeuta Autor</div>
+            <div className="responsavel-label">Autor</div>
             <div className="responsavel-nome">{fisioterapeuta?.nomeCompleto || '—'}</div>
             {fisioterapeuta?.email && (
               <div className="responsavel-info">

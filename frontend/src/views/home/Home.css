@@ -226,10 +226,6 @@
   background-color: #f59e0b;
 }
 
-.stat-icon.stat-red {
-  background-color: #ef4444;
-}
-
 .stat-icon.stat-green {
   background-color: #10b981;
 }
@@ -254,16 +250,6 @@
   font-size: 1.875rem;
   font-weight: 700;
   color: #1f2937;
-}
-
-.patients-card {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
 }
 
 .page-header {

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Menu, Bell, LogOut } from 'lucide-react'
+import { Menu, LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useModal } from '../contexts/ModalContext'
@@ -13,7 +13,6 @@ const { user: dadosAuth, logout } = useAuth()
 const modal = useModal()
 const navigate = useNavigate()
 const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-const [hasNotifications] = useState(true)
 const nomeUsuario = (dadosAuth?.nomeCompleto || dadosAuth?.nome || dadosAuth?.email || 'Usuário').trim() || 'Usuário'
 
 const user = dadosAuth
@@ -57,15 +56,6 @@ return (
           <Menu size={24} />
         </button>
         <div className="header-spacer" />
-        {
-          /*
-                <button className="icon-button notification-button">
-                  <Bell size={20} />
-                  {hasNotifications && <span className="notification-badge"></span>}
-                </button>
-        */
-        }
-
         <div
           className="header-profile"
           onClick={() => navigate('/perfil')}

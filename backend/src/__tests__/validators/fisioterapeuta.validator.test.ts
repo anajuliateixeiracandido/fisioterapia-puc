@@ -65,7 +65,13 @@ describe('professorCadastroSchema', () => {
 
 describe('alunoCadastroSchema', () => {
   it('deve rejeitar dados validos sem professor', () => {
-    const { codigoPessoaProfessor: _codigoPessoaProfessor, ...dadosSemProfessor } = dadosAlunoValido
+    const dadosSemProfessor = {
+      role: dadosAlunoValido.role,
+      nomeCompleto: dadosAlunoValido.nomeCompleto,
+      email: dadosAlunoValido.email,
+      senha: dadosAlunoValido.senha,
+      matricula: dadosAlunoValido.matricula,
+    }
     expect(() => alunoCadastroSchema.parse(dadosSemProfessor)).toThrow()
   })
 

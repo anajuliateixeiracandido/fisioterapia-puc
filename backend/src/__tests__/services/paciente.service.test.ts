@@ -1,3 +1,45 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const { prismaMock } = vi.hoisted(() => {
+  const prismaMock = {
+    paciente: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+    },
+  }
+  return { prismaMock }
+})
+
+vi.mock('../../lib/prisma', () => ({ default: prismaMock }))
+
+import { listarPacientesFisioterapeuta } from '../../services/paciente.service'
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+const pacienteCriado = {
+  id: 1,
+  codigo: 'PAC-001',
+  nomeCompleto: 'Paciente Teste',
+  dataNascimento: new Date('2000-01-15T00:00:00.000Z'),
+  sexo: 'F',
+  cpf: '12345678900',
+  telefone: '31999999999',
+  endereco: 'Rua Teste, 123',
+  email: 'paciente@email.com',
+  alergias: null,
+  condicaoSaude: 'Dor lombar',
+  professor: {
+    codigoPessoa: '1448023',
+    fisioterapeuta: {
+      nomeCompleto: 'Professor Teste',
+    },
+  },
+  alunos: [],
+  contatosEmergencia: [],
+}
+
 describe('listarPacientesFisioterapeuta', () => {
   const listaPacientes = [pacienteCriado]
 

@@ -3,6 +3,18 @@ import { hashPassword } from '../utils/hash.utils'
 import { AppError } from '../errors/AppError'
 import { CadastroInput, AtualizarPerfilInput } from '../validators/fisioterapeuta.validator'
 
+type ProfessorListado = {
+  id: number
+  fisioterapeutaId: number
+  codigoPessoa: string | null
+  coordenador: boolean
+  alunos?: Array<{ id: number }>
+  fisioterapeuta: {
+    nomeCompleto: string
+    email: string
+  }
+}
+
 async function cadastrarFisioterapeuta(dados: CadastroInput) {
   const senhaHash = await hashPassword(dados.senha)
 
@@ -115,7 +127,7 @@ function professorSelect() {
   } as const
 }
 
-function mapearProfessor(professor: any) {
+function mapearProfessor(professor: ProfessorListado) {
   return {
     id: professor.id,
     fisioterapeutaId: professor.fisioterapeutaId,
