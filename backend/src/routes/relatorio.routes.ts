@@ -24,7 +24,10 @@ router.get('/', authorize('ALUNO', 'PROFESSOR'), listar)
 // GET /relatorios/:id - Obter relatório por ID
 router.get('/:id', authorize('ALUNO', 'PROFESSOR'), obterPorId)
 
-// GET /relatorios/:id/pdf - Gerar PDF
+// GET /relatorios/:id/docx - Gerar documento Word
+router.get('/:id/docx', authorize('ALUNO', 'PROFESSOR'), gerarPDF)
+
+// GET /relatorios/:id/pdf - Alias legado para exportação
 router.get('/:id/pdf', authorize('ALUNO', 'PROFESSOR'), gerarPDF)
 
 // PATCH /relatorios/:id - Editar relatório

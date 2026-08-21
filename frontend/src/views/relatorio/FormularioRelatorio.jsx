@@ -32,14 +32,21 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
     if (!canSubmit) return
 
     const dadosEnvio = {
-      pacienteId: Number(form.pacienteId),
-      tipoCIF: form.tipoCIF,
-      dataPreenchimento: form.dataPreenchimento,
-      condicaoSaude: form.condicaoSaude,
+      pacienteId:            Number(form.pacienteId),
+      tipoCIF:               form.tipoCIF,
+      dataPreenchimento:     form.dataPreenchimento,
+      condicaoSaude:         form.condicaoSaude,
       condicaoSaudeDescricao: form.condicaoSaudeDescricao,
-      factoresPessoais: form.factoresPessoais,
-      planoTerapeutico: form.planoTerapeutico,
-      observacoes: form.observacoes,
+      queixaPrincipal:       form.queixaPrincipal       ?? null,
+      demandaReabilitacao:   form.demandaReabilitacao   ?? null,
+      atividadeLimitacao:    form.atividadeLimitacao    ?? null,
+      restricaoParticipacao: form.restricaoParticipacao ?? null,
+      factoresPessoais:      form.factoresPessoais      ?? null,
+      planoTerapeutico:      form.planoTerapeutico      ?? null,
+      diagnosticoFisioterapeutico: form.diagnosticoFisioterapeutico ?? null,
+      objetivoCurtoPrazo:    form.objetivoCurtoPrazo    ?? null,
+      objetivoLongoPrazo:    form.objetivoLongoPrazo    ?? null,
+      observacoes:           form.observacoes           ?? null,
       itens: Array.isArray(form.itens) ? form.itens : [],
     }
 
@@ -58,8 +65,10 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
           <span>Você está editando um relatório existente. Faça as alterações necessárias e clique em "Salvar alterações".</span>
         </div>
       )}
+
       <form onSubmit={handleSubmit}>
 
+        {/* ── Dados gerais + campos clínicos ──────────────────────────── */}
         <div className="form-section">
           <div className="section-title">
             <div className="section-icon"><FileText size={18} /></div>
@@ -67,7 +76,6 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
           </div>
 
           <div className="form-row-dois">
-
             <div className="form-field">
               <label className="form-label">
                 Paciente <span style={{ color: '#ef4444' }}>*</span>
@@ -99,9 +107,11 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
             </div>
           </div>
 
+          {/* Todos os campos clínicos na ordem da visualização */}
           <FormularioHeaderSection value={form} onChange={updateForm} />
         </div>
 
+        {/* ── Itens CIF ────────────────────────────────────────────────── */}
         <div className="cif-sections-container">
           {CIF_TIPOS_ARRAY.map((type) => {
             const typeItems = itemsByType[type.key]
@@ -148,6 +158,7 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
           })}
         </div>
 
+        {/* ── Ações ────────────────────────────────────────────────────── */}
         <div className="form-actions">
           {!canSubmit && (
             <div className="validation-message">

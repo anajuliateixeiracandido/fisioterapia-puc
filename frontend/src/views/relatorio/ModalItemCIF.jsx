@@ -7,6 +7,7 @@ import {
     obterRotuloQualificador3,
     obterRotuloQualificador4,
     obterCamposVisiveis,
+    obterOpcoesQualificador1,
     QUALIFICADOR_0_A_4_8_9,
     OPCOES_NATUREZA_ESTRUTURA,
     OPCOES_LOCALIZACAO_ESTRUTURA,
@@ -73,13 +74,14 @@ function toNullableInt(value) {
     return Number.isNaN(parsed) ? undefined : parsed
 }
 
-function QualificadorSelect({ id, label, value, onChange, opcoes }) {
+function QualificadorSelect({ id, label, value, onChange, opcoes, disabled = false }) {
     return (
         <div className="modal-item-cif__field">
             <label htmlFor={id}>{label}</label>
             <select
                 id={id}
                 value={value}
+                disabled={disabled}
                 onChange={(e) => onChange(e.target.value === '' ? '' : Number(e.target.value))}
             >
                 <option value="">Selecione</option>
@@ -144,6 +146,14 @@ export default function ModalItemCIF({
     }, [isOpen, item, currentType])
 
     if (!isOpen) return null
+
+    const itemComPrefixo = form.codigoCIF
+        ? form
+        : { ...form, codigoCIF: currentType }
+
+    const prefixoAtual = obterPrefixoCIF(itemComPrefixo.codigoCIF)
+    const opcoesQualificador1 = obterOpcoesQualificador1(itemComPrefixo)
+    const precisaTipoAmbiental = prefixoAtual === 'e' && !form.tipoQualificador1
 
     const handleChange = (field, value) => {
         setForm((prev) => ({ ...prev, [field]: value }))
@@ -278,17 +288,6 @@ export default function ModalItemCIF({
                             />
                         </div>
 
-                        {/* Qualificador 1 — sempre visível se há prefixo */}
-                        {campos.exibirQualificador1 && (
-                            <QualificadorSelect
-                                id="qualificador1"
-                                label={obterRotuloQualificador1(form)}
-                                value={form.qualificador1}
-                                onChange={(v) => handleChange('qualificador1', v)}
-                                opcoes={QUALIFICADOR_0_A_4_8_9}
-                            />
-                        )}
-
                         {/* Tipo qualificador 1 — só para factores ambientais */}
                         {campos.exibirTipoQualificador1 && (
                             <div className="modal-item-cif__field">
@@ -296,13 +295,32 @@ export default function ModalItemCIF({
                                 <select
                                     id="tipoQualificador1"
                                     value={form.tipoQualificador1}
-                                    onChange={(e) => handleChange('tipoQualificador1', e.target.value)}
+                                    onChange={(e) => {
+                                        const tipo = e.target.value
+                                        setForm((prev) => ({
+                                            ...prev,
+                                            tipoQualificador1: tipo,
+                                            qualificador1: '',
+                                        }))
+                                    }}
                                 >
                                     <option value="">Selecione</option>
                                     <option value="FACILITADOR">Facilitador (+)</option>
                                     <option value="BARREIRA">Barreira (.)</option>
                                 </select>
                             </div>
+                        )}
+
+                        {/* Qualificador 1 — sempre visível se há prefixo */}
+                        {campos.exibirQualificador1 && (
+                            <QualificadorSelect
+                                id="qualificador1"
+                                label={obterRotuloQualificador1(form)}
+                                value={form.qualificador1}
+                                onChange={(v) => handleChange('qualificador1', v)}
+                                opcoes={opcoesQualificador1}
+                                disabled={precisaTipoAmbiental}
+                            />
                         )}
 
                         {/* Qualificador 2 — para 's' (natureza) e 'd' (capacidade) */}
@@ -313,7 +331,7 @@ export default function ModalItemCIF({
                                 value={form.qualificador2}
                                 onChange={(v) => handleChange('qualificador2', v)}
                                 opcoes={
-                                    obterPrefixoCIF(form.codigoCIF) === 's'
+                                    prefixoAtual === 's'
                                         ? OPCOES_NATUREZA_ESTRUTURA
                                         : QUALIFICADOR_0_A_4_8_9
                                 }
@@ -342,7 +360,7 @@ export default function ModalItemCIF({
                                 value={form.qualificador3}
                                 onChange={(v) => handleChange('qualificador3', v)}
                                 opcoes={
-                                    obterPrefixoCIF(form.codigoCIF) === 's'
+                                    prefixoAtual === 's'
                                         ? OPCOES_LOCALIZACAO_ESTRUTURA
                                         : QUALIFICADOR_0_A_4_8_9
                                 }

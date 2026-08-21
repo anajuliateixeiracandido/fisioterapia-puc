@@ -81,7 +81,6 @@ const pacienteSelect = {
   endereco: true,
   email: true,
   alergias: true,
-  condicaoSaude: true,
   professor: {
     select: {
       codigoPessoa: true,
@@ -166,7 +165,6 @@ async function cadastrarPaciente(dados: CadastroPacienteInput, usuario: TokenPay
       endereco: dados.endereco,
       email: dados.email,
       alergias: dados.alergias,
-      condicaoSaude: dados.condicaoSaude,
       professorId,
       ...(alunoId && {
         alunos: {

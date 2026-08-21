@@ -7,7 +7,7 @@ import {
 const dadosProfessorValido = {
   role: 'PROFESSOR' as const,
   nomeCompleto: 'Professor Teste',
-  email: 'professor@sga.pucminas.br',
+  email: 'professor@pucminas.edu.br',
   senha: 'Senha@123',
   codigoPessoa: '1448023',
 }
@@ -15,7 +15,7 @@ const dadosProfessorValido = {
 const dadosAlunoValido = {
   role: 'ALUNO' as const,
   nomeCompleto: 'Aluno Teste',
-  email: 'aluno@sga.pucminas.br',
+  email: 'aluno@pucminas.edu.br',
   senha: 'Senha@123',
   matricula: '123456',
   codigoPessoaProfessor: '1448023',

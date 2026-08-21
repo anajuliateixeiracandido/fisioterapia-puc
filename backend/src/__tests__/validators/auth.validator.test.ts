@@ -32,7 +32,7 @@ describe('senhaForteSchema', () => {
 describe('loginSchema', () => {
   it('deve aceitar dados válidos', () => {
     expect(() =>
-      loginSchema.parse({ email: 'user@sga.pucminas.br', senha: 'qualquercoisa' })
+      loginSchema.parse({ email: 'user@pucminas.edu.br', senha: 'qualquercoisa' })
     ).not.toThrow()
   })
 
@@ -45,13 +45,13 @@ describe('loginSchema', () => {
   })
 
   it('deve rejeitar senha vazia', () => {
-    expect(() => loginSchema.parse({ email: 'user@sga.pucminas.br', senha: '' })).toThrow()
+    expect(() => loginSchema.parse({ email: 'user@pucminas.edu.br', senha: '' })).toThrow()
   })
 })
 
 describe('forgotPasswordSchema', () => {
   it('deve aceitar email institucional válido', () => {
-    expect(() => forgotPasswordSchema.parse({ email: 'user@sga.pucminas.br' })).not.toThrow()
+    expect(() => forgotPasswordSchema.parse({ email: 'user@pucminas.edu.br' })).not.toThrow()
   })
 
   it('deve rejeitar email fora do domínio', () => {

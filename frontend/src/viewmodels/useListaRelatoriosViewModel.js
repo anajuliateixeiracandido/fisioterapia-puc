@@ -60,6 +60,9 @@ export function useListaRelatoriosViewModel() {
           condicaoSaudeDescricao: dadosFormulario.condicaoSaudeDescricao,
           factoresPessoais: dadosFormulario.factoresPessoais || '',
           planoTerapeutico: dadosFormulario.planoTerapeutico || '',
+          diagnosticoFisioterapeutico: dadosFormulario.diagnosticoFisioterapeutico || '',
+          objetivoCurtoPrazo: dadosFormulario.objetivoCurtoPrazo || '',
+          objetivoLongoPrazo: dadosFormulario.objetivoLongoPrazo || '',
           observacoes: '',
           itens: itens.map(item => {
             const itemData = {

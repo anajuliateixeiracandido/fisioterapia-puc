@@ -1,5 +1,5 @@
 import React from 'react'
-import { User, Calendar, FileText, AlertCircle, CheckCircle, XCircle, Clock, Mail, ArrowLeft } from 'lucide-react'
+import { User, Calendar, FileText, AlertCircle, CheckCircle, Mail, ArrowLeft } from 'lucide-react'
 import { CIFItemCard } from './CartaoItemCIF'
 import { STATUS_RELATORIO, CIF_TYPES } from '../../constants/relatorio.constants'
 import { formatarData, formatarDataHora, calcularIdade } from '../../utils/formatadores'
@@ -18,11 +18,7 @@ function StatusBadge({ status }) {
 }
 
 export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVisualizarPaciente, acoes, onVoltar }) {
-  const {
-    relatorio,
-    carregando,
-    erro,
-  } = useVisualizacaoRelatorioViewModel(relatorioInicial, user)
+  const { relatorio, carregando, erro } = useVisualizacaoRelatorioViewModel(relatorioInicial, user)
 
   if (carregando) {
     return (
@@ -56,7 +52,6 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
   const { formularioCIF, paciente, fisioterapeuta, professorResponsavel, feedbacks, datasFeedback } = relatorio
   const codigo = `REL-${new Date(relatorio.dataCriacao).getFullYear()}-${String(relatorio.id).padStart(3, '0')}`
 
-  // Agrupar itens por categoria
   const itensPorCategoria = (formularioCIF.itens || []).reduce((acc, item) => {
     const prefixo = String(item.codigoCIF || '').charAt(0).toLowerCase()
     if (!acc[prefixo]) acc[prefixo] = []
@@ -66,7 +61,8 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
 
   return (
     <div className="visualizacao-relatorio">
-      {/* Header do Relatório */}
+
+      {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="visualizacao-header">
         <div className="header-info">
           {onVoltar && (
@@ -94,21 +90,15 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
         </div>
       </div>
 
-      {/* Informações dos Responsáveis */}
+      {/* ── Responsáveis ──────────────────────────────────────────────────── */}
       <div className="visualizacao-section">
-        <h3 className="section-title">
-          <User size={20} />
-          Responsáveis
-        </h3>
+        <h3 className="section-title"><User size={20} />Responsáveis</h3>
         <div className="responsaveis-grid">
           <div className="responsavel-card">
             <div className="responsavel-label">Autor</div>
             <div className="responsavel-nome">{fisioterapeuta?.nomeCompleto || '—'}</div>
             {fisioterapeuta?.email && (
-              <div className="responsavel-info">
-                <Mail size={14} />
-                {fisioterapeuta.email}
-              </div>
+              <div className="responsavel-info"><Mail size={14} />{fisioterapeuta.email}</div>
             )}
           </div>
           {professorResponsavel && (
@@ -116,23 +106,17 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
               <div className="responsavel-label">Professor Supervisor</div>
               <div className="responsavel-nome">{professorResponsavel.fisioterapeuta?.nomeCompleto || '—'}</div>
               {professorResponsavel.fisioterapeuta?.email && (
-                <div className="responsavel-info">
-                  <Mail size={14} />
-                  {professorResponsavel.fisioterapeuta.email}
-                </div>
+                <div className="responsavel-info"><Mail size={14} />{professorResponsavel.fisioterapeuta.email}</div>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Informações do Paciente */}
+      {/* ── Dados do Paciente (apenas dados cadastrais) ───────────────────── */}
       {paciente && (
         <div className="visualizacao-section">
-          <h3 className="section-title">
-            <User size={20} />
-            Dados do Paciente
-          </h3>
+          <h3 className="section-title"><User size={20} />Dados do Paciente</h3>
           <div className="paciente-info-grid">
             <div className="info-item">
               <span className="info-label">Código</span>
@@ -141,12 +125,7 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
             <div className="info-item">
               <span className="info-label">Nome Completo</span>
               {onVisualizarPaciente ? (
-                <button
-                  type="button"
-                  className="info-value-link"
-                  onClick={() => onVisualizarPaciente(paciente)}
-                  title="Clique para ver detalhes completos do paciente"
-                >
+                <button type="button" className="info-value-link" onClick={() => onVisualizarPaciente(paciente)}>
                   {paciente.nomeCompleto}
                 </button>
               ) : (
@@ -171,47 +150,14 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
                 <span className="info-value">{paciente.alergias}</span>
               </div>
             )}
-            {paciente.condicaoSaude && (
-              <div className="info-item full-width">
-                <span className="info-label">Condição de Saúde</span>
-                <span className="info-value">{paciente.condicaoSaude}</span>
-              </div>
-            )}
-            {paciente.demandaReabilitacao && (
-              <div className="info-item full-width">
-                <span className="info-label">Demanda de Reabilitação</span>
-                <span className="info-value">{paciente.demandaReabilitacao}</span>
-              </div>
-            )}
-            {paciente.atividadeLimitacao && (
-              <div className="info-item full-width">
-                <span className="info-label">Atividade e Limitação</span>
-                <span className="info-value">{paciente.atividadeLimitacao}</span>
-              </div>
-            )}
-            {paciente.queixaPrincipal && (
-              <div className="info-item full-width">
-                <span className="info-label">Queixa Principal</span>
-                <span className="info-value">{paciente.queixaPrincipal}</span>
-              </div>
-            )}
-            {paciente.observacoesIniciais && (
-              <div className="info-item full-width">
-                <span className="info-label">Observações Iniciais</span>
-                <span className="info-value">{paciente.observacoesIniciais}</span>
-              </div>
-            )}
           </div>
         </div>
       )}
 
-      {/* Dados do Formulário CIF */}
+      {/* ── Formulário CIF ────────────────────────────────────────────────── */}
       <div className="visualizacao-section">
-        <h3 className="section-title">
-          <FileText size={20} />
-          Formulário CIF
-        </h3>
-        
+        <h3 className="section-title"><FileText size={20} />Avaliação CIF</h3>
+
         <div className="cif-header-info">
           <div className="info-item">
             <span className="info-label">Tipo CIF</span>
@@ -231,18 +177,57 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
           )}
         </div>
 
+        {/* Condição de saúde */}
         {formularioCIF.condicaoSaude && (
           <div className="cif-field">
-            <div className="field-label">Condição de Saúde (CID-10)</div>
+            <div className="field-label">Condição de Saúde</div>
             <div className="field-value">{formularioCIF.condicaoSaude}</div>
           </div>
         )}
-
         <div className="cif-field">
           <div className="field-label">Descrição da Condição de Saúde</div>
           <div className="field-value">{formularioCIF.condicaoSaudeDescricao}</div>
         </div>
 
+        {/* Dados clínicos da avaliação */}
+        {formularioCIF.queixaPrincipal && (
+          <div className="cif-field">
+            <div className="field-label">Queixa Principal</div>
+            <div className="field-value">{formularioCIF.queixaPrincipal}</div>
+          </div>
+        )}
+        {formularioCIF.demandaReabilitacao && (
+          <div className="cif-field">
+            <div className="field-label">Demanda de Reabilitação</div>
+            <div className="field-value">{formularioCIF.demandaReabilitacao}</div>
+          </div>
+        )}
+
+        {/* Atividade 1 e Atividade 2 lado a lado */}
+        {(formularioCIF.atividadeLimitacao || formularioCIF.restricaoParticipacao) && (
+          <div className="cif-field">
+            <div className="atividades-grid">
+              {formularioCIF.atividadeLimitacao && (
+                <div className="atividade-card atividade-card--limitacao">
+                  <span className="atividade-badge">Atividade 1</span>
+                  <span className="info-label">Limitação de Atividade</span>
+                  <p className="atividade-descricao">{formularioCIF.atividadeLimitacao}</p>
+                  <span className="atividade-hint">d1–d6 · perspectiva individual</span>
+                </div>
+              )}
+              {formularioCIF.restricaoParticipacao && (
+                <div className="atividade-card atividade-card--participacao">
+                  <span className="atividade-badge">Atividade 2</span>
+                  <span className="info-label">Restrição de Participação Social</span>
+                  <p className="atividade-descricao">{formularioCIF.restricaoParticipacao}</p>
+                  <span className="atividade-hint">d7–d9 · perspectiva social</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Fatores pessoais */}
         {formularioCIF.factoresPessoais && (
           <div className="cif-field">
             <div className="field-label">Fatores Pessoais</div>
@@ -250,37 +235,57 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
           </div>
         )}
 
+        {/* Condutas */}
         {formularioCIF.planoTerapeutico && (
           <div className="cif-field">
-            <div className="field-label">Plano Terapêutico</div>
+            <div className="field-label">Condutas</div>
             <div className="field-value">{formularioCIF.planoTerapeutico}</div>
+          </div>
+        )}
+
+        {/* Diagnóstico e objetivos */}
+        {(formularioCIF.diagnosticoFisioterapeutico || formularioCIF.objetivoCurtoPrazo || formularioCIF.objetivoLongoPrazo) && (
+          <div className="cif-field-group">
+            {formularioCIF.diagnosticoFisioterapeutico && (
+              <div className="cif-field">
+                <div className="field-label">Diagnóstico Fisioterapêutico</div>
+                <div className="field-value">{formularioCIF.diagnosticoFisioterapeutico}</div>
+              </div>
+            )}
+            {(formularioCIF.objetivoCurtoPrazo || formularioCIF.objetivoLongoPrazo) && (
+              <div className="cif-field">
+                <div className="field-label">Plano de Tratamento para a Atividade Examinada</div>
+                {formularioCIF.objetivoCurtoPrazo && (
+                  <div className="field-subvalue">
+                    <strong>Curto prazo:</strong> {formularioCIF.objetivoCurtoPrazo}
+                  </div>
+                )}
+                {formularioCIF.objetivoLongoPrazo && (
+                  <div className="field-subvalue">
+                    <strong>Longo prazo:</strong> {formularioCIF.objetivoLongoPrazo}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* Observações adicionais se houver */}
+      {/* ── Observações ───────────────────────────────────────────────────── */}
       {formularioCIF.observacoes && (
         <div className="visualizacao-section">
-          <h3 className="section-title">
-            <FileText size={20} />
-            Observações Gerais
-          </h3>
+          <h3 className="section-title"><FileText size={20} />Observações Gerais</h3>
           <div className="field-value">{formularioCIF.observacoes}</div>
         </div>
       )}
-      
-      {/* Itens CIF por Categoria */}
+
+      {/* ── Itens CIF ─────────────────────────────────────────────────────── */}
       {Object.keys(itensPorCategoria).length > 0 && (
         <div className="visualizacao-section">
-          <h3 className="section-title">
-            <FileText size={20} />
-            Classificação CIF
-          </h3>
-
+          <h3 className="section-title"><FileText size={20} />Classificação CIF</h3>
           {['b', 's', 'd', 'e'].map(prefixo => {
             const itens = itensPorCategoria[prefixo]
             if (!itens || itens.length === 0) return null
-
             const tipoInfo = CIF_TYPES[prefixo]
             return (
               <div key={prefixo} className="categoria-section">
@@ -302,13 +307,10 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
         </div>
       )}
 
-      {/* Feedbacks */}
+      {/* ── Feedbacks ─────────────────────────────────────────────────────── */}
       {feedbacks && feedbacks.length > 0 && (
         <div className="visualizacao-section">
-          <h3 className="section-title">
-            <AlertCircle size={20} />
-            Histórico de Feedbacks
-          </h3>
+          <h3 className="section-title"><AlertCircle size={20} />Histórico de Feedbacks</h3>
           <div className="feedbacks-lista">
             {feedbacks.map((feedback, idx) => (
               <div key={idx} className="feedback-item">
@@ -324,7 +326,6 @@ export function VisualizacaoRelatorio({ relatorio: relatorioInicial, user, onVis
           </div>
         </div>
       )}
-
 
     </div>
   )

@@ -18,7 +18,7 @@ const tipoFactorAmbientalSchema = z.enum(['FACILITADOR', 'BARREIRA'], {
 
 const itemCIFSchema = z.object({
   codigoCIF: z.string().min(1, 'Código do item CIF é obrigatório'),
-  descricao: z.string().min(1, 'Descriçao invalida').optional(),
+  descricao: z.string().min(1, 'Descrição inválida').optional(),
   categoria: categoriaCIFSchema,
   nivel: z
     .number({ error: 'Nível do item CIF deve ser um número' })
@@ -59,11 +59,25 @@ const formularioCIFBaseSchema = z.object({
       message: 'Data de última alteração deve ser uma data válida',
     })
     .optional(),
-  condicaoSaude: z.string().optional(),
+
+  // ── Condição de saúde ──────────────────────────────────────────────────────
+  condicaoSaude:          z.string().optional(),
   condicaoSaudeDescricao: z.string(),
-  factoresPessoais: z.string().optional(),
-  planoTerapeutico: z.string().optional(),
-  observacoes: z.string().optional(),
+
+  // ── Campos clínicos da avaliação ───────────────────────────────────────────
+  queixaPrincipal:       z.string().trim().optional().nullable(),
+  demandaReabilitacao:   z.string().trim().max(400).optional().nullable(),
+  atividadeLimitacao:    z.string().trim().max(400).optional().nullable(),
+  restricaoParticipacao: z.string().trim().max(400).optional().nullable(),
+
+  // ── Contexto e plano ───────────────────────────────────────────────────────
+  factoresPessoais:            z.string().optional(),
+  planoTerapeutico:            z.string().optional(),
+  diagnosticoFisioterapeutico: z.string().optional(),
+  objetivoCurtoPrazo:          z.string().optional(),
+  objetivoLongoPrazo:          z.string().optional(),
+  observacoes:                 z.string().optional(),
+
   itens: z.array(itemCIFSchema).default([]),
 })
 
