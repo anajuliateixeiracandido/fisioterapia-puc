@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from 'lucide-react'
 import useLoginViewModel from '../../viewmodels/useLoginViewModel'
 import logo from '../../assets/logo-puc.png'
-import './Login.css'
+import './login.css'
 
 function Login() {
 const {
