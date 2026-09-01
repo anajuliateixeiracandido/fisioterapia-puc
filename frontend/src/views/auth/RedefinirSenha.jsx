@@ -1,7 +1,7 @@
 import { Eye, EyeOff, CheckCircle } from 'lucide-react'
 import useRedefinirSenhaViewModel from '../../viewmodels/useRedefinirSenhaViewModel'
 import logo from '../../assets/logo-puc.png'
-import './Login.css'
+import './login.css'
 
 function RedefinirSenha() {
 const {

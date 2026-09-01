@@ -1,6 +1,6 @@
 import useRecuperarSenhaViewModel from '../../viewmodels/useRecuperarSenhaViewModel'
 import logo from '../../assets/logo-puc.png'
-import './Login.css'
+import './login.css'
 
 function RecuperarSenha() {
 const {
