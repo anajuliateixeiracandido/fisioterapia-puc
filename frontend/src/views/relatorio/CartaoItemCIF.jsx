@@ -2,22 +2,23 @@ import React from 'react'
 import { Edit2, Trash2 } from 'lucide-react'
 import {
   obterPrefixoCIF,
+  obterMapaRotulosQualificador1,
   QUALIFICADOR_0_A_4_8_9,
   OPCOES_NATUREZA_ESTRUTURA,
   OPCOES_LOCALIZACAO_ESTRUTURA,
 } from '../../utils/regrascif'
 import './CartaoItemCIF.css'
 
+function mapearDescricaoQualificador(opcoes) {
+  return Object.fromEntries(
+    opcoes.map((op) => [op.valor, op.rotulo.replace(/^\d+\s*-\s*/, '')])
+  )
+}
+
 // Mapas de labels por tipo de opção
-const QUALIFICADOR_LABELS = Object.fromEntries(
-  QUALIFICADOR_0_A_4_8_9.map((q) => [q.valor, q.rotulo.split(' - ')[1]])
-)
-const NATUREZA_LABELS = Object.fromEntries(
-  OPCOES_NATUREZA_ESTRUTURA.map((q) => [q.valor, q.rotulo.split(' - ')[1]])
-)
-const LOCALIZACAO_LABELS = Object.fromEntries(
-  OPCOES_LOCALIZACAO_ESTRUTURA.map((q) => [q.valor, q.rotulo.split(' - ')[1]])
-)
+const QUALIFICADOR_LABELS = mapearDescricaoQualificador(QUALIFICADOR_0_A_4_8_9)
+const NATUREZA_LABELS = mapearDescricaoQualificador(OPCOES_NATUREZA_ESTRUTURA)
+const LOCALIZACAO_LABELS = mapearDescricaoQualificador(OPCOES_LOCALIZACAO_ESTRUTURA)
 
 function temValor(v) {
   return v !== null && v !== undefined && v !== ''
@@ -62,7 +63,7 @@ export function CIFItemCard({ item, onEdit, onRemove }) {
           <QualifierItem
             label="Gravidade da deficiência"
             value={item.qualificador1}
-            labelMap={QUALIFICADOR_LABELS}
+            labelMap={obterMapaRotulosQualificador1(item)}
           />
         )}
 
@@ -72,7 +73,7 @@ export function CIFItemCard({ item, onEdit, onRemove }) {
             <QualifierItem
               label="Extensão"
               value={item.qualificador1}
-              labelMap={QUALIFICADOR_LABELS}
+              labelMap={obterMapaRotulosQualificador1(item)}
             />
             <QualifierItem
               label="Natureza"
@@ -133,7 +134,7 @@ export function CIFItemCard({ item, onEdit, onRemove }) {
             <QualifierItem
               label="Grau"
               value={item.qualificador1}
-              labelMap={QUALIFICADOR_LABELS}
+              labelMap={obterMapaRotulosQualificador1(item)}
             />
           </>
         )}

@@ -82,11 +82,6 @@ model Paciente {
     endereco            String?
     email               String?
     alergias            String?
-    condicaoSaude       String?  @db.VarChar(400)
-    demandaReabilitacao String?  @db.VarChar(400)
-    atividadeLimitacao  String?  @db.VarChar(400)
-    queixaPrincipal     String?
-    observacoesIniciais String?
 
     professorId Int
     professor   Professor @relation("ProfessorPacientes", fields: [professorId], references: [id])
@@ -132,7 +127,15 @@ model FormularioCIF {
     condicaoSaudeDescricao String
     factoresPessoais       String?
     planoTerapeutico       String?
+    diagnosticoFisioterapeutico String?
+    objetivoCurtoPrazo          String?
+    objetivoLongoPrazo          String?
     observacoes            String?
+
+    queixaPrincipal         String?
+    demandaReabilitacao     String?  @db.VarChar(400)
+    atividadeLimitacao      String?  @db.VarChar(400)
+    restricaoParticipacao   String?  @db.VarChar(400)
 
     itens     ItemCIF[]
     relatorio Relatorio?
