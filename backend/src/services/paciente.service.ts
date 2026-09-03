@@ -3,11 +3,7 @@ import { Prisma, Role } from '@prisma/client'
 import { AppError } from '../errors/AppError'
 import { CadastroPacienteInput, ListarPacientesInput } from '../validators/paciente.validator'
 import { TokenPayload } from '../utils/jwt.utils'
-
-function parseDateBR(data: string): Date {
-  const [dia, mes, ano] = data.split('/')
-  return new Date(`${ano}-${mes}-${dia}`)
-}
+import { parseDateBR } from '../utils/date.utils'
 
 function buildDataNascimentoWhere(busca: string): Prisma.PacienteWhereInput | null {
   if (!/^\d{2}\/\d{2}\/\d{4}$/.test(busca)) {
@@ -239,17 +235,17 @@ async function listarPacientesFisioterapeuta(
   const whereBase: Prisma.PacienteWhereInput =
     role === 'ALUNO'
       ? {
-          alunos: {
-            some: {
-              fisioterapeutaId,
-            },
-          },
-        }
-      : {
-          professor: {
+        alunos: {
+          some: {
             fisioterapeutaId,
           },
-        }
+        },
+      }
+      : {
+        professor: {
+          fisioterapeutaId,
+        },
+      }
 
   const where = {
     AND: [whereBase, buildBuscaWhere(filtros.busca)],
@@ -290,16 +286,16 @@ async function buscarPacientePorId(
   const where =
     role === 'ALUNO'
       ? {
-          id: pacienteId,
-          alunos: {
-            some: {
-              fisioterapeutaId,
-            },
+        id: pacienteId,
+        alunos: {
+          some: {
+            fisioterapeutaId,
           },
-        }
+        },
+      }
       : {
-          id: pacienteId,
-        }
+        id: pacienteId,
+      }
 
   const paciente = await prisma.paciente.findFirst({
     where,

@@ -1,8 +1,8 @@
 import fs from 'node:fs/promises'
-import path from 'node:path'
 import JSZip from 'jszip'
 import prisma from '../lib/prisma'
 import { AppError } from '../errors/AppError'
+import env from '../config/env'
 import {
   CadastroRelatorioInput,
   EditarRelatorioInput,
@@ -10,7 +10,9 @@ import {
 } from '../validators/relatorio.validator'
 import { Prisma, CategoriaCIF, TipoFactorAmbiental } from '@prisma/client'
 import { TokenPayload } from '../utils/jwt.utils'
-import { parseDateBR, preencherTemplate } from '../utils/docx-builder.utils'
+import { preencherTemplate } from '../utils/docx-builder.utils'
+import { parseDateBR } from '../utils/date.utils'
+import type { TimeZone } from '../utils/date.utils'
 
 // ─── Tipos e Inclusões ────────────────────────────────────────────────────────
 
@@ -54,8 +56,6 @@ const RELATORIO_INCLUDE = {
 type RelatorioDetalhado = Prisma.RelatorioGetPayload<{
   include: typeof RELATORIO_INCLUDE
 }>
-
-const TEMPLATE_PATH = path.resolve(__dirname, '../../templates/avaliacao-funcional-pediatrica.docx')
 
 // ─── Utilitários Internos de Negócio ──────────────────────────────────────────
 
@@ -102,7 +102,7 @@ async function carregarRelatorioComPermissao(id: number, usuario: TokenPayload):
 
 // ─── Serviços Orquestradores ──────────────────────────────────────────────────
 
-export async function gerarRelatorioDocx(id: number, usuario: TokenPayload) {
+export async function gerarRelatorioDocx(id: number, usuario: TokenPayload, timeZone?: TimeZone) {
   const relatorio = await carregarRelatorioComPermissao(id, usuario)
 
   if (!relatorio.formularioCIF) {
@@ -111,7 +111,7 @@ export async function gerarRelatorioDocx(id: number, usuario: TokenPayload) {
 
   let templateBuffer: Buffer
   try {
-    templateBuffer = await fs.readFile(TEMPLATE_PATH)
+    templateBuffer = await fs.readFile(env.docx.templatePath)
   } catch {
     throw new AppError(500, 'DOCX_TEMPLATE_NOT_FOUND', 'Modelo de relatório não encontrado no servidor')
   }
@@ -124,7 +124,7 @@ export async function gerarRelatorioDocx(id: number, usuario: TokenPayload) {
   }
 
   const documentXml = await documentFile.async('string')
-  const atualizado = preencherTemplate(documentXml, relatorio)
+  const atualizado = preencherTemplate(documentXml, relatorio, timeZone)
 
   zip.file('word/document.xml', atualizado)
 
@@ -169,6 +169,10 @@ export async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario:
           : undefined,
         condicaoSaude: dados.formularioCIF.condicaoSaude,
         condicaoSaudeDescricao: dados.formularioCIF.condicaoSaudeDescricao,
+        queixaPrincipal: dados.formularioCIF.queixaPrincipal,
+        demandaReabilitacao: dados.formularioCIF.demandaReabilitacao,
+        atividadeLimitacao: dados.formularioCIF.atividadeLimitacao,
+        restricaoParticipacao: dados.formularioCIF.restricaoParticipacao,
         factoresPessoais: dados.formularioCIF.factoresPessoais,
         planoTerapeutico: dados.formularioCIF.planoTerapeutico,
         diagnosticoFisioterapeutico: dados.formularioCIF.diagnosticoFisioterapeutico,
@@ -177,21 +181,21 @@ export async function cadastrarRelatorio(dados: CadastroRelatorioInput, usuario:
         observacoes: dados.formularioCIF.observacoes,
         itens: dados.formularioCIF.itens?.length
           ? {
-              createMany: {
-                data: dados.formularioCIF.itens.map((item) => ({
-                  codigoCIF: item.codigoCIF,
-                  descricao: item.descricao,
-                  categoria: item.categoria as CategoriaCIF,
-                  nivel: item.nivel,
-                  qualificador1: item.qualificador1,
-                  tipoQualificador1: item.tipoQualificador1 as TipoFactorAmbiental | undefined,
-                  qualificador2: item.qualificador2,
-                  qualificador3: item.qualificador3,
-                  qualificador4: item.qualificador4,
-                  observacao: item.observacao,
-                })),
-              },
-            }
+            createMany: {
+              data: dados.formularioCIF.itens.map((item) => ({
+                codigoCIF: item.codigoCIF,
+                descricao: item.descricao,
+                categoria: item.categoria as CategoriaCIF,
+                nivel: item.nivel,
+                qualificador1: item.qualificador1,
+                tipoQualificador1: item.tipoQualificador1 as TipoFactorAmbiental | undefined,
+                qualificador2: item.qualificador2,
+                qualificador3: item.qualificador3,
+                qualificador4: item.qualificador4,
+                observacao: item.observacao,
+              })),
+            },
+          }
           : undefined,
       },
       select: { id: true },
@@ -286,6 +290,10 @@ export async function editarRelatorio(id: number, dados: EditarRelatorioInput, u
           ultimaAlteracao: new Date(),
           condicaoSaude: dados.formularioCIF!.condicaoSaude,
           condicaoSaudeDescricao: dados.formularioCIF!.condicaoSaudeDescricao,
+          queixaPrincipal: dados.formularioCIF!.queixaPrincipal,
+          demandaReabilitacao: dados.formularioCIF!.demandaReabilitacao,
+          atividadeLimitacao: dados.formularioCIF!.atividadeLimitacao,
+          restricaoParticipacao: dados.formularioCIF!.restricaoParticipacao,
           factoresPessoais: dados.formularioCIF!.factoresPessoais,
           planoTerapeutico: dados.formularioCIF!.planoTerapeutico,
           diagnosticoFisioterapeutico: dados.formularioCIF!.diagnosticoFisioterapeutico,
@@ -294,21 +302,21 @@ export async function editarRelatorio(id: number, dados: EditarRelatorioInput, u
           observacoes: dados.formularioCIF!.observacoes,
           itens: dados.formularioCIF!.itens?.length
             ? {
-                createMany: {
-                  data: dados.formularioCIF!.itens.map((item) => ({
-                    codigoCIF: item.codigoCIF,
-                    descricao: item.descricao,
-                    categoria: item.categoria as CategoriaCIF,
-                    nivel: item.nivel,
-                    qualificador1: item.qualificador1,
-                    tipoQualificador1: item.tipoQualificador1 as TipoFactorAmbiental | undefined,
-                    qualificador2: item.qualificador2,
-                    qualificador3: item.qualificador3,
-                    qualificador4: item.qualificador4,
-                    observacao: item.observacao,
-                  })),
-                },
-              }
+              createMany: {
+                data: dados.formularioCIF!.itens.map((item) => ({
+                  codigoCIF: item.codigoCIF,
+                  descricao: item.descricao,
+                  categoria: item.categoria as CategoriaCIF,
+                  nivel: item.nivel,
+                  qualificador1: item.qualificador1,
+                  tipoQualificador1: item.tipoQualificador1 as TipoFactorAmbiental | undefined,
+                  qualificador2: item.qualificador2,
+                  qualificador3: item.qualificador3,
+                  qualificador4: item.qualificador4,
+                  observacao: item.observacao,
+                })),
+              },
+            }
             : undefined,
         },
       })

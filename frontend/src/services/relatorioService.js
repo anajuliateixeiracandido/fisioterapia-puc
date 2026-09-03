@@ -36,6 +36,9 @@ export async function obterRelatorio(relatorioId) {
 export async function exportarRelatorioDocx(relatorioId) {
   const response = await api.get(`/relatorios/${relatorioId}/docx`, {
     responseType: 'blob',
+    headers: {
+      'X-Timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+    },
   })
 
   return {

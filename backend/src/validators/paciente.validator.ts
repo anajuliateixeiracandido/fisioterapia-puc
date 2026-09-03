@@ -1,25 +1,11 @@
 import { z } from 'zod'
+import { dataNascimentoValida } from '../utils/date.utils'
 
 const contatoEmergenciaSchema = z.object({
   nome: z.string().min(3, 'Nome do contato deve ter pelo menos 3 caracteres'),
   telefone: z.string().min(8, 'Telefone inválido'),
   parentesco: z.string().min(2, 'Parentesco inválido'),
 })
-
-function dataNascimentoValida(data: string) {
-  const [dia, mes, ano] = data.split('/').map(Number)
-  const nascimento = new Date(ano, mes - 1, dia)
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  return (
-    ano >= 1900 &&
-    nascimento.getFullYear() === ano &&
-    nascimento.getMonth() === mes - 1 &&
-    nascimento.getDate() === dia &&
-    nascimento <= hoje
-  )
-}
 
 const cadastroPacienteSchema = z.object({
   // ─── Dados pessoais ────────────────────────────────────────────────────────

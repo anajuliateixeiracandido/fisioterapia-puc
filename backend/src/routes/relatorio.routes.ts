@@ -5,7 +5,7 @@ import {
   deletar,
   listar,
   obterPorId,
-  gerarPDF,
+  gerarDocx,
 } from '../controllers/relatorio.controller'
 import { authenticate } from '../middlewares/auth.middleware'
 import { authorize } from '../middlewares/role.middleware'
@@ -25,10 +25,7 @@ router.get('/', authorize('ALUNO', 'PROFESSOR'), listar)
 router.get('/:id', authorize('ALUNO', 'PROFESSOR'), obterPorId)
 
 // GET /relatorios/:id/docx - Gerar documento Word
-router.get('/:id/docx', authorize('ALUNO', 'PROFESSOR'), gerarPDF)
-
-// GET /relatorios/:id/pdf - Alias legado para exportação
-router.get('/:id/pdf', authorize('ALUNO', 'PROFESSOR'), gerarPDF)
+router.get('/:id/docx', authorize('ALUNO', 'PROFESSOR'), gerarDocx)
 
 // PATCH /relatorios/:id - Editar relatório
 router.patch('/:id', authorize('ALUNO', 'PROFESSOR'), editar)

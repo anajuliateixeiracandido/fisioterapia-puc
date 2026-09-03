@@ -22,43 +22,16 @@ import {
   preencherParagrafoComRotulo,
   type Segmento,
 } from './docx.utils'
+import { calcularIdade, formatarDataExportacao, parseDateBR, type TimeZone } from './date.utils'
 
-// ─── Utilitários de Data ──────────────────────────────────────────────────────
-
-export function parseDateBR(data: string): Date {
-  if (data.includes('-') && !data.includes('/')) return new Date(data)
-  const [dia, mes, ano] = data.split('/')
-  return new Date(`${ano}-${mes}-${dia}`)
-}
-
-export function formatarDataExportacao(valor?: Date | string | null): string {
-  if (!valor) return ''
-  const data = valor instanceof Date ? valor : new Date(valor)
-  if (Number.isNaN(data.getTime())) return ''
-  return new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC' }).format(data)
-}
-
-export function calcularIdade(dataNascimento?: Date | string | null): string {
-  if (!dataNascimento) return ''
-  const nascimento = dataNascimento instanceof Date ? dataNascimento : new Date(dataNascimento)
-  if (Number.isNaN(nascimento.getTime())) return ''
-
-  const hoje = new Date()
-  let idade = hoje.getFullYear() - nascimento.getFullYear()
-  const aniversarioAindaNaoPassou =
-    hoje.getMonth() < nascimento.getMonth() ||
-    (hoje.getMonth() === nascimento.getMonth() && hoje.getDate() < nascimento.getDate())
-
-  if (aniversarioAindaNaoPassou) idade -= 1
-  return String(Math.max(idade, 0))
-}
+export { calcularIdade, formatarDataExportacao, parseDateBR } from './date.utils'
 
 // ─── Formatador legível de itens CIF ─────────────────────────────────────────
 
 function formatarItemCIFLegivel(item: any): string {
-  const codigo    = normalizarTexto(item.codigoCIF)
+  const codigo = normalizarTexto(item.codigoCIF)
   const descricao = normalizarTexto(item.descricao)
-  const prefixo   = obterPrefixoCIF(codigo)
+  const prefixo = obterPrefixoCIF(codigo)
   const quals: string[] = []
 
   const lbl = (tabela: Record<number, string>, v: number) => tabela[v] ?? String(v)
@@ -85,7 +58,7 @@ function formatarItemCIFLegivel(item: any): string {
   } else if (prefixo === 'e') {
     if (item.qualificador1 != null) {
       const tabelaE = item.tipoQualificador1 === 'FACILITADOR' ? QUALIFICADOR_FACILITADOR_LABELS : QUALIFICADOR_OBSTACULO_LABELS
-      const rotulo  = item.tipoQualificador1 === 'FACILITADOR' ? 'Facilitador' : 'Barreira'
+      const rotulo = item.tipoQualificador1 === 'FACILITADOR' ? 'Facilitador' : 'Barreira'
       quals.push(`${rotulo} ${item.qualificador1} — ${lbl(tabelaE, item.qualificador1)}`)
     }
   }
@@ -112,21 +85,21 @@ function resumirTabelaClinica(rotulo: string, texto: string): string {
 
 // ─── Preenchimento do Template ────────────────────────────────────────────────
 
-export function preencherTemplate(xml: string, relatorio: any): string {
+export function preencherTemplate(xml: string, relatorio: any, timeZone?: TimeZone): string {
   const responsavel = relatorio.paciente.contatosEmergencia?.[0]
   const itens = relatorio.formularioCIF?.itens ?? []
-  const cif   = relatorio.formularioCIF
+  const cif = relatorio.formularioCIF
 
   // ── Separação por prefixo CIF ─────────────────────────────────────────────
-  const itensFuncao     = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 'b')
-  const itensEstrutura  = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 's')
-  const itensDominiod   = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 'd')
+  const itensFuncao = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 'b')
+  const itensEstrutura = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 's')
+  const itensDominiod = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 'd')
   const itensAmbientais = itens.filter((i: any) => obterPrefixoCIF(i.codigoCIF) === 'e')
 
   // ── Resumos ───────────────────────────────────────────────────────────────
-  const resumoFuncoes    = resumirItensLegiveis(itensFuncao,    ['FUNCAO'])
+  const resumoFuncoes = resumirItensLegiveis(itensFuncao, ['FUNCAO'])
   const resumoEstruturas = resumirItensLegiveis(itensEstrutura, ['ESTRUTURA'])
-  const resumoAmbientais = resumirItensLegiveis(itensAmbientais,['FACTOR_AMBIENTAL'])
+  const resumoAmbientais = resumirItensLegiveis(itensAmbientais, ['FACTOR_AMBIENTAL'])
 
   const resumoAtividadesD1a6 = resumirItensLegiveis(
     itensDominiod.filter((i: any) => ehLimitacaoAtividade(i)),
@@ -142,23 +115,23 @@ export function preencherTemplate(xml: string, relatorio: any): string {
     itens.filter((i: any) => { const p = obterPrefixoCIF(i.codigoCIF); return p === 'b' || p === 's' }),
     ['FUNCAO', 'ESTRUTURA']
   )
-  const resumoLimitacoesDiagrama   = resumirItensLegiveis(itensDominiod.filter((i: any) => ehLimitacaoAtividade(i)),   ['ACTIVIDADE_PARTICIPACAO'])
-  const resumoParticipacaoDiagrama = resumirItensLegiveis(itensDominiod.filter((i: any) => ehRestricaoParticipacao(i)),['ACTIVIDADE_PARTICIPACAO'])
+  const resumoLimitacoesDiagrama = resumirItensLegiveis(itensDominiod.filter((i: any) => ehLimitacaoAtividade(i)), ['ACTIVIDADE_PARTICIPACAO'])
+  const resumoParticipacaoDiagrama = resumirItensLegiveis(itensDominiod.filter((i: any) => ehRestricaoParticipacao(i)), ['ACTIVIDADE_PARTICIPACAO'])
 
   // ── Campos clínicos ───────────────────────────────────────────────────────
-  const condicaoSaude       = normalizarTexto(cif?.condicaoSaude)
-  const queixaPrincipal     = normalizarTexto(cif?.queixaPrincipal)
+  const condicaoSaude = normalizarTexto(cif?.condicaoSaude)
+  const queixaPrincipal = normalizarTexto(cif?.queixaPrincipal)
   const demandaReabilitacao = normalizarTexto(cif?.demandaReabilitacao)
-  const atividade1          = normalizarTexto(cif?.atividadeLimitacao)
-  const atividade2          = normalizarTexto(cif?.restricaoParticipacao) || queixaPrincipal
-  const fatoresPessoais     = normalizarTexto(cif?.factoresPessoais)
+  const atividade1 = normalizarTexto(cif?.atividadeLimitacao)
+  const atividade2 = normalizarTexto(cif?.restricaoParticipacao) || queixaPrincipal
+  const fatoresPessoais = normalizarTexto(cif?.factoresPessoais)
 
   const diagnostico = primeiroTextoDisponivel(
     normalizarTexto(cif?.diagnosticoFisioterapeutico),
     [
       queixaPrincipal ? `Queixa principal: ${queixaPrincipal}` : '',
       normalizarTexto(cif?.condicaoSaudeDescricao) ? `Condição: ${normalizarTexto(cif?.condicaoSaudeDescricao)}` : '',
-      resumoFuncoes    ? `Achados de função:\n${resumoFuncoes}`      : '',
+      resumoFuncoes ? `Achados de função:\n${resumoFuncoes}` : '',
       resumoEstruturas ? `Achados de estrutura:\n${resumoEstruturas}` : '',
     ].filter(Boolean).join('\n')
   )
@@ -180,20 +153,20 @@ export function preencherTemplate(xml: string, relatorio: any): string {
   const objetivoLongoPrazo = primeiroTextoDisponivel(normalizarTexto(cif?.objetivoLongoPrazo), demandaReabilitacao, normalizarTexto(cif?.planoTerapeutico))
 
   // ── Tabelas ───────────────────────────────────────────────────────────────
-  const componentesAtividade1   = resumoFuncoes
+  const componentesAtividade1 = resumoFuncoes
   const comportamentoAtividade1 = [
     atividade1,
     resumoAtividadesD1a6 ? `Impacto nas atividades:\n${resumoAtividadesD1a6}` : '',
   ].filter(Boolean).join('\n\n')
-  const deficienciasAtividade1  = [
+  const deficienciasAtividade1 = [
     resumirTabelaClinica('Queixa', queixaPrincipal),
     resumirTabelaClinica('Condição', normalizarTexto(cif?.condicaoSaudeDescricao)),
     resumoEstruturas ? `Estruturas comprometidas:\n${resumoEstruturas}` : '',
   ].filter(Boolean).join('\n\n')
 
-  const componentesAtividade2   = resumoParticipacaoD7a9 || demandaReabilitacao
+  const componentesAtividade2 = resumoParticipacaoD7a9 || demandaReabilitacao
   const comportamentoAtividade2 = queixaPrincipal || normalizarTexto(cif?.observacoes)
-  const deficienciasAtividade2  = resumoAmbientais ? `Fatores ambientais:\n${resumoAmbientais}` : ''
+  const deficienciasAtividade2 = resumoAmbientais ? `Fatores ambientais:\n${resumoAmbientais}` : ''
 
   const condicaoComplementarLinhas = [
     queixaPrincipal ? `Queixa principal: ${queixaPrincipal}` : '',
@@ -211,11 +184,11 @@ export function preencherTemplate(xml: string, relatorio: any): string {
 
   atualizado = preencherParagrafoComRotulo(atualizado, 'Data da Aval.:', [
     { texto: 'Data da Aval.: ', negrito: true },
-    { texto: formatarDataExportacao(cif?.dataPreenchimento ?? relatorio.dataCriacao) },
+    { texto: formatarDataExportacao(cif?.dataPreenchimento ?? relatorio.dataCriacao, timeZone) },
     { texto: '    Data de Nascimento: ', negrito: true },
-    { texto: formatarDataExportacao(relatorio.paciente.dataNascimento) },
+    { texto: formatarDataExportacao(relatorio.paciente.dataNascimento, timeZone) },
     { texto: '    Idade Cronológica: ', negrito: true },
-    { texto: calcularIdade(relatorio.paciente.dataNascimento) },
+    { texto: calcularIdade(relatorio.paciente.dataNascimento, timeZone) },
     { texto: '    Idade Corrigida: ', negrito: true },
   ])
 
@@ -301,8 +274,8 @@ export function preencherTemplate(xml: string, relatorio: any): string {
     ]
   )
 
-  const nomeProfessor       = normalizarTexto(relatorio.professorResponsavel?.fisioterapeuta?.nomeCompleto)
-  const nomeAutor           = normalizarTexto(relatorio.fisioterapeuta.nomeCompleto)
+  const nomeProfessor = normalizarTexto(relatorio.professorResponsavel?.fisioterapeuta?.nomeCompleto)
+  const nomeAutor = normalizarTexto(relatorio.fisioterapeuta.nomeCompleto)
   const assinaturaProfessor = (nomeProfessor && nomeProfessor !== nomeAutor) ? nomeProfessor : ''
 
   atualizado = preencherParagrafoComRotulo(atualizado, 'Assinatura e carimbo do professor:', [
@@ -316,10 +289,10 @@ export function preencherTemplate(xml: string, relatorio: any): string {
     { alinhamentoCorpo: 'center', tamanhoFonteTitulo: '22', tamanhoFonteCorpo: '20' }
   )
   atualizado = preencherTextboxPorTitulo(atualizado, 'Deficiências de Estrutura e Função do Corpo', resumoFuncoesEstruturasDiagrama, { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '23', tamanhoFonteCorpo: '17', recuoCorpo: '80' })
-  atualizado = preencherTextboxPorTitulo(atualizado, 'Limitações de Atividade',              resumoLimitacoesDiagrama,   { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '23', tamanhoFonteCorpo: '17', recuoCorpo: '80' })
-  atualizado = preencherTextboxPorTitulo(atualizado, 'Restrições de Participação Social',     resumoParticipacaoDiagrama, { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '22', tamanhoFonteCorpo: '16', recuoCorpo: '80' })
+  atualizado = preencherTextboxPorTitulo(atualizado, 'Limitações de Atividade', resumoLimitacoesDiagrama, { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '23', tamanhoFonteCorpo: '17', recuoCorpo: '80' })
+  atualizado = preencherTextboxPorTitulo(atualizado, 'Restrições de Participação Social', resumoParticipacaoDiagrama, { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '22', tamanhoFonteCorpo: '16', recuoCorpo: '80' })
   atualizado = preencherTextboxPorTitulo(atualizado, 'Fatores Ambientais (barreiras e facilitadores)', resumoAmbientais, { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '22', tamanhoFonteCorpo: '16', recuoCorpo: '80' })
-  atualizado = preencherTextboxPorTitulo(atualizado, 'Fatores Pessoais', fatoresPessoais,     { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '22', tamanhoFonteCorpo: '16', recuoCorpo: '80' })
+  atualizado = preencherTextboxPorTitulo(atualizado, 'Fatores Pessoais', fatoresPessoais, { alinhamentoCorpo: 'left', tamanhoFonteTitulo: '22', tamanhoFonteCorpo: '16', recuoCorpo: '80' })
 
   // ─── 9. AUTO-RESIZE ───────────────────────────────────────────────────────
   atualizado = ativarAutoResizeTextboxes(atualizado)

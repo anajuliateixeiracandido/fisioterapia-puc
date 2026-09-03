@@ -91,7 +91,7 @@ async function obterPorId(req: Request, res: Response, next: NextFunction): Prom
   }
 }
 
-async function gerarPDF(req: Request, res: Response, next: NextFunction): Promise<void> {
+async function gerarDocx(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     const id = parseInt(req.params.id as string)
 
@@ -99,7 +99,8 @@ async function gerarPDF(req: Request, res: Response, next: NextFunction): Promis
       throw new AppError(400, 'INVALID_ID', 'ID inválido')
     }
 
-    const arquivo = await gerarRelatorioDocx(id, req.user!)
+    const timeZone = typeof req.headers['x-timezone'] === 'string' ? req.headers['x-timezone'] : undefined
+    const arquivo = await gerarRelatorioDocx(id, req.user!, timeZone)
 
     res.setHeader(
       'Content-Type',
@@ -112,4 +113,4 @@ async function gerarPDF(req: Request, res: Response, next: NextFunction): Promis
   }
 }
 
-export { criar, editar, deletar, listar, obterPorId, gerarPDF }
+export { criar, editar, deletar, listar, obterPorId, gerarDocx }
