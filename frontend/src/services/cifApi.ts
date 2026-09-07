@@ -1,6 +1,6 @@
 // Acessa a variável de ambiente do Vite
 // @ts-ignore
-const API_BASE = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3000'
+const API_BASE = (import.meta.env.VITE_API_URL as string) || 'https://fisioterapia-puc.onrender.com'
 
 export interface CIFReferencia {
     id: number
