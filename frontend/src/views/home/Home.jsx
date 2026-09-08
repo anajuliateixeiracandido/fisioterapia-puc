@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { ClipboardList, Clock, Check, Users, Pencil, Trash2, ArrowLeft } from 'lucide-react'
+import { ClipboardList, Clock, Check, Users, Pencil, Trash2, ArrowLeft, Download } from 'lucide-react'
 import Layout from '../../components/Layout'
 import { ListaRelatorios } from '../relatorio/ListaRelatorios'
 import { VisualizacaoRelatorio } from '../relatorio/VisualizacaoRelatorio'
@@ -11,7 +11,7 @@ import { useModal } from '../../contexts/ModalContext'
 import { useAuth } from '../../contexts/AuthContext'
 import api from '../../services/api'
 import { podeEditarRelatorio, podeDeletarRelatorio, podeAvaliarRelatorio } from '../../utils/permissoes'
-import { obterRelatorio } from '../../services/relatorioService'
+import { obterRelatorio, exportarRelatorioDocx } from '../../services/relatorioService'
 import { calcularIniciais } from '../../utils/formatadores'
 import './Home.css'
 
@@ -57,6 +57,7 @@ const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
 const [pacienteSelecionadoId, setPacienteSelecionadoId] = useState(null)
 const [escopoPacientes, setEscopoPacientes] = useState('meus')
 const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
+const [exportandoRelatorio, setExportandoRelatorio] = useState(false)
 const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
 const [enviandoAvaliacao, setEnviandoAvaliacao] = useState(false)
 
@@ -156,6 +157,36 @@ return (
           }}
           acoes={
             <div className="button-group">
+              <button
+                type="button"
+                onClick={async () => {
+                  setExportandoRelatorio(true)
+                  try {
+                    const { blob, fileName } = await exportarRelatorioDocx(relatorioSelecionado.id)
+                    const url = window.URL.createObjectURL(blob)
+                    const link = document.createElement('a')
+                    link.href = url
+                    link.download = fileName
+                    document.body.appendChild(link)
+                    link.click()
+                    document.body.removeChild(link)
+                    window.URL.revokeObjectURL(url)
+                  } catch (error) {
+                    modal.showError(
+                      'Erro ao exportar relatório: ' +
+                        (error.response?.data?.message || error.message)
+                    )
+                  } finally {
+                    setExportandoRelatorio(false)
+                  }
+                }}
+                disabled={exportandoRelatorio}
+                className="btn-header-action"
+                title="Exportar relatório"
+              >
+                <Download size={20} />
+              </button>
+
               {podeEditarRelatorio(relatorioSelecionado, user) && (
                 <button
                   type="button"

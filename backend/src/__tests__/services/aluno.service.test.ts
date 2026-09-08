@@ -28,7 +28,7 @@ const alunos = [
       id: 10,
       uid: 'uid-aluno',
       nomeCompleto: 'Aluno Teste',
-      email: 'aluno@sga.pucminas.br',
+      email: 'aluno@pucminas.edu.br',
       role: 'ALUNO',
       createdAt: new Date(),
     },
@@ -38,7 +38,7 @@ const alunos = [
       fisioterapeutaId: 30,
       fisioterapeuta: {
         nomeCompleto: 'Professor Teste',
-        email: 'professor@sga.pucminas.br',
+        email: 'professor@pucminas.edu.br',
       },
     },
   },

@@ -61,6 +61,10 @@ export function useHomeViewModel() {
           condicaoSaudeDescricao: dados.condicaoSaudeDescricao,
           factoresPessoais: dados.factoresPessoais,
           planoTerapeutico: dados.planoTerapeutico,
+          diagnosticoFisioterapeutico: dados.diagnosticoFisioterapeutico,
+          objetivoCurtoPrazo: dados.objetivoCurtoPrazo,
+          objetivoLongoPrazo: dados.objetivoLongoPrazo,
+          observacoes: dados.observacoes,
           itens: dados.itens,
         },
       })

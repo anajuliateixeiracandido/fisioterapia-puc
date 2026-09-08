@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import path from 'node:path'
 import type { SignOptions } from 'jsonwebtoken'
 
 const required = [
@@ -36,6 +37,11 @@ const env = {
   },
   passwordReset: {
     expiresInMinutes: Number(process.env.PASSWORD_RESET_EXPIRES_IN_MINUTES),
+  },
+  docx: {
+    templatePath: process.env.DOCX_TEMPLATE_PATH
+      ? path.resolve(process.env.DOCX_TEMPLATE_PATH)
+      : path.resolve(__dirname, '../../templates/avaliacao-funcional-pediatrica.docx'),
   },
 }
 

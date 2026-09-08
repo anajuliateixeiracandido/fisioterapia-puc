@@ -42,7 +42,7 @@ describe('listarProfessoresParaTransferencia', () => {
         coordenador: false,
         fisioterapeuta: {
           nomeCompleto: 'Professor Novo Coordenador',
-          email: 'novo.coordenador@sga.pucminas.br',
+          email: 'novo.coordenador@pucminas.edu.br',
         },
       },
     ]
@@ -121,7 +121,7 @@ describe('transferirCoordenador', () => {
     coordenador: true,
     fisioterapeuta: {
       nomeCompleto: 'Professor Novo Coordenador',
-      email: 'novo.coordenador@sga.pucminas.br',
+      email: 'novo.coordenador@pucminas.edu.br',
     },
   }
 

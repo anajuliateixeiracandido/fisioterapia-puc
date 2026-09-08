@@ -14,6 +14,15 @@
   margin-bottom: 24px;
 }
 
+.tratamento-section {
+  padding: 16px;
+  background: #f9fafb;
+}
+
+.tratamento-section .form-field + .form-field {
+  margin-top: 12px;
+}
+
 .section-title {
   font-size: 20px;
   font-weight: 600;

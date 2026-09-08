@@ -206,7 +206,7 @@ function ModalNovoPaciente({ aberto, carregando, erro, form, onChange, onClose, 
           </label>
 
           <label className="paciente-field">
-            <span>Diagnóstico (CID-10)</span>
+            <span>Diagnóstico</span>
             <input
               type="text"
               placeholder="Ex: G80 - Paralisia cerebral"
@@ -660,7 +660,7 @@ function DetalhesPaciente({ pacienteId, onVoltar }) {
           <DetalhePacienteCampo titulo="Endereco" destaque>
             {exibirValor(paciente.endereco)}
           </DetalhePacienteCampo>
-          <DetalhePacienteCampo titulo="Diagnostico (CID-10)" destaque>
+          <DetalhePacienteCampo titulo="Diagnostico" destaque>
             {exibirValor(paciente.condicaoSaude)}
           </DetalhePacienteCampo>
           <DetalhePacienteCampo titulo="Alergias" destaque>

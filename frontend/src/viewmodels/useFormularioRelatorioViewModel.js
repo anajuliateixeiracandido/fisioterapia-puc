@@ -31,6 +31,9 @@ function converterRelatorioParaForm(relatorio) {
       condicaoSaudeDescricao: formularioCIF.condicaoSaudeDescricao || '',
       factoresPessoais: formularioCIF.factoresPessoais || '',
       planoTerapeutico: formularioCIF.planoTerapeutico || '',
+      diagnosticoFisioterapeutico: formularioCIF.diagnosticoFisioterapeutico || '',
+      objetivoCurtoPrazo: formularioCIF.objetivoCurtoPrazo || '',
+      objetivoLongoPrazo: formularioCIF.objetivoLongoPrazo || '',
       observacoes: formularioCIF.observacoes || '',
       itens: (formularioCIF.itens || []).map(item => ({
         ...item,
@@ -61,6 +64,9 @@ export function useFormularioRelatorioViewModel(relatorioInicial = null, modoEdi
     condicaoSaudeDescricao: '',
     factoresPessoais: '',
     planoTerapeutico: '',
+    diagnosticoFisioterapeutico: '',
+    objetivoCurtoPrazo: '',
+    objetivoLongoPrazo: '',
     observacoes: '',
     itens: [],
   }

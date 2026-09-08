@@ -182,6 +182,59 @@ describe('cadastrarRelatorio', () => {
     expect(dataCapturada!.getFullYear()).toBe(2026)
     expect(dataCapturada!.getMonth()).toBe(0) // janeiro
   })
+
+  it('deve persistir campos clínicos no cadastro do formulário CIF', async () => {
+    prismaMock.paciente.findUnique.mockResolvedValue({ id: 1 })
+    prismaMock.professor.findFirst.mockResolvedValue({ id: 10 })
+
+    let payloadCapturado: Record<string, unknown> | undefined
+    prismaMock.$transaction.mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      async (fn: any) => {
+        const tx = {
+          formularioCIF: {
+            create: vi.fn().mockImplementation(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              async ({ data }: any) => {
+                payloadCapturado = data
+                return { id: 9 }
+              }
+            ),
+          },
+          relatorio: {
+            create: vi.fn().mockResolvedValue({
+              id: 9,
+              status: 'APROVADO',
+              dataCriacao: new Date(),
+              formularioCIF: { id: 9, tipoCIF: 'CIF', itens: [] },
+            }),
+          },
+        }
+        return fn(tx)
+      }
+    )
+
+    await cadastrarRelatorio(
+      {
+        pacienteId: 1,
+        formularioCIF: {
+          ...formularioCIFInput,
+          queixaPrincipal: 'Queixa principal',
+          demandaReabilitacao: 'Demanda de reabilitação',
+          atividadeLimitacao: 'Atividade com limitação',
+          restricaoParticipacao: 'Restrição de participação',
+        },
+      },
+      usuarioProfessor
+    )
+
+    expect(payloadCapturado).toMatchObject({
+      queixaPrincipal: 'Queixa principal',
+      demandaReabilitacao: 'Demanda de reabilitação',
+      atividadeLimitacao: 'Atividade com limitação',
+      restricaoParticipacao: 'Restrição de participação',
+    })
+  })
 })
 
 // ─── editarRelatorio ─────────────────────────────────────────────────────────
@@ -344,6 +397,59 @@ describe('editarRelatorio', () => {
     const resultado = await editarRelatorio(1, { formularioCIF: formularioCIFInput }, usuarioAluno)
 
     expect(resultado.status).toBe('CORRIGIDO')
+  })
+
+  it('deve persistir campos clínicos ao editar o formulário CIF', async () => {
+    prismaMock.relatorio.findUnique.mockResolvedValue({
+      ...relatorioBase,
+      fisioterapeutaId: 2,
+      status: 'ENVIADO',
+      formularioCIF: { id: 5, itens: [] },
+    })
+
+    const relatorioAtualizado = { ...relatorioBase, status: 'CORRIGIDO' }
+    let payloadCapturado: Record<string, unknown> | undefined
+
+    prismaMock.$transaction.mockImplementation(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      async (fn: any) => {
+        const tx = {
+          itemCIF: { deleteMany: vi.fn().mockResolvedValue({}) },
+          formularioCIF: {
+            update: vi.fn().mockImplementation(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              async ({ data }: any) => {
+                payloadCapturado = data
+                return {}
+              }
+            ),
+          },
+          relatorio: { update: vi.fn().mockResolvedValue(relatorioAtualizado) },
+        }
+        return fn(tx)
+      }
+    )
+
+    await editarRelatorio(
+      1,
+      {
+        formularioCIF: {
+          ...formularioCIFInput,
+          queixaPrincipal: 'Queixa principal',
+          demandaReabilitacao: 'Demanda de reabilitação',
+          atividadeLimitacao: 'Atividade com limitação',
+          restricaoParticipacao: 'Restrição de participação',
+        },
+      },
+      usuarioAluno
+    )
+
+    expect(payloadCapturado).toMatchObject({
+      queixaPrincipal: 'Queixa principal',
+      demandaReabilitacao: 'Demanda de reabilitação',
+      atividadeLimitacao: 'Atividade com limitação',
+      restricaoParticipacao: 'Restrição de participação',
+    })
   })
 
   it('deve lançar FORBIDDEN quando ALUNO tenta editar formularioCIF de relatório aprovado', async () => {

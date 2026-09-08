@@ -4,7 +4,7 @@ import { senhaForteSchema } from './auth.validator'
 const emailSchema = z
   .string()
   .email('E-mail invalido')
-  .endsWith('@sga.pucminas.br', 'Apenas e-mails @sga.pucminas.br sao permitidos')
+  .endsWith('@pucminas.edu.br', 'Apenas e-mails @pucminas.edu.br sao permitidos')
 
 const nomeSchema = z.string().min(3, 'Nome deve ter pelo menos 3 caracteres').max(200)
 

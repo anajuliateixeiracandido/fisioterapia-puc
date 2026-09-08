@@ -89,7 +89,7 @@ return (
             <input
               type="email"
               className="form-input"
-              placeholder="professor@sga.pucminas.br"
+              placeholder="professor@pucminas.edu.br"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={carregando}

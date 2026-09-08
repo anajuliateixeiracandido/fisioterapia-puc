@@ -11,7 +11,7 @@ const loginSchema = z.object({
   email: z
     .string()
     .email('E-mail inválido')
-    .endsWith('@sga.pucminas.br', 'Apenas e-mails @sga.pucminas.br são permitidos'),
+    .endsWith('@pucminas.edu.br', 'Apenas e-mails @pucminas.edu.br são permitidos'),
   senha: z.string().min(1, 'Senha obrigatória'),
 })
 
@@ -19,7 +19,7 @@ const forgotPasswordSchema = z.object({
   email: z
     .string()
     .email('E-mail inválido')
-    .endsWith('@sga.pucminas.br', 'Apenas e-mails @sga.pucminas.br são permitidos'),
+    .endsWith('@pucminas.edu.br', 'Apenas e-mails @pucminas.edu.br são permitidos'),
 })
 
 const resetPasswordSchema = z.object({
