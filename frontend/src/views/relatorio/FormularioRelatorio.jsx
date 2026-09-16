@@ -1,5 +1,6 @@
-import React from 'react'
-import { FileText, Send, AlertCircle, Plus } from 'lucide-react'
+import React, { useState } from 'react'
+import { FileText, Send, AlertCircle, Plus, Database, LoaderCircle } from 'lucide-react'
+import api from '../../services/api'
 import { FormularioHeaderSection } from './FormularioHeaderSection'
 import { CIFItemCard } from './CartaoItemCIF'
 import { CIF_TIPOS_ARRAY } from '../../constants/relatorio.constants'
@@ -26,6 +27,24 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
     setItemModalOpen,
     setEditingIndex,
   } = useFormularioRelatorioViewModel(relatorioInicial, modoEdicao)
+
+  const [carregandoCIF, setCarregandoCIF] = useState(false)
+  const [mensagemCIF, setMensagemCIF] = useState('')
+
+  const handleRecarregarCIF = async () => {
+    setCarregandoCIF(true)
+    setMensagemCIF('')
+
+    try {
+      const { data } = await api.post('/cif-referencias/carregar')
+      setMensagemCIF(data?.mensagem || `Itens CIF carregados (${data?.total ?? 0}).`)
+    } catch (error) {
+      const msg = error?.response?.data?.erro || 'Não foi possível carregar os itens CIF.'
+      setMensagemCIF(msg)
+    } finally {
+      setCarregandoCIF(false)
+    }
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -112,6 +131,21 @@ export function ReportForm({ onSubmitReport, relatorioInicial = null, modoEdicao
         </div>
 
         {/* ── Itens CIF ────────────────────────────────────────────────── */}
+        <div className="cif-toolbar">
+          <button
+            type="button"
+            className="btn btn-secondary cif-load-button"
+            onClick={handleRecarregarCIF}
+            disabled={carregandoCIF}
+          >
+            {carregandoCIF ? <LoaderCircle size={16} className="spinning" /> : <Database size={16} />}
+            {carregandoCIF ? 'Carregando...' : 'Carregar itens CIF'}
+          </button>
+          {mensagemCIF && (
+            <span className="cif-load-message">{mensagemCIF}</span>
+          )}
+        </div>
+
         <div className="cif-sections-container">
           {CIF_TIPOS_ARRAY.map((type) => {
             const typeItems = itemsByType[type.key]

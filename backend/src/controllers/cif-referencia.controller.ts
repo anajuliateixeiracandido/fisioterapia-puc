@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import prisma from '../lib/prisma'
 import { Prisma } from '@prisma/client'
+import { carregarItensCIF } from '../services/cif-referencia.service'
 
 export async function listarReferencias(req: Request, res: Response) {
   try {
@@ -66,5 +67,22 @@ export async function obterPorCodigo(req: Request, res: Response) {
   } catch (error) {
     console.error('Erro ao obter referência CIF:', error)
     res.status(500).json({ erro: 'Erro ao buscar referência CIF' })
+  }
+}
+
+export async function carregarItensCIFController(req: Request, res: Response) {
+  try {
+    const resultado = await carregarItensCIF()
+    res.json({
+      ok: true,
+      mensagem: 'Itens CIF carregados com sucesso.',
+      total: resultado.total,
+    })
+  } catch (error) {
+    console.error('Erro ao carregar itens CIF:', error)
+    res.status(500).json({
+      ok: false,
+      erro: error instanceof Error ? error.message : 'Erro ao carregar itens CIF',
+    })
   }
 }
