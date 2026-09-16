@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { listarReferencias, obterPorCodigo } from '../controllers/cif-referencia.controller'
+import { listarReferencias, obterPorCodigo, carregarItensCIFController } from '../controllers/cif-referencia.controller'
 
 const router = Router()
 
@@ -10,6 +10,9 @@ const router = Router()
 //   - limit (default: 50)
 //   - offset (default: 0)
 router.get('/', listarReferencias)
+
+// POST /cif-referencias/carregar - Carregar itens CIF a partir do JSON
+router.post('/carregar', carregarItensCIFController)
 
 // GET /cif-referencias/:codigo - Obter referência por código
 router.get('/:codigo', obterPorCodigo)

@@ -45,6 +45,38 @@
 }
 
 /* Bloco 2 - Itens CIF por tipo */
+.cif-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.cif-load-button {
+  min-width: 200px;
+  justify-content: center;
+}
+
+.cif-load-message {
+  font-size: 13px;
+  color: #0f766e;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  border-radius: 999px;
+  padding: 6px 12px;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .cif-sections-container {
   display: flex;
   flex-direction: column;
