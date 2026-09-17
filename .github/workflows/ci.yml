@@ -27,6 +27,15 @@ jobs:
           cd frontend
           npm ci
       - name: Run backend tests
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/fisioterapia_ci
+          JWT_SECRET: ci-only-jwt-secret
+          JWT_EXPIRES_IN: 1h
+          REFRESH_TOKEN_EXPIRES_IN_DAYS: 7
+          RESEND_API_KEY: re_ci_only
+          RESEND_FROM: ci@example.com
+          FRONTEND_URL: http://localhost:5173
+          PASSWORD_RESET_EXPIRES_IN_MINUTES: 60
         run: |
           cd backend
           npm test || echo "No backend tests found"
