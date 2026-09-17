@@ -2,6 +2,10 @@ import 'dotenv/config'
 import path from 'node:path'
 import type { SignOptions } from 'jsonwebtoken'
 
+const backendRoot = path.basename(path.resolve(__dirname, '../..')) === 'dist'
+  ? path.resolve(__dirname, '../../../')
+  : path.resolve(__dirname, '../../')
+
 const required = [
   'DATABASE_URL',
   'JWT_SECRET',
@@ -40,8 +44,8 @@ const env = {
   },
   docx: {
     templatePath: process.env.DOCX_TEMPLATE_PATH
-      ? path.resolve(process.env.DOCX_TEMPLATE_PATH)
-      : path.resolve(__dirname, '../../templates/avaliacao-funcional-pediatrica.docx'),
+      ? path.resolve(backendRoot, process.env.DOCX_TEMPLATE_PATH)
+      : path.resolve(backendRoot, 'templates/avaliacao-funcional-pediatrica.docx'),
   },
 }
 
