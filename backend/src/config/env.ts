@@ -1,10 +1,24 @@
 import 'dotenv/config'
+import fs from 'node:fs'
 import path from 'node:path'
 import type { SignOptions } from 'jsonwebtoken'
 
 const backendRoot = path.basename(path.resolve(__dirname, '../..')) === 'dist'
   ? path.resolve(__dirname, '../../../')
   : path.resolve(__dirname, '../../')
+
+function resolverTemplatePath(valor?: string): string {
+  const nomeTemplate = valor || 'templates/avaliacao-funcional-pediatrica.docx'
+  if (path.isAbsolute(nomeTemplate)) return nomeTemplate
+
+  const candidatos = [
+    path.resolve(backendRoot, nomeTemplate),
+    path.resolve(backendRoot, '..', nomeTemplate),
+    path.resolve(process.cwd(), nomeTemplate),
+  ]
+
+  return candidatos.find((candidato) => fs.existsSync(candidato)) ?? candidatos[0]
+}
 
 const required = [
   'DATABASE_URL',
@@ -43,9 +57,7 @@ const env = {
     expiresInMinutes: Number(process.env.PASSWORD_RESET_EXPIRES_IN_MINUTES),
   },
   docx: {
-    templatePath: process.env.DOCX_TEMPLATE_PATH
-      ? path.resolve(backendRoot, process.env.DOCX_TEMPLATE_PATH)
-      : path.resolve(backendRoot, 'templates/avaliacao-funcional-pediatrica.docx'),
+    templatePath: resolverTemplatePath(process.env.DOCX_TEMPLATE_PATH),
   },
 }
 
