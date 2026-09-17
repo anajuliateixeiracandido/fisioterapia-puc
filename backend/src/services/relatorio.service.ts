@@ -116,21 +116,32 @@ export async function gerarRelatorioDocx(id: number, usuario: TokenPayload, time
     throw new AppError(500, 'DOCX_TEMPLATE_NOT_FOUND', 'Modelo de relatório não encontrado no servidor')
   }
 
-  const zip = await JSZip.loadAsync(templateBuffer)
-  const documentFile = zip.file('word/document.xml')
+  try {
+    const zip = await JSZip.loadAsync(templateBuffer)
+    const documentFile = zip.file('word/document.xml')
 
-  if (!documentFile) {
-    throw new AppError(500, 'DOCX_TEMPLATE_INVALID', 'Modelo de relatório inválido')
-  }
+    if (!documentFile) {
+      throw new AppError(500, 'DOCX_TEMPLATE_INVALID', 'Modelo de relatório inválido')
+    }
 
-  const documentXml = await documentFile.async('string')
-  const atualizado = preencherTemplate(documentXml, relatorio, timeZone)
+    const documentXml = await documentFile.async('string')
+    const atualizado = preencherTemplate(documentXml, relatorio, timeZone)
 
-  zip.file('word/document.xml', atualizado)
+    zip.file('word/document.xml', atualizado)
 
-  return {
-    buffer: await zip.generateAsync({ type: 'nodebuffer' }),
-    fileName: `relatorio-${montarCodigoRelatorio(relatorio.id, relatorio.dataCriacao)}.docx`,
+    return {
+      buffer: await zip.generateAsync({ type: 'nodebuffer' }),
+      fileName: `relatorio-${montarCodigoRelatorio(relatorio.id, relatorio.dataCriacao)}.docx`,
+    }
+  } catch (erro) {
+    if (erro instanceof AppError) throw erro
+
+    console.error('[DOCX] Falha ao gerar relatório', {
+      relatorioId: id,
+      templatePath: env.docx.templatePath,
+      erro,
+    })
+    throw new AppError(500, 'DOCX_GENERATION_FAILED', 'Não foi possível gerar o relatório')
   }
 }
 
