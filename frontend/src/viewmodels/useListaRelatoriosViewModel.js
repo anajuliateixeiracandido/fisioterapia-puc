@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useModal } from '../contexts/ModalContext'
 import api from '../services/api'
 
-export function useListaRelatoriosViewModel() {
+export function useListaRelatoriosViewModel(statusInicial = '') {
   const modal = useModal()
   const [view, setView] = useState('lista')
   const [relatorios, setRelatorios] = useState([])
@@ -10,7 +10,7 @@ export function useListaRelatoriosViewModel() {
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
   const [busca, setBusca] = useState('')
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState(statusInicial)
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const [pagina, setPagina] = useState(1)

@@ -34,13 +34,13 @@ export function useHomeViewModel() {
   useEffect(() => {
     Promise.all([
       api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos' } }),
-      api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'ENVIADO' } }),
+      api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'CORRIGIDO' } }),
       api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'APROVADO' } }),
     ])
-      .then(([todos, enviados, aprovados]) => {
+      .then(([todos, corrigidos, aprovados]) => {
         setStats([
           { label: 'Total de relatórios', value: todos.data?.pagination?.total ?? 0 },
-          { label: 'Aguardando aprovação', value: enviados.data?.pagination?.total ?? 0 },
+          { label: 'Aguardando aprovação', value: corrigidos.data?.pagination?.total ?? 0 },
           { label: 'Aprovados', value: aprovados.data?.pagination?.total ?? 0 },
         ])
       })

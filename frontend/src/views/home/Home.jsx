@@ -15,10 +15,10 @@ import { obterRelatorio, exportarRelatorioDocx } from '../../services/relatorioS
 import { calcularIniciais } from '../../utils/formatadores'
 import './Home.css'
 
-const StatCard = ({ icon, label, value, colorClass }) => {
+const StatCard = ({ icon, label, value, colorClass, onClick }) => {
 const Icon = icon
 return (
-  <div className="stat-card">
+  <button type="button" className="stat-card" onClick={onClick}>
     <div className={`stat-icon ${colorClass}`}>
       <Icon size={24} />
     </div>
@@ -26,7 +26,7 @@ return (
       <div className="stat-label">{label}</div>
       <div className="stat-value">{value}</div>
     </div>
-  </div>
+  </button>
 )
 }
 
@@ -56,6 +56,7 @@ const [currentPage, setCurrentPage] = useState(paginaInicial)
 const [relatorioSelecionado, setRelatorioSelecionado] = useState(null)
 const [pacienteSelecionadoId, setPacienteSelecionadoId] = useState(null)
 const [escopoPacientes, setEscopoPacientes] = useState('meus')
+const [statusRelatorios, setStatusRelatorios] = useState('')
 const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
 const [exportandoRelatorio, setExportandoRelatorio] = useState(false)
 const [modalAvaliacaoAberto, setModalAvaliacaoAberto] = useState(false)
@@ -77,15 +78,14 @@ useEffect(() => {
 useEffect(() => {
   Promise.all([
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos' } }),
-    api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'ENVIADO' } }),
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'CORRIGIDO' } }),
     api.get('/relatorios', { params: { page: 1, limit: 1, tipo: 'todos', status: 'APROVADO' } }),
     api.get('/pacientes', { params: { page: 1, limit: 1 } }),
   ])
-    .then(([todos, enviados, corrigidos, aprovados, pacientesData]) => {
+    .then(([todos, corrigidos, aprovados, pacientesData]) => {
       setStats([
         { icon: ClipboardList, label: 'Total de relatórios', value: todos.data?.pagination?.total ?? 0, colorClass: 'stat-blue' },
-        { icon: Clock, label: 'Aguardando aprovação', value: (enviados.data?.pagination?.total ?? 0) + (corrigidos.data?.pagination?.total ?? 0), colorClass: 'stat-yellow' },
+        { icon: Clock, label: 'Aguardando aprovação', value: corrigidos.data?.pagination?.total ?? 0, colorClass: 'stat-yellow' },
         { icon: Check, label: 'Aprovados', value: aprovados.data?.pagination?.total ?? 0, colorClass: 'stat-green' },
       ])
       setTotalPacientes(
@@ -100,7 +100,10 @@ useEffect(() => {
 if (!user) return null
 
 return (
-  <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
+  <Layout currentPage={currentPage} onNavigate={(page) => {
+    setStatusRelatorios('')
+    setCurrentPage(page)
+  }}>
     {currentPage === 'dashboard' && (
       <div className="content-section">
         <div className="greeting-section">
@@ -119,6 +122,10 @@ return (
             label="Meus pacientes"
             value={totalPacientes}
             colorClass="stat-purple"
+            onClick={() => {
+              setEscopoPacientes('meus')
+              setCurrentPage('pacientes')
+            }}
           />
           {stats.map((stat, index) => (
             <StatCard
@@ -127,6 +134,10 @@ return (
               label={stat.label}
               value={stat.value}
               colorClass={stat.colorClass}
+              onClick={() => {
+                setStatusRelatorios(['', 'CORRIGIDO', 'APROVADO'][index])
+                setCurrentPage('relatorios')
+              }}
             />
           ))}
         </div>
@@ -136,6 +147,8 @@ return (
     {currentPage === 'relatorios' && (
       <div className="content-section">
         <ListaRelatorios
+          key={statusRelatorios}
+          statusInicial={statusRelatorios}
           onVerRelatorio={(r) => {
             setRelatorioSelecionado(r)
             setCurrentPage('ver-relatorio')
