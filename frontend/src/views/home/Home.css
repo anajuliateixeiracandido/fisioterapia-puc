@@ -193,6 +193,10 @@
 }
 
 .stat-card {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
   background-color: white;
   padding: 1.5rem;
   border-radius: 0.5rem;
@@ -228,6 +232,11 @@
 
 .stat-icon.stat-green {
   background-color: #10b981;
+}
+
+.stat-card:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
 }
 
 .stat-icon.stat-purple {

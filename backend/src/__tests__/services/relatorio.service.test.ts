@@ -572,6 +572,27 @@ describe('obterRelatorioPorId', () => {
 // ─── listarRelatorios ─────────────────────────────────────────────────────────
 
 describe('listarRelatorios', () => {
+  it('deve listar e contar apenas corrigidos mantendo o escopo do aluno', async () => {
+    prismaMock.relatorio.findMany.mockResolvedValue([])
+    prismaMock.relatorio.count.mockResolvedValue(0)
+
+    await listarRelatorios({
+      page: 1,
+      limit: 15,
+      ordenarPor: 'dataCriacao',
+      ordem: 'desc',
+      tipo: 'todos',
+      status: 'CORRIGIDO',
+    }, usuarioAluno)
+
+    const where = expect.objectContaining({
+      fisioterapeutaId: usuarioAluno.fisioterapeutaId,
+      AND: expect.arrayContaining([{ status: 'CORRIGIDO' }]),
+    })
+    expect(prismaMock.relatorio.findMany).toHaveBeenCalledWith(expect.objectContaining({ where }))
+    expect(prismaMock.relatorio.count).toHaveBeenCalledWith(expect.objectContaining({ where }))
+  })
+
   const filtrosPadrao = {
     page: 1,
     limit: 10,

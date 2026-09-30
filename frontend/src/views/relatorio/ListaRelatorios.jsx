@@ -84,7 +84,7 @@ function Paginacao({ pagination, onMudarPagina }) {
     )
 }
 
-export function ListaRelatorios({ onVerRelatorio }) {
+export function ListaRelatorios({ onVerRelatorio, statusInicial = '' }) {
     const {
         view,
         relatorios,
@@ -104,7 +104,7 @@ export function ListaRelatorios({ onVerRelatorio }) {
         handleSalvarRelatorio,
         handleMudarPagina,
         fetchRelatorios,
-    } = useListaRelatoriosViewModel()
+    } = useListaRelatoriosViewModel(statusInicial)
 
     if (view === 'form') {
         return (
